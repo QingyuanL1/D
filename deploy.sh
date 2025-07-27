@@ -80,17 +80,17 @@ enter_project() {
 }
 
 # 安装依赖
-install_dependencies() {
-    log "安装/更新依赖..."
+# install_dependencies() {
+#     log "安装/更新依赖..."
     
-    if [ -f "package.json" ]; then
-        npm install --force
-        success "依赖安装完成"
-    else
-        error "package.json 文件不存在"
-        exit 1
-    fi
-}
+#     if [ -f "package.json" ]; then
+#         npm install --force
+#         success "依赖安装完成"
+#     else
+#         error "package.json 文件不存在"
+#         exit 1
+#     fi
+# }
 
 # 构建项目
 build_project() {
@@ -188,7 +188,7 @@ main() {
     check_dependencies
     backup_current
     enter_project
-    install_dependencies
+    # install_dependencies
     build_project
     set_permissions
     test_nginx
