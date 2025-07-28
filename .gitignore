@@ -51,12 +51,25 @@ uploads/
 temp/
 tmp/
 
-# PM2 ecosystem files
-ecosystem.config.js
-
 # Test coverage
 coverage/
 .nyc_output/
 
 # Backend specific
 app.log
+
+# Backup directories
+backup/
+dist_backup_*/
+
+# Package lock files (can be regenerated)
+package-lock.json
+
+# Editor files
+*.tmp
+*.bak
+*~
+
+# Cache directories
+.cache/
+.parcel-cache/
