@@ -1,7 +1,9 @@
 <template>
     <div class="max-w-[1500px] mx-auto bg-white rounded-lg shadow-lg p-6">
         <div class="flex justify-between items-center mb-6">
-            <h1 class="text-2xl font-bold">主营业务收入分解情况（单位：万元）</h1>
+            <div class="flex items-center space-x-4">
+                <h1 class="text-2xl font-bold">主营业务收入分解情况（单位：万元）</h1>
+            </div>
             <div class="flex items-center space-x-4">
                 <input v-model="period" type="month" class="px-3 py-2 border rounded" />
             </div>
@@ -33,7 +35,7 @@
                                 {{ item.yearlyPlan }}
                             </td>
                             <td class="border border-gray-300 px-4 py-2">
-                                <input v-model.number="item.currentMonthIncome" type="number" class="w-full px-2 py-1 border rounded" step="0.01" />
+                                <span class="font-medium text-blue-600">{{ item.currentMonthIncome.toFixed(2) }}</span>
                             </td>
                             <td class="border border-gray-300 px-4 py-2">
                                 <span class="font-medium">{{ item.accumulatedIncome.toFixed(2) }}</span>
@@ -57,7 +59,7 @@
                                 {{ item.yearlyPlan }}
                             </td>
                             <td class="border border-gray-300 px-4 py-2">
-                                <input v-model.number="item.currentMonthIncome" type="number" class="w-full px-2 py-1 border rounded" step="0.01" />
+                                <span class="font-medium text-blue-600">{{ item.currentMonthIncome.toFixed(2) }}</span>
                             </td>
                             <td class="border border-gray-300 px-4 py-2">
                                 <span class="font-medium">{{ item.accumulatedIncome.toFixed(2) }}</span>
@@ -81,7 +83,7 @@
                                 {{ item.yearlyPlan }}
                             </td>
                             <td class="border border-gray-300 px-4 py-2">
-                                <input v-model.number="item.currentMonthIncome" type="number" class="w-full px-2 py-1 border rounded" step="0.01" />
+                                <span class="font-medium text-blue-600">{{ item.currentMonthIncome.toFixed(2) }}</span>
                             </td>
                             <td class="border border-gray-300 px-4 py-2">
                                 <span class="font-medium">{{ item.accumulatedIncome.toFixed(2) }}</span>

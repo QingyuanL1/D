@@ -15,49 +15,91 @@ router.get('/:period', async (req, res) => {
     // 计算主营业务和非主营业务的当期和累计收入
     const [year, month] = period.split('-');
 
-    // 1. 计算主营业务收入
+    // 1. 计算主营业务收入 - 改为使用订单转收入数据
     let mainBusinessCurrentPeriod = 0;
     let mainBusinessCumulative = 0;
 
     try {
-      // 获取主营业务当期收入
+      // 计算主营业务当期收入 = 当月订单转收入 + 存量订单转收入
       const mainPeriodDate = `${period}-01`;
-      const [mainCurrentRows] = await pool.execute(
-        'SELECT data FROM main_business_income WHERE period = ?',
+      
+      // 1.1 获取当月订单转收入数据
+      const [orderToIncomeRows] = await pool.execute(
+        'SELECT data FROM order_to_income WHERE period = ?',
         [mainPeriodDate]
       );
 
-      if (mainCurrentRows.length > 0) {
-        const data = typeof mainCurrentRows[0].data === 'string' ? JSON.parse(mainCurrentRows[0].data) : mainCurrentRows[0].data;
+      let currentOrderIncome = 0;
+      if (orderToIncomeRows.length > 0) {
+        const orderData = typeof orderToIncomeRows[0].data === 'string' ? JSON.parse(orderToIncomeRows[0].data) : orderToIncomeRows[0].data;
         ['equipment', 'components', 'engineering'].forEach(category => {
-          if (data[category] && Array.isArray(data[category])) {
-            data[category].forEach(item => {
-              mainBusinessCurrentPeriod += Number(item.currentMonthIncome || 0);
+          if (orderData[category] && Array.isArray(orderData[category])) {
+            orderData[category].forEach(item => {
+              currentOrderIncome += Number(item.currentIncome || 0);
             });
           }
         });
       }
 
-      // 获取主营业务累计收入（从年初到当前期间）
-      const [mainCumulativeRows] = await pool.execute(
-        'SELECT data FROM main_business_income WHERE period >= ? AND period <= ? ORDER BY period',
-        [`${year}-01-01`, mainPeriodDate]
+      // 1.2 获取存量订单转收入数据
+      const [stockOrderRows] = await pool.execute(
+        'SELECT data FROM stock_order_to_income WHERE period = ?',
+        [period]
       );
 
-      mainCumulativeRows.forEach(row => {
-        try {
-          const data = typeof row.data === 'string' ? JSON.parse(row.data) : row.data;
+      let stockOrderIncome = 0;
+      if (stockOrderRows.length > 0) {
+        const stockData = typeof stockOrderRows[0].data === 'string' ? JSON.parse(stockOrderRows[0].data) : stockOrderRows[0].data;
+        ['equipment', 'components', 'engineering'].forEach(category => {
+          if (stockData[category] && Array.isArray(stockData[category])) {
+            stockData[category].forEach(item => {
+              stockOrderIncome += Number(item.currentMonthIncome || 0);
+            });
+          }
+        });
+      }
+
+      mainBusinessCurrentPeriod = currentOrderIncome + stockOrderIncome;
+
+      // 获取主营业务累计收入（从年初到当前期间）
+      for (let m = 1; m <= parseInt(month); m++) {
+        const monthPeriod = `${year}-${m.toString().padStart(2, '0')}`;
+        const monthPeriodDate = `${monthPeriod}-01`;
+        
+        // 累计当月订单转收入
+        const [monthOrderRows] = await pool.execute(
+          'SELECT data FROM order_to_income WHERE period = ?',
+          [monthPeriodDate]
+        );
+        
+        if (monthOrderRows.length > 0) {
+          const orderData = typeof monthOrderRows[0].data === 'string' ? JSON.parse(monthOrderRows[0].data) : monthOrderRows[0].data;
           ['equipment', 'components', 'engineering'].forEach(category => {
-            if (data[category] && Array.isArray(data[category])) {
-              data[category].forEach(item => {
+            if (orderData[category] && Array.isArray(orderData[category])) {
+              orderData[category].forEach(item => {
+                mainBusinessCumulative += Number(item.currentIncome || 0);
+              });
+            }
+          });
+        }
+
+        // 累计存量订单转收入
+        const [monthStockRows] = await pool.execute(
+          'SELECT data FROM stock_order_to_income WHERE period = ?',
+          [monthPeriod]
+        );
+        
+        if (monthStockRows.length > 0) {
+          const stockData = typeof monthStockRows[0].data === 'string' ? JSON.parse(monthStockRows[0].data) : monthStockRows[0].data;
+          ['equipment', 'components', 'engineering'].forEach(category => {
+            if (stockData[category] && Array.isArray(stockData[category])) {
+              stockData[category].forEach(item => {
                 mainBusinessCumulative += Number(item.currentMonthIncome || 0);
               });
             }
           });
-        } catch (e) {
-          console.error('解析主营业务数据失败:', e);
         }
-      });
+      }
     } catch (error) {
       console.error('获取主营业务数据失败:', error);
     }

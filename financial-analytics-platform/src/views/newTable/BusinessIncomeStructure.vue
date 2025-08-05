@@ -64,7 +64,13 @@
 
         <!-- 主营业务收入分解情况表 -->
         <div class="mt-8">
-            <h2 class="text-xl font-bold mb-4">主营业务收入分解情况（单位：万元）</h2>
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-xl font-bold">主营业务收入分解情况（单位：万元）</h2>
+                <div class="bg-blue-50 px-3 py-1 rounded-lg">
+                    <span class="text-blue-600 text-sm font-medium">✨ 当月收入</span>
+                    <small class="block text-blue-500 text-xs">基于订单转收入数据</small>
+                </div>
+            </div>
             <div class="overflow-x-auto my-6">
                 <table class="w-full border-collapse border border-gray-300">
                     <thead class="sticky top-0 bg-white">
@@ -91,7 +97,7 @@
                                     <span class="font-medium">{{ typeof item.yearlyPlan === 'number' ? item.yearlyPlan.toFixed(2) : item.yearlyPlan }}</span>
                                 </td>
                                 <td class="border border-gray-300 px-4 py-2">
-                                    <input v-model.number="item.currentMonthIncome" type="number" class="w-full px-2 py-1 border rounded" step="0.01" />
+                                    <span class="font-medium text-blue-600">{{ item.currentMonthIncome.toFixed(2) }}</span>
                                 </td>
                                 <td class="border border-gray-300 px-4 py-2">
                                     <span class="font-medium">{{ item.accumulatedIncome.toFixed(2) }}</span>
@@ -115,7 +121,7 @@
                                     <span class="font-medium">{{ typeof item.yearlyPlan === 'number' ? item.yearlyPlan.toFixed(2) : item.yearlyPlan }}</span>
                                 </td>
                                 <td class="border border-gray-300 px-4 py-2">
-                                    <input v-model.number="item.currentMonthIncome" type="number" class="w-full px-2 py-1 border rounded" step="0.01" />
+                                    <span class="font-medium text-blue-600">{{ item.currentMonthIncome.toFixed(2) }}</span>
                                 </td>
                                 <td class="border border-gray-300 px-4 py-2">
                                     <span class="font-medium">{{ item.accumulatedIncome.toFixed(2) }}</span>
@@ -139,7 +145,8 @@
                                     <span class="font-medium">{{ typeof item.yearlyPlan === 'number' ? item.yearlyPlan.toFixed(2) : item.yearlyPlan }}</span>
                                 </td>
                                 <td class="border border-gray-300 px-4 py-2">
-                                    <input v-model.number="item.currentMonthIncome" type="number" class="w-full px-2 py-1 border rounded" step="0.01" />
+                                    <span class="font-medium text-blue-600">{{ item.currentMonthIncome.toFixed(2) }}</span>
+                                    <small class="block text-gray-500 text-xs mt-1"></small>
                                 </td>
                                 <td class="border border-gray-300 px-4 py-2">
                                     <span class="font-medium">{{ item.accumulatedIncome.toFixed(2) }}</span>
@@ -869,7 +876,7 @@ watch(() => route.query.period, (newPeriod) => {
     }
 })
 
-// 监听主营业务收入数据变化，自动计算累计收入和进度
+// 监听主营业务收入数据变化，累计收入和进度
 watch(mainBusinessIncomeData, () => {
     // 更新累计收入
     updateAccumulatedIncomeForMainBusiness()

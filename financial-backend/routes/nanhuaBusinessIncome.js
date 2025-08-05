@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { pool } = require('../config/database');
 
-// 获取南华营业收入结构与质量数据
+// 获取南华营业收入结构与质量数据 - 改为基于订单转收入数据计算
 router.get('/:period', async (req, res) => {
   const { period } = req.params;
   
@@ -22,40 +22,79 @@ router.get('/:period', async (req, res) => {
       ]
     };
     
-    // 从数据库获取当期数据
-    const [currentRows] = await pool.execute(
-      'SELECT customer_name, yearly_plan, current_amount, accumulated_amount, completion_rate FROM nanhua_business_income WHERE period = ?',
-      [period]
-    );
-
-    // 计算累计数据（所有历史期间的当期总和）
-    const [accumulatedRows] = await pool.execute(
-      'SELECT customer_name, SUM(current_amount) as total_accumulated FROM nanhua_business_income WHERE period <= ? GROUP BY customer_name',
-      [period]
-    );
-
-    // 合并数据
+    // 计算当期收入 = 当月订单转收入 + 存量订单转收入
+    const [year, month] = period.split('-');
+    
+    // 合并数据并计算当期收入
     const result = {
-      customers: fixedData.customers.map(item => {
-        const currentItem = currentRows.find(row => row.customer_name === item.customerName);
-        const accumulatedItem = accumulatedRows.find(row => row.customer_name === item.customerName);
+      customers: await Promise.all(fixedData.customers.map(async (item) => {
+        let currentIncome = 0;
         
-        const accumulated = accumulatedItem ? parseFloat(accumulatedItem.total_accumulated) : 0;
-        const completionRate = item.yearlyPlan > 0 ? (accumulated / item.yearlyPlan * 100) : 0;
+        // 1. 获取当月订单转收入
+        const [orderRows] = await pool.execute(
+          'SELECT current_amount FROM nanhua_order_to_income WHERE period = ? AND customer_name = ?',
+          [period, item.customerName]
+        );
+        
+        if (orderRows.length > 0) {
+          currentIncome += parseFloat(orderRows[0].current_amount) || 0;
+        }
+        
+        // 2. 获取存量订单转收入
+        const [stockRows] = await pool.execute(
+          'SELECT current_amount FROM nanhua_stock_order_to_income WHERE period = ? AND customer_name = ?',
+          [period, item.customerName]
+        );
+        
+        if (stockRows.length > 0) {
+          currentIncome += parseFloat(stockRows[0].current_amount) || 0;
+        }
+        
+        // 3. 计算累计收入（从年初到当前月份）
+        let accumulatedIncome = 0;
+        
+        for (let m = 1; m <= parseInt(month); m++) {
+          const monthPeriod = `${year}-${m.toString().padStart(2, '0')}`;
+          
+          // 累计当月订单转收入
+          const [monthOrderRows] = await pool.execute(
+            'SELECT current_amount FROM nanhua_order_to_income WHERE period = ? AND customer_name = ?',
+            [monthPeriod, item.customerName]
+          );
+          
+          if (monthOrderRows.length > 0) {
+            accumulatedIncome += parseFloat(monthOrderRows[0].current_amount) || 0;
+          }
+          
+          // 累计存量订单转收入
+          const [monthStockRows] = await pool.execute(
+            'SELECT current_amount FROM nanhua_stock_order_to_income WHERE period = ? AND customer_name = ?',
+            [monthPeriod, item.customerName]
+          );
+          
+          if (monthStockRows.length > 0) {
+            accumulatedIncome += parseFloat(monthStockRows[0].current_amount) || 0;
+          }
+        }
+        
+        // 4. 计算完成率
+        const completionRate = item.yearlyPlan > 0 ? (accumulatedIncome / item.yearlyPlan * 100) : 0;
         
         return {
           customerName: item.customerName,
           yearlyPlan: item.yearlyPlan,
-          current: currentItem ? parseFloat(currentItem.current_amount) : 0,
-          accumulated: accumulated,
+          current: currentIncome,
+          accumulated: accumulatedIncome,
           completionRate: parseFloat(completionRate.toFixed(2))
         };
-      })
+      }))
     };
 
     res.json({
       success: true,
-      data: result
+      data: result,
+      calculated: true,
+      message: '数据基于订单转收入计算'
     });
   } catch (error) {
     console.error('获取南华营业收入结构与质量数据失败:', error);
