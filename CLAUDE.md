@@ -54,6 +54,9 @@ pm2 stop financial-backend
 
 # Backend deployment (automated)
 cd financial-backend && ./deploy.sh
+
+# Full stack deployment
+./deploy-all.sh [frontend|backend|all]
 ```
 
 ## Architecture Overview

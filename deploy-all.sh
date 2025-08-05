@@ -155,11 +155,11 @@ EOF
     local max_retries=10
     
     while [ $retry_count -lt $max_retries ]; do
-        HEALTH_CHECK=$(curl -s http://47.111.95.19:3000/health || echo "failed")
+        HEALTH_CHECK=$(curl -s http://127.0.0.1:3000/health || echo "failed")
         if [[ $HEALTH_CHECK == *"ok"* ]]; then
             success "后端服务启动成功！"
-            success "   - 服务地址: http://47.111.95.19:3000"
-            success "   - 健康检查: http://47.111.95.19:3000/health"
+            success "   - 服务地址: http://127.0.0.1:3000"
+            success "   - 健康检查: http://127.0.0.1:3000/health"
             return 0
         fi
         
@@ -232,7 +232,7 @@ deploy_frontend() {
     log "验证前端部署..."
     sleep 2
     
-    if curl -f -s http://47.111.95.19 > /dev/null; then
+    if curl -f -s http://127.0.0.1 > /dev/null; then
         success "前端部署验证成功 - 网站可访问"
         return 0
     else
@@ -265,9 +265,9 @@ show_deployment_info() {
     echo "备份目录: $BACKUP_DIR"
     echo ""
     echo "访问地址:"
-    echo "   前端: http://47.111.95.19"
-    echo "   后端API: http://47.111.95.19:3000"
-    echo "   健康检查: http://47.111.95.19:3000/health"
+    echo "   前端: http://127.0.0.1"
+    echo "   后端API: http://127.0.0.1:3000"
+    echo "   健康检查: http://127.0.0.1:3000/health"
     echo ""
     echo "常用管理命令:"
     echo "   查看后端状态: pm2 status"

@@ -1,0 +1,8 @@
+CREATE TABLE IF NOT EXISTS monthly_receipt_industrial (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    period VARCHAR(7) NOT NULL COMMENT '期间，格式：YYYY-MM',
+    data JSON NOT NULL COMMENT '收款数据，包含各区域的收款信息',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY uk_period (period)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='本月收款-Industrial Company'; 
