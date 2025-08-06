@@ -1,9 +1,8 @@
 <template>
     <div class="max-w-[1500px] mx-auto bg-white rounded-lg shadow-lg p-6">
         <div class="flex justify-between items-center mb-6">
-            <h1 class="text-2xl font-bold">拓源库存情况</h1>
+            <h1 class="text-2xl font-bold">拓源库存情况(合同存量)（单位：万元）</h1>
             <div class="flex items-center space-x-4">
-                <span class="text-sm text-gray-600">（单位：万元）</span>
                 <input v-model="period" type="month" class="px-3 py-2 border rounded" />
             </div>
         </div>
@@ -12,12 +11,13 @@
             <table class="w-full border-collapse border border-gray-300">
                 <thead class="sticky top-0 bg-white">
                     <tr class="bg-gray-50">
-                        <th class="border border-gray-300 px-4 py-2 w-32">板块</th>
-                        <th class="border border-gray-300 px-4 py-2 w-32">客户属性</th>
-                        <th class="border border-gray-300 px-4 py-2 w-32">年初余量</th>
-                        <th class="border border-gray-300 px-4 py-2 w-32">当期余额</th>
-                        <th class="border border-gray-300 px-4 py-2 w-32">余额</th>
-                        <th class="border border-gray-300 px-4 py-2 w-32">波动率</th>
+                        <th class="border border-gray-300 px-4 py-2">板块</th>
+                        <th class="border border-gray-300 px-4 py-2">客户属性</th>
+                        <th class="border border-gray-300 px-4 py-2">年初余量</th>
+                        <th class="border border-gray-300 px-4 py-2">当期新增</th>
+                        <th class="border border-gray-300 px-4 py-2">当月收入</th>
+                        <th class="border border-gray-300 px-4 py-2">当期库存</th>
+                        <th class="border border-gray-300 px-4 py-2">波动率</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -33,45 +33,51 @@
                             </td>
                             <td class="border border-gray-300 px-4 py-2">
                                 <input 
-                                    v-model="item.initialBalance" 
+                                    v-model.number="item.initialAmount" 
                                     type="number" 
-                                    class="w-full px-2 py-1 border rounded text-right bg-gray-100" 
+                                    class="w-full px-2 py-1 border rounded text-right bg-gray-50" 
                                     step="0.01"
                                     readonly
                                 />
                             </td>
                             <td class="border border-gray-300 px-4 py-2">
-                                <input 
-                                    v-model="item.currentAmount" 
-                                    type="number" 
-                                    class="w-full px-2 py-1 border rounded text-right" 
+                                <input
+                                    v-model.number="item.currentIncrease"
+                                    type="number"
+                                    class="w-full px-2 py-1 border rounded text-right"
                                     step="0.01"
-                                    @input="calculateBalance(item)"
+                                    @input="updateCumulativeAmounts"
                                 />
                             </td>
                             <td class="border border-gray-300 px-4 py-2 text-right">
-                                <span class="text-sm font-medium">{{ formatNumber(item.balance) }}</span>
+                                <span class="font-medium">{{ formatNumber(getMainBusinessIncome('equipment', item.customerAttribute)) }}</span>
                             </td>
                             <td class="border border-gray-300 px-4 py-2 text-right">
-                                <span class="text-sm font-medium">{{ formatPercentage(item.fluctuationRate) }}%</span>
+                                <span class="font-medium">{{ formatNumber(item.cumulativeAmount) }}</span>
+                            </td>
+                            <td class="border border-gray-300 px-4 py-2 text-right">
+                                {{ calculateFluctuation(item.initialAmount, item.cumulativeAmount) }}%
                             </td>
                         </tr>
                     </template>
 
                     <!-- 合计行 -->
                     <tr class="bg-gray-50 font-bold">
-                        <td colspan="2" class="border border-gray-300 px-4 py-2 text-center">合计</td>
+                        <td class="border border-gray-300 px-4 py-2 text-center" colspan="2">合计</td>
                         <td class="border border-gray-300 px-4 py-2 text-right">
-                            {{ formatNumber(totalData.initialBalance) }}
+                            {{ formatNumber(totalData.initialAmount) }}
                         </td>
                         <td class="border border-gray-300 px-4 py-2 text-right">
-                            {{ formatNumber(totalData.currentAmount) }}
+                            {{ formatNumber(totalData.currentIncrease) }}
                         </td>
                         <td class="border border-gray-300 px-4 py-2 text-right">
-                            <span class="text-sm font-bold">{{ formatNumber(totalData.balance) }}</span>
+                            {{ formatNumber(getTotalMainBusinessIncome()) }}
                         </td>
                         <td class="border border-gray-300 px-4 py-2 text-right">
-                            <span class="text-sm font-bold">{{ formatPercentage(totalData.fluctuationRate) }}%</span>
+                            {{ formatNumber(totalData.cumulativeAmount) }}
+                        </td>
+                        <td class="border border-gray-300 px-4 py-2 text-right">
+                            {{ calculateFluctuation(totalData.initialAmount, totalData.cumulativeAmount) }}%
                         </td>
                     </tr>
                 </tbody>
@@ -109,24 +115,33 @@ const period = ref(route.query.period?.toString() || new Date().toISOString().sl
 interface InventoryItem {
     segmentAttribute: string;
     customerAttribute: string;
-    initialBalance: number;
-    currentAmount: number;
-    balance: number;
-    fluctuationRate: number;
+    initialAmount: number;
+    currentIncrease: number;
+    cumulativeAmount: number;
 }
 
 interface InventoryData {
     items: InventoryItem[];
 }
 
+// 静态年初余量数据
+const staticInitialAmounts = {
+    '电业项目': 490.21,
+    '用户项目': 374.66,
+    '贸易': 0.00,
+    '代理设备': 636.81,
+    '代理工程': 0.00,
+    '代理设计': 0.00
+}
+
 const fixedPlanData: InventoryData = {
     items: [
-        { segmentAttribute: '设备', customerAttribute: '电业项目', initialBalance: 614.32, currentAmount: -614.32, balance: 0.00, fluctuationRate: -100.00 },
-        { segmentAttribute: '设备', customerAttribute: '用户项目', initialBalance: 0.00, currentAmount: 14.45, balance: 14.45, fluctuationRate: 0.00 },
-        { segmentAttribute: '设备', customerAttribute: '贸易', initialBalance: 0.00, currentAmount: 0.00, balance: 0.00, fluctuationRate: 0.00 },
-        { segmentAttribute: '设备', customerAttribute: '代理设备', initialBalance: 225.08, currentAmount: 319.75, balance: 544.83, fluctuationRate: 142.06 },
-        { segmentAttribute: '设备', customerAttribute: '代理工程', initialBalance: 0.00, currentAmount: 0.00, balance: 0.00, fluctuationRate: 0.00 },
-        { segmentAttribute: '设备', customerAttribute: '代理设计', initialBalance: 0.00, currentAmount: 0.00, balance: 0.00, fluctuationRate: 0.00 }
+        { segmentAttribute: '设备', customerAttribute: '电业项目', initialAmount: staticInitialAmounts['电业项目'], currentIncrease: 0, cumulativeAmount: 0 },
+        { segmentAttribute: '设备', customerAttribute: '用户项目', initialAmount: staticInitialAmounts['用户项目'], currentIncrease: 0, cumulativeAmount: 0 },
+        { segmentAttribute: '设备', customerAttribute: '贸易', initialAmount: staticInitialAmounts['贸易'], currentIncrease: 0, cumulativeAmount: 0 },
+        { segmentAttribute: '设备', customerAttribute: '代理设备', initialAmount: staticInitialAmounts['代理设备'], currentIncrease: 0, cumulativeAmount: 0 },
+        { segmentAttribute: '其他', customerAttribute: '代理工程', initialAmount: staticInitialAmounts['代理工程'], currentIncrease: 0, cumulativeAmount: 0 },
+        { segmentAttribute: '其他', customerAttribute: '代理设计', initialAmount: staticInitialAmounts['代理设计'], currentIncrease: 0, cumulativeAmount: 0 }
     ]
 }
 
@@ -134,29 +149,20 @@ const inventoryData = ref<InventoryData>(JSON.parse(JSON.stringify(fixedPlanData
 const remarks = ref('')
 const suggestions = ref('')
 
+// 存储所有历史月份数据，用于计算累计库存
+const allMonthsData = ref<Array<{ period: string; data: any }>>([])
+
+// 存储主营业务收入数据
+const mainBusinessIncomeData = ref<any>(null)
+
 const formatNumber = (value: number): string => {
-    if (value === 0) return '0.00'
-    return value.toFixed(2)
-}
-
-const formatPercentage = (value: number): string => {
-    if (value === 0) return '0.00'
-    return value.toFixed(2)
-}
-
-// 计算余额和波动率
-const calculateBalance = (item: InventoryItem) => {
-    // 余额 = 年初余量 + 当期余额（当期余额为正表示增加，为负表示减少）
-    item.balance = item.initialBalance + item.currentAmount
-    
-    // 波动率计算：如果年初余量为0，波动率为0；否则为(当期余额/年初余量)*100%
-    if (item.initialBalance && item.initialBalance !== 0) {
-        item.fluctuationRate = (item.currentAmount / item.initialBalance) * 100
-    } else {
-        // 如果年初余量为0，但当期余额不为0，波动率设为当期余额的符号 * 100%
-        item.fluctuationRate = item.currentAmount !== 0 ? (item.currentAmount > 0 ? 100 : -100) : 0
+    if (isNaN(value) || value === null || value === undefined) {
+        return '0.00'
     }
+    return value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
+
+
 
 // 判断是否是板块的第一行
 const isFirstInSegment = (index: number): boolean => {
@@ -169,70 +175,197 @@ const getSegmentRowspan = (segmentAttribute: string): number => {
     return inventoryData.value.items.filter(item => item.segmentAttribute === segmentAttribute).length
 }
 
+// 加载主营业务收入数据
+const loadMainBusinessIncomeData = async (targetPeriod: string) => {
+    try {
+        const response = await fetch(`http://127.0.0.1:3000/tuoyuan-main-business-income/${targetPeriod}`)
+        if (response.ok) {
+            const result = await response.json()
+            if (result.success && result.data) {
+                mainBusinessIncomeData.value = result.data
+                console.log('拓源主营业务收入数据:', mainBusinessIncomeData.value)
+            }
+        }
+    } catch (error) {
+        console.error('加载拓源主营业务收入数据失败:', error)
+    }
+}
+
+// 获取主营业务收入值
+const getMainBusinessIncome = (category: string, customerType: string): number => {
+    if (!mainBusinessIncomeData.value) return 0
+
+    // 拓源只有设备板块，所以直接查找设备数据
+    const categoryData = mainBusinessIncomeData.value.equipment || []
+    const item = categoryData.find((item: any) => item.customer === customerType)
+    return item ? (item.currentMonthIncome || 0) : 0
+}
+
+// 获取主营业务收入总计
+const getTotalMainBusinessIncome = (): number => {
+    if (!mainBusinessIncomeData.value) return 0
+
+    let total = 0
+    const equipmentData = mainBusinessIncomeData.value.equipment || []
+
+    equipmentData.forEach((item: any) => {
+        total += item.currentMonthIncome || 0
+    })
+
+    return total
+}
+
+// 加载所有月份数据（从年初到当前月份）
+const loadAllMonthsData = async (currentPeriod: string) => {
+    try {
+        const allData: Array<{ period: string; data: any }> = []
+        const currentYear = currentPeriod.substring(0, 4)
+        const currentMonth = parseInt(currentPeriod.substring(5, 7))
+
+        // 从1月到当前月份（不包括当前月份）
+        for (let month = 1; month < currentMonth; month++) {
+            const monthPeriod = `${currentYear}-${month.toString().padStart(2, '0')}`
+            try {
+                const response = await fetch(`http://127.0.0.1:3000/tuoyuan-inventory-status/${monthPeriod}`)
+                if (response.ok) {
+                    const result = await response.json()
+                    if (result.success && result.data) {
+                        allData.push({ period: monthPeriod, data: result.data })
+                    }
+                }
+            } catch (error) {
+                console.log(`跳过月份 ${monthPeriod}:`, error)
+            }
+        }
+
+        allMonthsData.value = allData
+        console.log('加载的所有月份数据:', allData)
+    } catch (error) {
+        console.error('加载所有月份数据失败:', error)
+    }
+}
+
+// 计算累计库存：年初余量 + 当期新增（每个月）- 当月收入（每月）（含税）
+const calculateCumulativeAmount = (customerType: string) => {
+    // 获取年初余量
+    const initialAmount = staticInitialAmounts[customerType] || 0
+
+    let totalIncrease = 0
+
+    // 累加历史月份数据
+    for (const monthData of allMonthsData.value) {
+        if (monthData.data.items) {
+            const item = monthData.data.items.find((d: any) => d.customerAttribute === customerType)
+            if (item) {
+                totalIncrease += parseFloat(item.currentIncrease?.toString()) || 0
+            }
+        }
+    }
+
+    // 加上当前月份的输入值
+    const currentItem = inventoryData.value.items.find(d => d.customerAttribute === customerType)
+    if (currentItem) {
+        totalIncrease += parseFloat(currentItem.currentIncrease?.toString()) || 0
+    }
+
+    // 获取当月收入（含税）
+    const currentMonthIncome = getMainBusinessIncome('equipment', customerType)
+    let currentMonthIncomeWithTax = 0
+
+    if (currentMonthIncome > 0) {
+        // 设备板块税率为13%
+        const taxRate = 0.13
+        // 当月收入（含税）= 当月收入 / (1 - 税率)
+        currentMonthIncomeWithTax = currentMonthIncome / (1 - taxRate)
+    }
+
+    // 累计库存 = 年初余量 + 总新增 - 当月收入（含税）
+    return initialAmount + totalIncrease - currentMonthIncomeWithTax
+}
+
+// 更新累计库存数据
+const updateCumulativeAmounts = () => {
+    inventoryData.value.items.forEach(item => {
+        const cumulative = calculateCumulativeAmount(item.customerAttribute)
+        item.cumulativeAmount = cumulative
+    })
+}
+
+// 计算波动率
+const calculateFluctuation = (initial: number, cumulative: number): string => {
+    if (initial === 0) {
+        return cumulative === 0 ? '0.00' : 'N/A'
+    }
+    const fluctuation = ((cumulative - initial) / initial) * 100;
+    return fluctuation.toFixed(2);
+}
+
 // 计算合计数据
 const totalData = computed(() => {
     const total = {
-        initialBalance: 0,
-        currentAmount: 0,
-        balance: 0,
-        fluctuationRate: 0
+        initialAmount: 0,
+        currentIncrease: 0,
+        cumulativeAmount: 0
     }
-    
+
     inventoryData.value.items.forEach(item => {
-        total.initialBalance += parseFloat(item.initialBalance?.toString() || '0') || 0
-        total.currentAmount += parseFloat(item.currentAmount?.toString() || '0') || 0
-        total.balance += parseFloat(item.balance?.toString() || '0') || 0
-    })
-    
-    // 计算总波动率：如果年初余量总计为0，波动率为0；否则为(当期余额总计/年初余量总计)*100%
-    if (total.initialBalance && total.initialBalance !== 0) {
-        total.fluctuationRate = (total.currentAmount / total.initialBalance) * 100
-    } else {
-        // 如果年初余量总计为0，但当期余额总计不为0，波动率设为当期余额总计的符号 * 100%
-        total.fluctuationRate = total.currentAmount !== 0 ? (total.currentAmount > 0 ? 100 : -100) : 0
-    }
-    
-    return total
+        total.initialAmount += Number(item.initialAmount) || 0;
+        total.currentIncrease += Number(item.currentIncrease) || 0;
+        total.cumulativeAmount += Number(item.cumulativeAmount) || 0;
+    });
+
+    return total;
 })
 
 // 加载数据
 const loadData = async (targetPeriod: string) => {
     try {
+        console.log(`正在加载拓源库存情况数据，期间: ${targetPeriod}`)
         const response = await fetch(`http://127.0.0.1:3000/tuoyuan-inventory-status/${targetPeriod}`)
         if (!response.ok) {
             if (response.status !== 404) {
                 throw new Error('加载数据失败')
             }
-            console.log(`${targetPeriod}期间无数据，重置为默认状态`)
+            console.log('未找到数据，重置为初始模板')
             resetToDefaultData()
+
+            // 加载历史数据并更新累计库存
+            await loadAllMonthsData(targetPeriod)
+            updateCumulativeAmounts()
             return
         }
         const result = await response.json()
-        if (result.data && result.data.items) {
-            // 合并数据库数据和默认数据，保证顺序一致
-            const dbItems = result.data.items
-            inventoryData.value.items = fixedPlanData.items.map(defaultItem => {
-                const dbItem = dbItems.find((item: any) => 
-                    item.segmentAttribute === defaultItem.segmentAttribute && 
-                    item.customerAttribute === defaultItem.customerAttribute
-                )
-                if (dbItem) {
-                    const newItem = {
+        console.log('API返回数据:', result)
+        
+        if (result.success && result.data) {
+            console.log('成功获取数据，开始合并...')
+            if (result.data.items) {
+                // 合并数据库数据和默认数据，保证顺序一致
+                const dbItems = result.data.items
+                inventoryData.value.items = fixedPlanData.items.map(defaultItem => {
+                    const dbItem = dbItems.find((item: any) => 
+                        item.segmentAttribute === defaultItem.segmentAttribute && 
+                        item.customerAttribute === defaultItem.customerAttribute
+                    )
+                    return {
                         segmentAttribute: defaultItem.segmentAttribute,
                         customerAttribute: defaultItem.customerAttribute,
-                        initialBalance: Number(dbItem.initialBalance) || 0,
-                        currentAmount: Number(dbItem.currentAmount) || 0,
-                        balance: Number(dbItem.balance) || 0,
-                        fluctuationRate: Number(dbItem.fluctuationRate) || 0
+                        initialAmount: defaultItem.initialAmount, // 使用静态初始余量
+                        currentIncrease: dbItem ? Number(dbItem.currentIncrease) || 0 : 0,
+                        cumulativeAmount: 0 // 累计库存需要重新计算
                     }
-                    // 重新计算余额和波动率
-                    calculateBalance(newItem)
-                    return newItem
-                } else {
-                    return { ...defaultItem }
-                }
-            })
+                })
+            }
+            
+            console.log('合并后的数据:', { inventoryData: inventoryData.value })
         }
+
+        // 加载所有月份数据并更新累计库存
+        await loadAllMonthsData(targetPeriod)
+        updateCumulativeAmounts()
+
+        // 加载主营业务收入数据
+        await loadMainBusinessIncomeData(targetPeriod)
     } catch (error) {
         console.error('加载数据失败:', error)
         resetToDefaultData()
@@ -268,17 +401,33 @@ watch(() => route.query.period, async (newPeriod) => {
     }
 })
 
+// 监听当期数据变化，自动更新累计库存
+watch(() => inventoryData.value.items.map(item => item.currentIncrease), () => {
+    updateCumulativeAmounts()
+}, { deep: true })
+
 watch(period, async (newPeriod, oldPeriod) => {
     if (newPeriod && newPeriod !== oldPeriod) {
         console.log(`期间发生变化: ${oldPeriod} -> ${newPeriod}`)
         resetToDefaultData()
         await loadData(newPeriod)
+        await loadMainBusinessIncomeData(newPeriod)
         loadRemarksAndSuggestions(newPeriod)
     }
 })
 
 const handleSave = async () => {
     try {
+        const formData = {
+            items: inventoryData.value.items.map(item => ({
+                segmentAttribute: item.segmentAttribute,
+                customerAttribute: item.customerAttribute,
+                initialAmount: item.initialAmount,
+                currentIncrease: item.currentIncrease || 0,
+                cumulativeAmount: item.cumulativeAmount
+            }))
+        }
+
         const response = await fetch('http://127.0.0.1:3000/tuoyuan-inventory-status', {
             method: 'POST',
             headers: {
@@ -286,16 +435,7 @@ const handleSave = async () => {
             },
             body: JSON.stringify({
                 period: period.value,
-                data: {
-                    items: inventoryData.value.items.map(item => ({
-                        segmentAttribute: item.segmentAttribute,
-                        customerAttribute: item.customerAttribute,
-                        initialBalance: item.initialBalance,
-                        currentAmount: item.currentAmount,
-                        balance: item.balance,
-                        fluctuationRate: item.fluctuationRate
-                    }))
-                }
+                data: formData
             })
         })
 
@@ -303,7 +443,7 @@ const handleSave = async () => {
             throw new Error('保存失败')
         }
 
-        await recordFormSubmission(MODULE_IDS.TUOYUAN_INVENTORY_STATUS, period.value, { items: inventoryData.value.items }, remarks.value, suggestions.value)
+        await recordFormSubmission(MODULE_IDS.TUOYUAN_INVENTORY_STATUS, period.value, formData, remarks.value, suggestions.value)
         alert('保存成功')
     } catch (error) {
         console.error('保存失败:', error)
@@ -315,12 +455,15 @@ const handleReset = () => {
     resetToDefaultData()
     remarks.value = ''
     suggestions.value = ''
+    console.log('已重置为初始数据')
 }
 
 onMounted(async () => {
+    console.log('拓源库存情况组件挂载，当前期间:', period.value)
     resetToDefaultData()
     const targetPeriod = route.query.period?.toString() || period.value
     await loadData(targetPeriod)
+    await loadMainBusinessIncomeData(targetPeriod)
     loadRemarksAndSuggestions(targetPeriod)
 })
 </script>

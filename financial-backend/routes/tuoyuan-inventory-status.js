@@ -12,15 +12,14 @@ router.get('/:period', async (req, res) => {
             SELECT 
                 segment_attribute,
                 customer_attribute,
-                initial_balance,
-                current_amount,
-                balance,
-                fluctuation_rate
+                initial_amount,
+                current_increase
             FROM tuoyuan_inventory_status 
             WHERE period = ?
             ORDER BY 
                 CASE segment_attribute
                     WHEN '设备' THEN 1
+                    WHEN '其他' THEN 2
                     ELSE 99
                 END,
                 CASE customer_attribute
@@ -42,12 +41,12 @@ router.get('/:period', async (req, res) => {
             console.log('没有找到数据，返回默认数据');
             const defaultData = {
                 items: [
-                    { segmentAttribute: '设备', customerAttribute: '电业项目', initialBalance: 614.32, currentAmount: -614.32, balance: 0.00, fluctuationRate: -100.00 },
-                    { segmentAttribute: '设备', customerAttribute: '用户项目', initialBalance: 0.00, currentAmount: 14.45, balance: 14.45, fluctuationRate: 0.00 },
-                    { segmentAttribute: '设备', customerAttribute: '贸易', initialBalance: 0.00, currentAmount: 0.00, balance: 0.00, fluctuationRate: 0.00 },
-                    { segmentAttribute: '设备', customerAttribute: '代理设备', initialBalance: 225.08, currentAmount: 319.75, balance: 544.83, fluctuationRate: 142.06 },
-                    { segmentAttribute: '设备', customerAttribute: '代理工程', initialBalance: 0.00, currentAmount: 0.00, balance: 0.00, fluctuationRate: 0.00 },
-                    { segmentAttribute: '设备', customerAttribute: '代理设计', initialBalance: 0.00, currentAmount: 0.00, balance: 0.00, fluctuationRate: 0.00 }
+                    { segmentAttribute: '设备', customerAttribute: '电业项目', initialAmount: 490.21, currentIncrease: 0, cumulativeAmount: 0 },
+                    { segmentAttribute: '设备', customerAttribute: '用户项目', initialAmount: 374.66, currentIncrease: 0, cumulativeAmount: 0 },
+                    { segmentAttribute: '设备', customerAttribute: '贸易', initialAmount: 0.00, currentIncrease: 0, cumulativeAmount: 0 },
+                    { segmentAttribute: '设备', customerAttribute: '代理设备', initialAmount: 636.81, currentIncrease: 0, cumulativeAmount: 0 },
+                    { segmentAttribute: '其他', customerAttribute: '代理工程', initialAmount: 0.00, currentIncrease: 0, cumulativeAmount: 0 },
+                    { segmentAttribute: '其他', customerAttribute: '代理设计', initialAmount: 0.00, currentIncrease: 0, cumulativeAmount: 0 }
                 ]
             };
             return res.json({ success: true, data: defaultData });
@@ -56,10 +55,8 @@ router.get('/:period', async (req, res) => {
         const items = rows.map(row => ({
             segmentAttribute: row.segment_attribute,
             customerAttribute: row.customer_attribute,
-            initialBalance: parseFloat(row.initial_balance) || 0,
-            currentAmount: parseFloat(row.current_amount) || 0,
-            balance: parseFloat(row.balance) || 0,
-            fluctuationRate: parseFloat(row.fluctuation_rate) || 0
+            initialAmount: parseFloat(row.initial_amount) || 0,
+            currentIncrease: parseFloat(row.current_increase) || 0
         }));
 
         const data = { items };
@@ -105,11 +102,9 @@ router.post('/', async (req, res) => {
                 period, 
                 segment_attribute, 
                 customer_attribute,
-                initial_balance,
-                current_amount,
-                balance,
-                fluctuation_rate
-            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+                initial_amount,
+                current_increase
+            ) VALUES (?, ?, ?, ?, ?)
         `;
         
         for (const item of data.items) {
@@ -117,10 +112,8 @@ router.post('/', async (req, res) => {
                 period,
                 item.segmentAttribute,
                 item.customerAttribute,
-                item.initialBalance || 0,
-                item.currentAmount || 0,
-                item.balance || 0,
-                item.fluctuationRate || 0
+                item.initialAmount || 0,
+                item.currentIncrease || 0
             ]);
         }
         

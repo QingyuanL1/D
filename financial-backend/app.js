@@ -9,6 +9,10 @@ const { testConnection } = require('./config/database');
 const balanceSheetRoutes = require('./routes/balanceSheet');
 const cashFlowRoutes = require('./routes/cashFlow');
 const incomeStatementRoutes = require('./routes/incomeStatement');
+const changzhouTuoyuanIncomeStatementRoutes = require('./routes/changzhouTuoyuanIncomeStatement');
+const changzhouTuoyuanCashFlowRoutes = require('./routes/changzhouTuoyuanCashFlow');
+const shanghaiNanhuaLanlingIncomeStatementRoutes = require('./routes/shanghaiNanhuaLanlingIncomeStatement');
+const shanghaiNanhuaLanlingCashFlowRoutes = require('./routes/shanghaiNanhuaLanlingCashFlow');
 const businessIncomeRoutes = require('./routes/businessIncome');
 const mainBusinessIncomeRoutes = require('./routes/mainBusinessIncome');
 const orderToIncomeRoutes = require('./routes/orderToIncome');
@@ -162,6 +166,12 @@ app.use('/income-statement', incomeStatementRoutes);
 app.use('/business-income', businessIncomeRoutes);
 app.use('/main-business-income', mainBusinessIncomeRoutes);
 app.use('/order-to-income', orderToIncomeRoutes);
+app.use('/changzhou-tuoyuan-income-statement', changzhouTuoyuanIncomeStatementRoutes);
+app.use('/changzhou-tuoyuan-cash-flow', changzhouTuoyuanCashFlowRoutes);
+app.use('/shanghai-nanhua-lanling-income-statement', shanghaiNanhuaLanlingIncomeStatementRoutes);
+app.use('/shanghai-nanhua-lanling-cash-flow', shanghaiNanhuaLanlingCashFlowRoutes);
+
+
 
 // 新增的六个财务报表路由
 app.use('/stock-order-to-income', stockOrderToIncomeRoutes);

@@ -142,8 +142,8 @@ const fixedPlanData: AccountsReceivableData = {
         { segmentAttribute: '设备', customerAttribute: '用户项目', yearBeginningBalance: 0, currentInvoicing: 0, cumulativeInvoicing: 0, currentCollection: 0, cumulativeCollection: 0, currentReceivableBalance: 0 },
         { segmentAttribute: '设备', customerAttribute: '贸易', yearBeginningBalance: 0, currentInvoicing: 0, cumulativeInvoicing: 0, currentCollection: 0, cumulativeCollection: 0, currentReceivableBalance: 0 },
         { segmentAttribute: '设备', customerAttribute: '代理设备', yearBeginningBalance: 0, currentInvoicing: 0, cumulativeInvoicing: 0, currentCollection: 0, cumulativeCollection: 0, currentReceivableBalance: 0 },
-        { segmentAttribute: '设备', customerAttribute: '代理工程', yearBeginningBalance: 0, currentInvoicing: 0, cumulativeInvoicing: 0, currentCollection: 0, cumulativeCollection: 0, currentReceivableBalance: 0 },
-        { segmentAttribute: '设备', customerAttribute: '代理设计', yearBeginningBalance: 0, currentInvoicing: 0, cumulativeInvoicing: 0, currentCollection: 0, cumulativeCollection: 0, currentReceivableBalance: 0 }
+        { segmentAttribute: '其他', customerAttribute: '代理工程', yearBeginningBalance: 0, currentInvoicing: 0, cumulativeInvoicing: 0, currentCollection: 0, cumulativeCollection: 0, currentReceivableBalance: 0 },
+        { segmentAttribute: '其他', customerAttribute: '代理设计', yearBeginningBalance: 0, currentInvoicing: 0, cumulativeInvoicing: 0, currentCollection: 0, cumulativeCollection: 0, currentReceivableBalance: 0 }
     ]
 }
 

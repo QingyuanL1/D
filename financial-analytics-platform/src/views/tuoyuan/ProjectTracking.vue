@@ -104,8 +104,8 @@ const fixedPlanData: TrackingData = {
         { segmentAttribute: '设备', customerAttribute: '用户项目', annualPlan: 0.00, currentPeriod: 0, currentCumulative: 0, executionProgress: 0 },
         { segmentAttribute: '设备', customerAttribute: '贸易', annualPlan: 0.00, currentPeriod: 0, currentCumulative: 0, executionProgress: 0 },
         { segmentAttribute: '设备', customerAttribute: '代理设备', annualPlan: 0.00, currentPeriod: 0, currentCumulative: 0, executionProgress: 0 },
-        { segmentAttribute: '设备', customerAttribute: '代理工程', annualPlan: 0.00, currentPeriod: 0, currentCumulative: 0, executionProgress: 0 },
-        { segmentAttribute: '设备', customerAttribute: '代理设计', annualPlan: 0.00, currentPeriod: 0, currentCumulative: 0, executionProgress: 0 }
+        { segmentAttribute: '其他', customerAttribute: '代理工程', annualPlan: 0.00, currentPeriod: 0, currentCumulative: 0, executionProgress: 0 },
+        { segmentAttribute: '其他', customerAttribute: '代理设计', annualPlan: 0.00, currentPeriod: 0, currentCumulative: 0, executionProgress: 0 }
     ]
 }
 

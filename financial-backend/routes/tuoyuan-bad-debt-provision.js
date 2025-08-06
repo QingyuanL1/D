@@ -8,6 +8,18 @@ router.get('/:period', async (req, res) => {
         const { period } = req.params;
         console.log(`获取拓源公司坏账准备情况数据，期间: ${period}`);
         
+        // 定义默认数据结构
+        const defaultData = {
+            items: [
+                { segmentAttribute: '设备', customerAttribute: '电业项目', yearBeginningBalance: 0, yearNewIncrease: 0, currentCollected: 0, cumulativeCollected: 0, provisionBalance: 0 },
+                { segmentAttribute: '设备', customerAttribute: '用户项目', yearBeginningBalance: 0, yearNewIncrease: 0, currentCollected: 0, cumulativeCollected: 0, provisionBalance: 0 },
+                { segmentAttribute: '设备', customerAttribute: '贸易', yearBeginningBalance: 0, yearNewIncrease: 0, currentCollected: 0, cumulativeCollected: 0, provisionBalance: 0 },
+                { segmentAttribute: '设备', customerAttribute: '代理设备', yearBeginningBalance: 0, yearNewIncrease: 0, currentCollected: 0, cumulativeCollected: 0, provisionBalance: 0 },
+                { segmentAttribute: '其他', customerAttribute: '代理工程', yearBeginningBalance: 0, yearNewIncrease: 0, currentCollected: 0, cumulativeCollected: 0, provisionBalance: 0 },
+                { segmentAttribute: '其他', customerAttribute: '代理设计', yearBeginningBalance: 0, yearNewIncrease: 0, currentCollected: 0, cumulativeCollected: 0, provisionBalance: 0 }
+            ]
+        };
+
         const query = `
             SELECT 
                 id,
@@ -28,10 +40,11 @@ router.get('/:period', async (req, res) => {
         
         const [results] = await pool.execute(query, [period]);
         
+        // 如果没有数据，返回默认数据
         if (results.length === 0) {
-            return res.status(404).json({
-                success: false,
-                message: '未找到数据'
+            return res.json({
+                success: true,
+                data: defaultData
             });
         }
 
@@ -48,10 +61,7 @@ router.get('/:period', async (req, res) => {
 
         res.json({
             success: true,
-            data: {
-                period: period,
-                items: items
-            }
+            data: { items }
         });
 
     } catch (error) {
@@ -63,6 +73,9 @@ router.get('/:period', async (req, res) => {
         });
     }
 });
+
+// 简化版：本年新增现在直接从数据库读取，不需要复杂计算
+// 如果需要自动计算，可以根据业务需求从其他相关表获取
 
 // 保存数据
 router.post('/', async (req, res) => {
@@ -96,6 +109,9 @@ router.post('/', async (req, res) => {
             `;
 
             for (const item of data.items) {
+                // 重新计算坏账准备余额以确保数据一致性
+                const provisionBalance = (item.yearBeginningBalance || 0) + (item.yearNewIncrease || 0) - (item.cumulativeCollected || 0);
+                
                 await connection.execute(insertQuery, [
                     period,
                     item.segmentAttribute,
@@ -104,7 +120,7 @@ router.post('/', async (req, res) => {
                     item.yearNewIncrease || 0,
                     item.currentCollected || 0,
                     item.cumulativeCollected || 0,
-                    item.provisionBalance || 0
+                    provisionBalance
                 ]);
             }
 

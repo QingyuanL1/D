@@ -109,8 +109,8 @@ const fixedPlanData: PaymentStructureData = {
         { segmentAttribute: '设备', customerAttribute: '用户项目', yearlyPlan: 0, missingData: 0, currentAccumulated: 0.00, executionProgress: 0 },
         { segmentAttribute: '设备', customerAttribute: '贸易', yearlyPlan: 0, missingData: 0, currentAccumulated: 0.00, executionProgress: 0 },
         { segmentAttribute: '设备', customerAttribute: '代理设备', yearlyPlan: 0, missingData: 0, currentAccumulated: 458.11, executionProgress: 0 },
-        { segmentAttribute: '设备', customerAttribute: '代理工程', yearlyPlan: 0, missingData: 0, currentAccumulated: 0.00, executionProgress: 0 },
-        { segmentAttribute: '设备', customerAttribute: '代理设计', yearlyPlan: 0, missingData: 0, currentAccumulated: 0.00, executionProgress: 0 }
+        { segmentAttribute: '其他', customerAttribute: '代理工程', yearlyPlan: 0, missingData: 0, currentAccumulated: 0.00, executionProgress: 0 },
+        { segmentAttribute: '其他', customerAttribute: '代理设计', yearlyPlan: 0, missingData: 0, currentAccumulated: 0.00, executionProgress: 0 }
     ]
 }
 

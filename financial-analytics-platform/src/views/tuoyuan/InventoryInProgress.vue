@@ -15,9 +15,8 @@
                     <tr class="bg-gray-50">
                         <th class="border border-gray-300 px-4 py-2 w-32">板块</th>
                         <th class="border border-gray-300 px-4 py-2 w-32">客户属性</th>
-                        <th class="border border-gray-300 px-4 py-2 w-32">年初金额</th>
-                        <th class="border border-gray-300 px-4 py-2 w-32">当期金额</th>
-                        <th class="border border-gray-300 px-4 py-2 w-32">当期金额累计</th>
+                        <th class="border border-gray-300 px-4 py-2 w-32">年初余额</th>
+                        <th class="border border-gray-300 px-4 py-2 w-32">当期余额</th>
                         <th class="border border-gray-300 px-4 py-2 w-32">波动率</th>
                     </tr>
                 </thead>
@@ -32,7 +31,7 @@
                             <td class="border border-gray-300 px-4 py-2">
                                 {{ item.customerAttribute }}
                             </td>
-                            <td class="border border-gray-300 px-4 py-2 text-right">
+                            <td class="border border-gray-300 px-4 py-2 text-right bg-gray-50">
                                 {{ formatNumber(item.yearBeginningAmount) }}
                             </td>
                             <td class="border border-gray-300 px-4 py-2">
@@ -42,9 +41,6 @@
                                     class="w-full px-2 py-1 border rounded text-right" 
                                     step="0.01"
                                 />
-                            </td>
-                            <td class="border border-gray-300 px-4 py-2 text-right">
-                                {{ formatNumber(item.currentPeriodCumulative) }}
                             </td>
                             <td class="border border-gray-300 px-4 py-2 text-right">
                                 <span class="text-sm font-medium">{{ formatPercentage(item.fluctuationRate) }}%</span>
@@ -60,9 +56,6 @@
                         </td>
                         <td class="border border-gray-300 px-4 py-2 text-right">
                             {{ formatNumber(totalData.currentPeriodAmount) }}
-                        </td>
-                        <td class="border border-gray-300 px-4 py-2 text-right">
-                            {{ formatNumber(totalData.currentPeriodCumulative) }}
                         </td>
                         <td class="border border-gray-300 px-4 py-2 text-right">
                             <span class="text-sm font-bold">{{ formatPercentage(totalData.fluctuationRate) }}%</span>
@@ -105,7 +98,6 @@ interface InventoryItem {
     customerAttribute: string;
     yearBeginningAmount: number;
     currentPeriodAmount: number;
-    currentPeriodCumulative: number;
     fluctuationRate: number;
 }
 
@@ -115,12 +107,12 @@ interface InventoryData {
 
 const fixedPlanData: InventoryData = {
     items: [
-        { segmentAttribute: '设备', customerAttribute: '电业项目', yearBeginningAmount: 490.21, currentPeriodAmount: 0, currentPeriodCumulative: 0, fluctuationRate: 0 },
-        { segmentAttribute: '设备', customerAttribute: '用户项目', yearBeginningAmount: 374.66, currentPeriodAmount: 0, currentPeriodCumulative: 0, fluctuationRate: 0 },
-        { segmentAttribute: '设备', customerAttribute: '贸易', yearBeginningAmount: 0.00, currentPeriodAmount: 0, currentPeriodCumulative: 0, fluctuationRate: 0 },
-        { segmentAttribute: '设备', customerAttribute: '代理设备', yearBeginningAmount: 636.81, currentPeriodAmount: 0, currentPeriodCumulative: 0, fluctuationRate: 0 },
-        { segmentAttribute: '设备', customerAttribute: '代理工程', yearBeginningAmount: 0.00, currentPeriodAmount: 0, currentPeriodCumulative: 0, fluctuationRate: 0 },
-        { segmentAttribute: '设备', customerAttribute: '代理设计', yearBeginningAmount: 0.00, currentPeriodAmount: 0, currentPeriodCumulative: 0, fluctuationRate: 0 }
+        { segmentAttribute: '设备', customerAttribute: '电业项目', yearBeginningAmount: 490.21, currentPeriodAmount: 0, fluctuationRate: 0 },
+        { segmentAttribute: '设备', customerAttribute: '用户项目', yearBeginningAmount: 374.66, currentPeriodAmount: 0, fluctuationRate: 0 },
+        { segmentAttribute: '设备', customerAttribute: '贸易', yearBeginningAmount: 0.00, currentPeriodAmount: 0, fluctuationRate: 0 },
+        { segmentAttribute: '设备', customerAttribute: '代理设备', yearBeginningAmount: 636.81, currentPeriodAmount: 0, fluctuationRate: 0 },
+        { segmentAttribute: '其他', customerAttribute: '代理工程', yearBeginningAmount: 0.00, currentPeriodAmount: 0, fluctuationRate: 0 },
+        { segmentAttribute: '其他', customerAttribute: '代理设计', yearBeginningAmount: 0.00, currentPeriodAmount: 0, fluctuationRate: 0 }
     ]
 }
 
@@ -149,57 +141,21 @@ const getSegmentRowspan = (segmentAttribute: string): number => {
     return inventoryData.value.items.filter(item => item.segmentAttribute === segmentAttribute).length
 }
 
-// 计算当期金额累计（年初金额 + 当期金额累计）
-const calculateCurrentPeriodCumulative = async (targetPeriod: string) => {
-    try {
-        const [year] = targetPeriod.split('-')
-        const currentMonth = parseInt(targetPeriod.split('-')[1])
-        
-        // 为每个项目计算当期金额累计
-        for (let item of inventoryData.value.items) {
-            let cumulativeChangeAmount = 0
-            
-            // 从1月累计到当前月份前一个月的"当期金额"变化
-            for (let m = 1; m < currentMonth; m++) {
-                const monthPeriod = `${year}-${m.toString().padStart(2, '0')}`
-                try {
-                    const response = await fetch(`http://127.0.0.1:3000/tuoyuan-inventory-in-progress/${monthPeriod}`)
-                    if (response.ok) {
-                        const result = await response.json()
-                        const projectData = result.data.items.find((p: any) => 
-                            p.segmentAttribute === item.segmentAttribute && 
-                            p.customerAttribute === item.customerAttribute
-                        )
-                        if (projectData) {
-                            cumulativeChangeAmount += projectData.currentPeriodAmount || 0
-                        }
-                    }
-                } catch (error) {
-                    console.warn(`无法加载${monthPeriod}的数据:`, error)
-                }
-            }
-            
-            // 加上当前月份的当期金额变化
-            cumulativeChangeAmount += item.currentPeriodAmount || 0
-            
-            // 当期金额累计 = 年初金额 + 当期金额变化累计
-            item.currentPeriodCumulative = item.yearBeginningAmount + cumulativeChangeAmount
-            
-            // 计算波动率 = 当期金额变化累计 / 年初金额 * 100%
-            item.fluctuationRate = item.yearBeginningAmount > 0 ? 
-                (cumulativeChangeAmount / item.yearBeginningAmount) * 100 : 
-                (cumulativeChangeAmount !== 0 ? (cumulativeChangeAmount > 0 ? 100 : -100) : 0)
+// 计算波动率
+const calculateFluctuationRate = () => {
+    for (let item of inventoryData.value.items) {
+        // 计算波动率 = (当期余额 - 年初余额) / 年初余额 * 100%
+        if (item.yearBeginningAmount && item.yearBeginningAmount !== 0) {
+            item.fluctuationRate = ((item.currentPeriodAmount - item.yearBeginningAmount) / item.yearBeginningAmount) * 100
+        } else {
+            item.fluctuationRate = item.currentPeriodAmount !== 0 ? (item.currentPeriodAmount > 0 ? 100 : -100) : 0
         }
-        
-    } catch (error) {
-        console.error('计算当期金额累计失败:', error)
     }
 }
 
-// 监听数据变化，自动重新计算当期金额累计和波动率
-watch(() => inventoryData.value.items, async (newItems) => {
-    // 当当期金额发生变化时，重新计算当期金额累计
-    await calculateCurrentPeriodCumulative(period.value)
+// 监听数据变化，自动重新计算波动率
+watch(() => inventoryData.value.items, () => {
+    calculateFluctuationRate()
 }, { deep: true })
 
 // 计算合计数据
@@ -207,22 +163,21 @@ const totalData = computed(() => {
     const total = {
         yearBeginningAmount: 0,
         currentPeriodAmount: 0,
-        currentPeriodCumulative: 0,
         fluctuationRate: 0
     }
     
     inventoryData.value.items.forEach(item => {
         total.yearBeginningAmount += item.yearBeginningAmount || 0
         total.currentPeriodAmount += item.currentPeriodAmount || 0
-        total.currentPeriodCumulative += item.currentPeriodCumulative || 0
     })
     
-    // 计算总波动率 = 总当期金额变化 / 总年初金额 * 100%
-    // 当期金额变化 = 当期金额累计 - 年初金额
-    const totalChangeAmount = total.currentPeriodCumulative - total.yearBeginningAmount
-    total.fluctuationRate = total.yearBeginningAmount > 0 ? 
-        (totalChangeAmount / total.yearBeginningAmount) * 100 : 
-        (totalChangeAmount !== 0 ? (totalChangeAmount > 0 ? 100 : -100) : 0)
+    // 计算总波动率 = (总当期余额 - 总年初余额) / 总年初余额 * 100%
+    if (total.yearBeginningAmount > 0) {
+        total.fluctuationRate = ((total.currentPeriodAmount - total.yearBeginningAmount) / total.yearBeginningAmount) * 100
+    } else {
+        const changeAmount = total.currentPeriodAmount - total.yearBeginningAmount
+        total.fluctuationRate = changeAmount !== 0 ? (changeAmount > 0 ? 100 : -100) : 0
+    }
     
     return total
 })
@@ -253,14 +208,13 @@ const loadData = async (targetPeriod: string) => {
                     customerAttribute: defaultItem.customerAttribute,
                     yearBeginningAmount: defaultItem.yearBeginningAmount, // 使用默认值
                     currentPeriodAmount: dbItem ? Number(dbItem.currentPeriodAmount) || 0 : 0,
-                    currentPeriodCumulative: 0, // 将由计算函数重新计算
                     fluctuationRate: 0 // 将由计算函数重新计算
                 }
             })
         }
         
-        // 加载完数据后重新计算当期金额累计
-        await calculateCurrentPeriodCumulative(targetPeriod)
+        // 加载完数据后重新计算波动率
+        calculateFluctuationRate()
     } catch (error) {
         console.error('加载数据失败:', error)
         resetToDefaultData()
@@ -292,7 +246,7 @@ watch(() => route.query.period, async (newPeriod) => {
         period.value = newPeriod.toString()
         resetToDefaultData()
         await loadData(newPeriod.toString())
-        await calculateCurrentPeriodCumulative(newPeriod.toString())
+        calculateFluctuationRate()
         loadRemarksAndSuggestions(newPeriod.toString())
     }
 })
@@ -302,7 +256,7 @@ watch(period, async (newPeriod, oldPeriod) => {
         console.log(`期间发生变化: ${oldPeriod} -> ${newPeriod}`)
         resetToDefaultData()
         await loadData(newPeriod)
-        await calculateCurrentPeriodCumulative(newPeriod)
+        calculateFluctuationRate()
         loadRemarksAndSuggestions(newPeriod)
     }
 })
@@ -322,7 +276,7 @@ const handleSave = async () => {
                         customerAttribute: item.customerAttribute,
                         yearBeginningAmount: item.yearBeginningAmount,
                         currentPeriodAmount: item.currentPeriodAmount,
-                        // 不保存累计值和波动率，由前端计算
+                        // 不保存波动率，由前端计算
                     }))
                 }
             })
@@ -350,7 +304,7 @@ onMounted(async () => {
     resetToDefaultData()
     const targetPeriod = route.query.period?.toString() || period.value
     await loadData(targetPeriod)
-    await calculateCurrentPeriodCumulative(targetPeriod)
+    calculateFluctuationRate()
     loadRemarksAndSuggestions(targetPeriod)
 })
 </script>

@@ -117,8 +117,8 @@ const fixedPlanData: BiddingData = {
         { segmentAttribute: '设备', customerAttribute: '用户项目', collectiveBidding: 0, winningBidCount: 0, winningRate: 0 },
         { segmentAttribute: '设备', customerAttribute: '贸易', collectiveBidding: 0, winningBidCount: 0, winningRate: 0 },
         { segmentAttribute: '设备', customerAttribute: '代理设备', collectiveBidding: 0, winningBidCount: 0, winningRate: 0 },
-        { segmentAttribute: '设备', customerAttribute: '代理工程', collectiveBidding: 0, winningBidCount: 0, winningRate: 0 },
-        { segmentAttribute: '设备', customerAttribute: '代理设计', collectiveBidding: 0, winningBidCount: 0, winningRate: 0 }
+        { segmentAttribute: '其他', customerAttribute: '代理工程', collectiveBidding: 0, winningBidCount: 0, winningRate: 0 },
+        { segmentAttribute: '其他', customerAttribute: '代理设计', collectiveBidding: 0, winningBidCount: 0, winningRate: 0 }
     ]
 }
 

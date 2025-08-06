@@ -36,8 +36,14 @@
                             <td class="border border-gray-300 px-4 py-2 text-right bg-gray-50">
                                 {{ formatNumber(item.yearBeginningBalance) }}
                             </td>
-                            <td class="border border-gray-300 px-4 py-2 text-right bg-gray-50">
-                                {{ formatNumber(item.yearNewIncrease) }}
+                            <td class="border border-gray-300 px-4 py-2">
+                                <input 
+                                    v-model="item.yearNewIncrease" 
+                                    type="number" 
+                                    class="w-full px-2 py-1 border rounded text-right" 
+                                    step="0.01"
+                                    placeholder="0.00"
+                                />
                             </td>
                             <td class="border border-gray-300 px-4 py-2">
                                 <input 
@@ -132,8 +138,8 @@ const fixedPlanData: OverdueReceivablesData = {
         { segmentAttribute: '设备', customerAttribute: '用户项目', yearBeginningBalance: 0, yearNewIncrease: 0, currentCollected: 0, cumulativeCollected: 0, collectionProgress: 0 },
         { segmentAttribute: '设备', customerAttribute: '贸易', yearBeginningBalance: 0, yearNewIncrease: 0, currentCollected: 0, cumulativeCollected: 0, collectionProgress: 0 },
         { segmentAttribute: '设备', customerAttribute: '代理设备', yearBeginningBalance: 0, yearNewIncrease: 0, currentCollected: 0, cumulativeCollected: 0, collectionProgress: 0 },
-        { segmentAttribute: '设备', customerAttribute: '代理工程', yearBeginningBalance: 0, yearNewIncrease: 0, currentCollected: 0, cumulativeCollected: 0, collectionProgress: 0 },
-        { segmentAttribute: '设备', customerAttribute: '代理设计', yearBeginningBalance: 0, yearNewIncrease: 0, currentCollected: 0, cumulativeCollected: 0, collectionProgress: 0 }
+        { segmentAttribute: '其他', customerAttribute: '代理工程', yearBeginningBalance: 0, yearNewIncrease: 0, currentCollected: 0, cumulativeCollected: 0, collectionProgress: 0 },
+        { segmentAttribute: '其他', customerAttribute: '代理设计', yearBeginningBalance: 0, yearNewIncrease: 0, currentCollected: 0, cumulativeCollected: 0, collectionProgress: 0 }
     ]
 }
 

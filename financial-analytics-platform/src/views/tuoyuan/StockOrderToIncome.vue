@@ -119,8 +119,8 @@ const fixedPlanData: StockOrderData = {
         { segmentAttribute: '设备', customerAttribute: '用户项目', initialStockOrderBalance: 374.66, currentPeriodIncome: 0, currentIncomeCumulative: 0, stockOrderIncomeRatio: 0 },
         { segmentAttribute: '设备', customerAttribute: '贸易', initialStockOrderBalance: 0.00, currentPeriodIncome: 0, currentIncomeCumulative: 0, stockOrderIncomeRatio: 0 },
         { segmentAttribute: '设备', customerAttribute: '代理设备', initialStockOrderBalance: 861.89, currentPeriodIncome: 0, currentIncomeCumulative: 0, stockOrderIncomeRatio: 0 },
-        { segmentAttribute: '设备', customerAttribute: '代理工程', initialStockOrderBalance: 0.00, currentPeriodIncome: 0, currentIncomeCumulative: 0, stockOrderIncomeRatio: 0 },
-        { segmentAttribute: '设备', customerAttribute: '代理设计', initialStockOrderBalance: 0.00, currentPeriodIncome: 0, currentIncomeCumulative: 0, stockOrderIncomeRatio: 0 }
+        { segmentAttribute: '其他', customerAttribute: '代理工程', initialStockOrderBalance: 0.00, currentPeriodIncome: 0, currentIncomeCumulative: 0, stockOrderIncomeRatio: 0 },
+        { segmentAttribute: '其他', customerAttribute: '代理设计', initialStockOrderBalance: 0.00, currentPeriodIncome: 0, currentIncomeCumulative: 0, stockOrderIncomeRatio: 0 }
     ]
 }
 

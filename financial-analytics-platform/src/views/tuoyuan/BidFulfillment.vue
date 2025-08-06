@@ -13,12 +13,11 @@
             <table class="w-full border-collapse border border-gray-300">
                 <thead class="sticky top-0 bg-white">
                     <tr class="bg-gray-50">
-                        <th class="border border-gray-300 px-4 py-2 w-24">板块</th>
-                        <th class="border border-gray-300 px-4 py-2 w-32">客户属性</th>
-                        <th class="border border-gray-300 px-4 py-2 w-32">期初余额</th>
-                        <th class="border border-gray-300 px-4 py-2 w-32">当期值</th>
-                        <th class="border border-gray-300 px-4 py-2 w-32">当期余额(计算值)</th>
-                        <th class="border border-gray-300 px-4 py-2 w-32">波动率</th>
+                        <th class="border border-gray-300 px-4 py-2">板块</th>
+                        <th class="border border-gray-300 px-4 py-2">客户属性</th>
+                        <th class="border border-gray-300 px-4 py-2">期初余额</th>
+                        <th class="border border-gray-300 px-4 py-2">当期余额</th>
+                        <th class="border border-gray-300 px-4 py-2">波动率</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -33,21 +32,18 @@
                                 {{ item.customerAttribute }}
                             </td>
                             <td class="border border-gray-300 px-4 py-2 text-right">
-                                {{ formatNumber(item.initialBalance) }}
+                                <span>{{ formatNumber(item.initialBalance) }}</span>
                             </td>
                             <td class="border border-gray-300 px-4 py-2">
                                 <input 
-                                    v-model="item.currentPeriodValue" 
+                                    v-model.number="item.currentBalance" 
                                     type="number" 
                                     class="w-full px-2 py-1 border rounded text-right" 
                                     step="0.01"
                                 />
                             </td>
                             <td class="border border-gray-300 px-4 py-2 text-right">
-                                {{ formatNumber(item.currentBalance) }}
-                            </td>
-                            <td class="border border-gray-300 px-4 py-2 text-right">
-                                <span class="text-sm font-medium">{{ formatPercentage(item.volatilityRate) }}%</span>
+                                {{ calculateFluctuation(item.initialBalance, item.currentBalance || 0) }}%
                             </td>
                         </tr>
                     </template>
@@ -59,13 +55,10 @@
                             {{ formatNumber(totalData.initialBalance) }}
                         </td>
                         <td class="border border-gray-300 px-4 py-2 text-right">
-                            {{ formatNumber(totalData.currentPeriodValue) }}
-                        </td>
-                        <td class="border border-gray-300 px-4 py-2 text-right">
                             {{ formatNumber(totalData.currentBalance) }}
                         </td>
                         <td class="border border-gray-300 px-4 py-2 text-right">
-                            <span class="text-sm font-bold">{{ formatPercentage(totalData.volatilityRate) }}%</span>
+                            {{ calculateFluctuation(totalData.initialBalance, totalData.currentBalance) }}%
                         </td>
                     </tr>
                 </tbody>
@@ -104,9 +97,7 @@ interface BidFulfillmentItem {
     segmentAttribute: string;
     customerAttribute: string;
     initialBalance: number;
-    currentPeriodValue: number;
     currentBalance: number;
-    volatilityRate: number;
 }
 
 interface BidFulfillmentData {
@@ -115,12 +106,12 @@ interface BidFulfillmentData {
 
 const fixedPlanData: BidFulfillmentData = {
     items: [
-        { segmentAttribute: '设备', customerAttribute: '电业项目', initialBalance: 4200.00, currentPeriodValue: 0, currentBalance: 4200.00, volatilityRate: 0 },
-        { segmentAttribute: '设备', customerAttribute: '用户项目', initialBalance: 0.00, currentPeriodValue: 0, currentBalance: 0.00, volatilityRate: 0 },
-        { segmentAttribute: '设备', customerAttribute: '贸易', initialBalance: 0.00, currentPeriodValue: 0, currentBalance: 0.00, volatilityRate: 0 },
-        { segmentAttribute: '设备', customerAttribute: '代理设备', initialBalance: 2800.00, currentPeriodValue: 0, currentBalance: 2800.00, volatilityRate: 0 },
-        { segmentAttribute: '设备', customerAttribute: '代理工程', initialBalance: 0.00, currentPeriodValue: 0, currentBalance: 0.00, volatilityRate: 0 },
-        { segmentAttribute: '设备', customerAttribute: '代理设计', initialBalance: 200.00, currentPeriodValue: 0, currentBalance: 200.00, volatilityRate: 0 }
+        { segmentAttribute: '设备', customerAttribute: '电业项目', initialBalance: 4200.00, currentBalance: 0 },
+        { segmentAttribute: '设备', customerAttribute: '用户项目', initialBalance: 0.00, currentBalance: 0 },
+        { segmentAttribute: '设备', customerAttribute: '贸易', initialBalance: 0.00, currentBalance: 0 },
+        { segmentAttribute: '设备', customerAttribute: '代理设备', initialBalance: 2800.00, currentBalance: 0 },
+        { segmentAttribute: '其他', customerAttribute: '代理工程', initialBalance: 0.00, currentBalance: 0 },
+        { segmentAttribute: '其他', customerAttribute: '代理设计', initialBalance: 200.00, currentBalance: 0 }
     ]
 }
 
@@ -150,72 +141,24 @@ const getSegmentRowspan = (segmentAttribute: string): number => {
 }
 
 // 计算当期余额和波动率
-const calculateCurrentBalanceAndVolatility = async (targetPeriod: string) => {
-    try {
-        const [year] = targetPeriod.split('-')
-        const currentMonth = parseInt(targetPeriod.split('-')[1])
-        
-        // 为每个项目计算当期余额和波动率
-        for (let item of bidFulfillmentData.value.items) {
-            let totalCurrentPeriodValues = 0
-            
-            // 从1月累计到当前月份的所有"当期值"
-            for (let m = 1; m <= currentMonth; m++) {
-                const monthPeriod = `${year}-${m.toString().padStart(2, '0')}`
-                try {
-                    const response = await fetch(`http://127.0.0.1:3000/tuoyuan-bid-fulfillment/${monthPeriod}`)
-                    if (response.ok) {
-                        const result = await response.json()
-                        const projectData = result.data.items.find((p: any) => 
-                            p.segmentAttribute === item.segmentAttribute && 
-                            p.customerAttribute === item.customerAttribute
-                        )
-                        if (projectData) {
-                            totalCurrentPeriodValues += projectData.currentPeriodValue || 0
-                        }
-                    }
-                } catch (error) {
-                    console.warn(`无法加载${monthPeriod}的数据:`, error)
-                }
-            }
-            
-            // 计算当期余额 = 期初余额 - 所有当期值
-            item.currentBalance = item.initialBalance - totalCurrentPeriodValues
-            
-            // 计算波动率 = (当期余额 - 期初余额) / 期初余额 * 100%
-            item.volatilityRate = item.initialBalance > 0 ? 
-                ((item.currentBalance - item.initialBalance) / item.initialBalance) * 100 : 0
-        }
-        
-    } catch (error) {
-        console.error('计算当期余额和波动率失败:', error)
-    }
+// 计算波动率
+const calculateFluctuation = (initial: number, current: number): string => {
+    if (initial === 0) return current === 0 ? '0.00' : '0.00';
+    const fluctuation = ((current - initial) / initial) * 100;
+    return fluctuation.toFixed(2);
 }
-
-// 监听数据变化，自动重新计算当期余额和波动率
-watch(() => bidFulfillmentData.value.items, async (newItems) => {
-    // 当期初余额或当期值发生变化时，重新计算
-    await calculateCurrentBalanceAndVolatility(period.value)
-}, { deep: true })
 
 // 计算合计数据
 const totalData = computed(() => {
     const total = {
         initialBalance: 0,
-        currentPeriodValue: 0,
-        currentBalance: 0,
-        volatilityRate: 0
+        currentBalance: 0
     }
     
     bidFulfillmentData.value.items.forEach(item => {
-        total.initialBalance += item.initialBalance || 0
-        total.currentPeriodValue += item.currentPeriodValue || 0
-        total.currentBalance += item.currentBalance || 0
+        total.initialBalance += Number(item.initialBalance) || 0
+        total.currentBalance += Number(item.currentBalance) || 0
     })
-    
-    // 计算总波动率
-    total.volatilityRate = total.initialBalance > 0 ? 
-        ((total.currentBalance - total.initialBalance) / total.initialBalance) * 100 : 0
     
     return total
 })
@@ -234,18 +177,23 @@ const loadData = async (targetPeriod: string) => {
         }
         const result = await response.json()
         if (result.data && result.data.items) {
-            bidFulfillmentData.value.items = result.data.items.map((item: any) => ({
-                segmentAttribute: item.segmentAttribute,
-                customerAttribute: item.customerAttribute,
-                initialBalance: Number(item.initialBalance) || 0,
-                currentPeriodValue: Number(item.currentPeriodValue) || 0,
-                currentBalance: Number(item.currentBalance) || 0,
-                volatilityRate: Number(item.volatilityRate) || 0
-            }))
+            // 合并数据库数据和默认数据，保证顺序一致
+            const dbItems = result.data.items
+            bidFulfillmentData.value.items = fixedPlanData.items.map(defaultItem => {
+                const dbItem = dbItems.find((item: any) => 
+                    item.segmentAttribute === defaultItem.segmentAttribute && 
+                    item.customerAttribute === defaultItem.customerAttribute
+                )
+                return {
+                    segmentAttribute: defaultItem.segmentAttribute,
+                    customerAttribute: defaultItem.customerAttribute,
+                    initialBalance: defaultItem.initialBalance, // 使用固定的初始余额
+                    currentBalance: dbItem ? Number(dbItem.currentBalance) || 0 : 0
+                }
+            })
         }
         
-        // 加载完数据后重新计算当期余额和波动率
-        await calculateCurrentBalanceAndVolatility(targetPeriod)
+
     } catch (error) {
         console.error('加载数据失败:', error)
         resetToDefaultData()
@@ -277,7 +225,7 @@ watch(() => route.query.period, async (newPeriod) => {
         period.value = newPeriod.toString()
         resetToDefaultData()
         await loadData(newPeriod.toString())
-        await calculateCurrentBalanceAndVolatility(newPeriod.toString())
+
         loadRemarksAndSuggestions(newPeriod.toString())
     }
 })
@@ -287,7 +235,7 @@ watch(period, async (newPeriod, oldPeriod) => {
         console.log(`期间发生变化: ${oldPeriod} -> ${newPeriod}`)
         resetToDefaultData()
         await loadData(newPeriod)
-        await calculateCurrentBalanceAndVolatility(newPeriod)
+
         loadRemarksAndSuggestions(newPeriod)
     }
 })
@@ -329,7 +277,7 @@ onMounted(async () => {
     resetToDefaultData()
     const targetPeriod = route.query.period?.toString() || period.value
     await loadData(targetPeriod)
-    await calculateCurrentBalanceAndVolatility(targetPeriod)
+
     loadRemarksAndSuggestions(targetPeriod)
 })
 </script>

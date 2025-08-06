@@ -119,8 +119,8 @@ const fixedPlanData: OrderToIncomeData = {
         { segmentAttribute: '设备', customerAttribute: '用户项目', annualNewOrderCumulative: 0.00, currentPeriodIncome: 0, currentPeriodIncomeCumulative: 0, orderToIncomeRatio: 0 },
         { segmentAttribute: '设备', customerAttribute: '贸易', annualNewOrderCumulative: 218.24, currentPeriodIncome: 0, currentPeriodIncomeCumulative: 0, orderToIncomeRatio: 0 },
         { segmentAttribute: '设备', customerAttribute: '代理设备', annualNewOrderCumulative: 622.38, currentPeriodIncome: 0, currentPeriodIncomeCumulative: 0, orderToIncomeRatio: 0 },
-        { segmentAttribute: '设备', customerAttribute: '代理工程', annualNewOrderCumulative: 0.00, currentPeriodIncome: 0, currentPeriodIncomeCumulative: 0, orderToIncomeRatio: 0 },
-        { segmentAttribute: '设备', customerAttribute: '代理设计', annualNewOrderCumulative: 0.00, currentPeriodIncome: 0, currentPeriodIncomeCumulative: 0, orderToIncomeRatio: 0 }
+        { segmentAttribute: '其他', customerAttribute: '代理工程', annualNewOrderCumulative: 0.00, currentPeriodIncome: 0, currentPeriodIncomeCumulative: 0, orderToIncomeRatio: 0 },
+        { segmentAttribute: '其他', customerAttribute: '代理设计', annualNewOrderCumulative: 0.00, currentPeriodIncome: 0, currentPeriodIncomeCumulative: 0, orderToIncomeRatio: 0 }
     ]
 }
 

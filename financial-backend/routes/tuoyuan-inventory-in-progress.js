@@ -13,9 +13,7 @@ router.get('/:period', async (req, res) => {
                 segment_attribute,
                 customer_attribute,
                 year_beginning_amount,
-                current_period_amount,
-                current_period_cumulative,
-                fluctuation_rate
+                current_period_amount
             FROM tuoyuan_inventory_in_progress 
             WHERE period = ?
             ORDER BY 
@@ -42,12 +40,12 @@ router.get('/:period', async (req, res) => {
             console.log('没有找到数据，返回默认数据');
             const defaultData = {
                 items: [
-                    { segmentAttribute: '设备', customerAttribute: '电业项目', yearBeginningAmount: 490.21, currentPeriodAmount: 0, currentPeriodCumulative: 0, fluctuationRate: 0 },
-                    { segmentAttribute: '设备', customerAttribute: '用户项目', yearBeginningAmount: 374.66, currentPeriodAmount: 0, currentPeriodCumulative: 0, fluctuationRate: 0 },
-                    { segmentAttribute: '设备', customerAttribute: '贸易', yearBeginningAmount: 0.00, currentPeriodAmount: 0, currentPeriodCumulative: 0, fluctuationRate: 0 },
-                    { segmentAttribute: '设备', customerAttribute: '代理设备', yearBeginningAmount: 636.81, currentPeriodAmount: 0, currentPeriodCumulative: 0, fluctuationRate: 0 },
-                    { segmentAttribute: '设备', customerAttribute: '代理工程', yearBeginningAmount: 0.00, currentPeriodAmount: 0, currentPeriodCumulative: 0, fluctuationRate: 0 },
-                    { segmentAttribute: '设备', customerAttribute: '代理设计', yearBeginningAmount: 0.00, currentPeriodAmount: 0, currentPeriodCumulative: 0, fluctuationRate: 0 }
+                    { segmentAttribute: '设备', customerAttribute: '电业项目', yearBeginningAmount: 490.21, currentPeriodAmount: 0 },
+                    { segmentAttribute: '设备', customerAttribute: '用户项目', yearBeginningAmount: 374.66, currentPeriodAmount: 0 },
+                    { segmentAttribute: '设备', customerAttribute: '贸易', yearBeginningAmount: 0.00, currentPeriodAmount: 0 },
+                    { segmentAttribute: '设备', customerAttribute: '代理设备', yearBeginningAmount: 636.81, currentPeriodAmount: 0 },
+                    { segmentAttribute: '其他', customerAttribute: '代理工程', yearBeginningAmount: 0.00, currentPeriodAmount: 0 },
+                    { segmentAttribute: '其他', customerAttribute: '代理设计', yearBeginningAmount: 0.00, currentPeriodAmount: 0 }
                 ]
             };
             return res.json({ success: true, data: defaultData });
@@ -57,9 +55,7 @@ router.get('/:period', async (req, res) => {
             segmentAttribute: row.segment_attribute,
             customerAttribute: row.customer_attribute,
             yearBeginningAmount: parseFloat(row.year_beginning_amount) || 0,
-            currentPeriodAmount: parseFloat(row.current_period_amount) || 0,
-            currentPeriodCumulative: parseFloat(row.current_period_cumulative) || 0,
-            fluctuationRate: parseFloat(row.fluctuation_rate) || 0
+            currentPeriodAmount: parseFloat(row.current_period_amount) || 0
         }));
 
         const data = { items };
@@ -99,17 +95,15 @@ router.post('/', async (req, res) => {
             [period]
         );
         
-        // 插入新数据 - 只保存当期金额，其他字段由前端计算
+        // 插入新数据 - 只保存基本数据，波动率由前端计算
         const insertQuery = `
             INSERT INTO tuoyuan_inventory_in_progress (
                 period, 
                 segment_attribute, 
                 customer_attribute,
                 year_beginning_amount,
-                current_period_amount,
-                current_period_cumulative,
-                fluctuation_rate
-            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+                current_period_amount
+            ) VALUES (?, ?, ?, ?, ?)
         `;
         
         for (const item of data.items) {
@@ -118,9 +112,7 @@ router.post('/', async (req, res) => {
                 item.segmentAttribute,
                 item.customerAttribute,
                 item.yearBeginningAmount || 0,
-                item.currentPeriodAmount || 0,
-                0, // 不保存累计值，由前端计算
-                0  // 不保存波动率，由前端计算
+                item.currentPeriodAmount || 0
             ]);
         }
         

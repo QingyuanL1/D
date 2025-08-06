@@ -137,8 +137,8 @@ const fixedPlanData: ConstructionExecutionData = {
         { segmentAttribute: '设备', customerAttribute: '用户项目', yearlyPlanProductionValue: 0, selfConstruction: 0, semiSelfSubcontract: 0, outsourceTransfer: 0, selfConstructionPercentage: 0 },
         { segmentAttribute: '设备', customerAttribute: '贸易', yearlyPlanProductionValue: 0, selfConstruction: 0, semiSelfSubcontract: 0, outsourceTransfer: 0, selfConstructionPercentage: 0 },
         { segmentAttribute: '设备', customerAttribute: '代理设备', yearlyPlanProductionValue: 0, selfConstruction: 0, semiSelfSubcontract: 0, outsourceTransfer: 0, selfConstructionPercentage: 0 },
-        { segmentAttribute: '设备', customerAttribute: '代理工程', yearlyPlanProductionValue: 0, selfConstruction: 0, semiSelfSubcontract: 0, outsourceTransfer: 0, selfConstructionPercentage: 0 },
-        { segmentAttribute: '设备', customerAttribute: '代理设计', yearlyPlanProductionValue: 0, selfConstruction: 0, semiSelfSubcontract: 0, outsourceTransfer: 0, selfConstructionPercentage: 0 },
+        { segmentAttribute: '其他', customerAttribute: '代理工程', yearlyPlanProductionValue: 0, selfConstruction: 0, semiSelfSubcontract: 0, outsourceTransfer: 0, selfConstructionPercentage: 0 },
+        { segmentAttribute: '其他', customerAttribute: '代理设计', yearlyPlanProductionValue: 0, selfConstruction: 0, semiSelfSubcontract: 0, outsourceTransfer: 0, selfConstructionPercentage: 0 },
         { segmentAttribute: '', customerAttribute: '自行施工率%', yearlyPlanProductionValue: 0, selfConstruction: 0, semiSelfSubcontract: 0, outsourceTransfer: 0, selfConstructionPercentage: 0 }
     ]
 }

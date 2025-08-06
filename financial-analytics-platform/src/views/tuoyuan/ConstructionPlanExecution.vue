@@ -138,8 +138,8 @@ const fixedPlanData: ConstructionPlanData = {
         { segmentAttribute: '设备', customerAttribute: '用户项目', yearlyTarget: 0, onTimeCompletionRate: 0, acceptanceQualificationRate: 0, planAchievementRate: 0 },
         { segmentAttribute: '设备', customerAttribute: '贸易', yearlyTarget: 0, onTimeCompletionRate: 0, acceptanceQualificationRate: 0, planAchievementRate: 0 },
         { segmentAttribute: '设备', customerAttribute: '代理设备', yearlyTarget: 0, onTimeCompletionRate: 0, acceptanceQualificationRate: 0, planAchievementRate: 0 },
-        { segmentAttribute: '设备', customerAttribute: '代理工程', yearlyTarget: 0, onTimeCompletionRate: 0, acceptanceQualificationRate: 0, planAchievementRate: 0 },
-        { segmentAttribute: '设备', customerAttribute: '代理设计', yearlyTarget: 0, onTimeCompletionRate: 0, acceptanceQualificationRate: 0, planAchievementRate: 0 }
+        { segmentAttribute: '其他', customerAttribute: '代理工程', yearlyTarget: 0, onTimeCompletionRate: 0, acceptanceQualificationRate: 0, planAchievementRate: 0 },
+        { segmentAttribute: '其他', customerAttribute: '代理设计', yearlyTarget: 0, onTimeCompletionRate: 0, acceptanceQualificationRate: 0, planAchievementRate: 0 }
     ]
 }
 

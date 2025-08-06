@@ -9,8 +9,7 @@ router.get('/:period', async (req, res) => {
         
         // 查询数据库中的数据
         const [rows] = await pool.execute(`
-            SELECT segment_attribute, customer_attribute, initial_balance, 
-                   current_period_value, current_balance, volatility_rate
+            SELECT segment_attribute, customer_attribute, initial_balance, current_balance
             FROM tuoyuan_bid_fulfillment 
             WHERE period = ?
             ORDER BY id ASC
@@ -19,12 +18,12 @@ router.get('/:period', async (req, res) => {
         // 定义默认数据结构
         const defaultData = {
             items: [
-                { segmentAttribute: '设备', customerAttribute: '电业项目', initialBalance: 4200.00, currentPeriodValue: 0, currentBalance: 4200.00, volatilityRate: 0 },
-                { segmentAttribute: '设备', customerAttribute: '用户项目', initialBalance: 0.00, currentPeriodValue: 0, currentBalance: 0.00, volatilityRate: 0 },
-                { segmentAttribute: '设备', customerAttribute: '贸易', initialBalance: 0.00, currentPeriodValue: 0, currentBalance: 0.00, volatilityRate: 0 },
-                { segmentAttribute: '设备', customerAttribute: '代理设备', initialBalance: 2800.00, currentPeriodValue: 0, currentBalance: 2800.00, volatilityRate: 0 },
-                { segmentAttribute: '设备', customerAttribute: '代理工程', initialBalance: 0.00, currentPeriodValue: 0, currentBalance: 0.00, volatilityRate: 0 },
-                { segmentAttribute: '设备', customerAttribute: '代理设计', initialBalance: 200.00, currentPeriodValue: 0, currentBalance: 200.00, volatilityRate: 0 }
+                { segmentAttribute: '设备', customerAttribute: '电业项目', initialBalance: 4200.00, currentBalance: 0 },
+                { segmentAttribute: '设备', customerAttribute: '用户项目', initialBalance: 0.00, currentBalance: 0 },
+                { segmentAttribute: '设备', customerAttribute: '贸易', initialBalance: 0.00, currentBalance: 0 },
+                { segmentAttribute: '设备', customerAttribute: '代理设备', initialBalance: 2800.00, currentBalance: 0 },
+                { segmentAttribute: '其他', customerAttribute: '代理工程', initialBalance: 0.00, currentBalance: 0 },
+                { segmentAttribute: '其他', customerAttribute: '代理设计', initialBalance: 200.00, currentBalance: 0 }
             ]
         };
 
@@ -41,9 +40,7 @@ router.get('/:period', async (req, res) => {
             segmentAttribute: row.segment_attribute,
             customerAttribute: row.customer_attribute,
             initialBalance: parseFloat(row.initial_balance) || 0,
-            currentPeriodValue: parseFloat(row.current_period_value) || 0,
-            currentBalance: parseFloat(row.current_balance) || 0,
-            volatilityRate: parseFloat(row.volatility_rate) || 0
+            currentBalance: parseFloat(row.current_balance) || 0
         }));
 
         res.json({
@@ -84,17 +81,14 @@ router.post('/', async (req, res) => {
             for (const item of data.items) {
                 await connection.execute(`
                     INSERT INTO tuoyuan_bid_fulfillment 
-                    (period, segment_attribute, customer_attribute, initial_balance, 
-                     current_period_value, current_balance, volatility_rate)
-                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                    (period, segment_attribute, customer_attribute, initial_balance, current_balance)
+                    VALUES (?, ?, ?, ?, ?)
                 `, [
                     period,
                     item.segmentAttribute,
                     item.customerAttribute,
                     item.initialBalance || 0,
-                    item.currentPeriodValue || 0,
-                    item.currentBalance || 0,
-                    item.volatilityRate || 0
+                    item.currentBalance || 0
                 ]);
             }
 

@@ -34,14 +34,10 @@
                             <td class="border border-gray-300 px-4 py-2 text-right">
                                 {{ formatPercentage(item.yearlyPlan) }}%
                             </td>
-                            <td class="border border-gray-300 px-4 py-2">
-                                <input 
-                                    v-model="item.currentActual" 
-                                    type="number" 
-                                    class="w-full px-2 py-1 border rounded text-right" 
-                                    step="0.01"
-                                    placeholder="0.00"
-                                />
+                            <td class="border border-gray-300 px-4 py-2 text-right">
+                                <span class="text-sm font-medium">
+                                    {{ formatPercentage(item.currentActual) }}%
+                                </span>
                             </td>
                             <td class="border border-gray-300 px-4 py-2 text-right">
                                 <span class="text-sm font-medium" :class="item.deviation >= 0 ? 'text-green-600' : 'text-red-600'">
@@ -112,12 +108,12 @@ interface ContributionRateData {
 
 const fixedPlanData: ContributionRateData = {
     items: [
-        { segmentAttribute: '设备', customerAttribute: '电业项目', yearlyPlan: 15.47, currentActual: 0, deviation: 0 },
+        { segmentAttribute: '设备', customerAttribute: '申业项目', yearlyPlan: 15.47, currentActual: 0, deviation: 0 },
         { segmentAttribute: '设备', customerAttribute: '用户项目', yearlyPlan: 0, currentActual: 0, deviation: 0 },
         { segmentAttribute: '设备', customerAttribute: '贸易', yearlyPlan: 6.00, currentActual: 0, deviation: 0 },
         { segmentAttribute: '设备', customerAttribute: '代理设备', yearlyPlan: 26.67, currentActual: 0, deviation: 0 },
-        { segmentAttribute: '设备', customerAttribute: '代理工程', yearlyPlan: 0, currentActual: 0, deviation: 0 },
-        { segmentAttribute: '设备', customerAttribute: '代理设计', yearlyPlan: 100.00, currentActual: 0, deviation: 0 }
+        { segmentAttribute: '其他', customerAttribute: '代理工程', yearlyPlan: 0, currentActual: 0, deviation: 0 },
+        { segmentAttribute: '其他', customerAttribute: '代理设计', yearlyPlan: 100.00, currentActual: 0, deviation: 0 }
     ]
 }
 
@@ -148,10 +144,7 @@ const calculateDeviation = () => {
     })
 }
 
-// 监听数据变化，自动计算偏差
-watch(() => contributionRateData.value.items, () => {
-    calculateDeviation()
-}, { deep: true })
+// 在数据加载后计算偏差（不需要监听变化）
 
 // 计算合计数据
 const totalData = computed(() => {
@@ -179,7 +172,36 @@ const loadData = async (targetPeriod: string) => {
             if (response.status !== 404) {
                 throw new Error('加载数据失败')
             }
-            console.log(`${targetPeriod}期间无数据，重置为默认状态`)
+            console.log(`${targetPeriod}期间无数据，尝试自动计算...`)
+            
+            // 尝试自动计算
+            try {
+                const calculateResponse = await fetch(`http://127.0.0.1:3000/tuoyuan-main-business-contribution-rate/calculate/${targetPeriod}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                
+                if (calculateResponse.ok) {
+                    const calculateResult = await calculateResponse.json()
+                    if (calculateResult.success && calculateResult.data && calculateResult.data.items) {
+                        contributionRateData.value.items = calculateResult.data.items.map((item: any) => ({
+                            segmentAttribute: item.segmentAttribute,
+                            customerAttribute: item.customerAttribute,
+                            yearlyPlan: Number(item.yearlyPlan) || 0,
+                            currentActual: Number(item.currentActual) || 0,
+                            deviation: Number(item.deviation) || 0
+                        }))
+                        console.log('自动计算成功，数据已加载')
+                        return
+                    }
+                }
+            } catch (calcError) {
+                console.log('自动计算失败，使用默认数据:', calcError)
+            }
+            
+            // 如果自动计算失败，重置为默认数据
             resetToDefaultData()
             return
         }

@@ -35,14 +35,8 @@
                             <td class="border border-gray-300 px-4 py-2 text-right">
                                 {{ formatPercentage(item.yearlyPlan) }}%
                             </td>
-                            <td class="border border-gray-300 px-4 py-2">
-                                <input 
-                                    v-model="item.currentActual" 
-                                    type="number" 
-                                    class="w-full px-2 py-1 border rounded text-right" 
-                                    step="0.01"
-                                    placeholder="0.00"
-                                />
+                            <td class="border border-gray-300 px-4 py-2 text-right">
+                                <span class="font-medium">{{ formatPercentage(item.currentActual) }}%</span>
                             </td>
                             <td class="border border-gray-300 px-4 py-2 text-right">
                                 <span class="text-sm font-medium" :class="item.deviation >= 0 ? 'text-green-600' : 'text-red-600'">
@@ -80,6 +74,9 @@
         />
 
         <div class="mt-4 flex justify-end space-x-4">
+            <button @click="handleCalculate" class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">
+                自动计算
+            </button>
             <button @click="handleSave" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
                 保存
             </button>
@@ -117,8 +114,8 @@ const fixedPlanData: ProfitMarginData = {
         { segmentAttribute: '设备', customerAttribute: '用户项目', yearlyPlan: 0, currentActual: 0, deviation: 0 },
         { segmentAttribute: '设备', customerAttribute: '贸易', yearlyPlan: 0, currentActual: 0, deviation: 0 },
         { segmentAttribute: '设备', customerAttribute: '代理设备', yearlyPlan: 24.99, currentActual: 0, deviation: 0 },
-        { segmentAttribute: '设备', customerAttribute: '代理工程', yearlyPlan: 0, currentActual: 0, deviation: 0 },
-        { segmentAttribute: '设备', customerAttribute: '代理设计', yearlyPlan: 100, currentActual: 0, deviation: 0 }
+        { segmentAttribute: '其他', customerAttribute: '代理工程', yearlyPlan: 0, currentActual: 0, deviation: 0 },
+        { segmentAttribute: '其他', customerAttribute: '代理设计', yearlyPlan: 100, currentActual: 0, deviation: 0 }
     ]
 }
 
@@ -149,11 +146,6 @@ const calculateDeviation = () => {
     })
 }
 
-// 监听数据变化，自动计算偏差
-watch(() => profitMarginData.value.items, () => {
-    calculateDeviation()
-}, { deep: true })
-
 // 计算合计数据
 const totalData = computed(() => {
     const total = {
@@ -172,6 +164,37 @@ const totalData = computed(() => {
     return total
 })
 
+// 自动计算毛利率的辅助函数
+const autoCalculateProfitMargin = async (targetPeriod: string) => {
+    try {
+        console.log(`自动计算毛利率，期间: ${targetPeriod}`)
+        const response = await fetch(`http://127.0.0.1:3000/tuoyuan-main-business-profit-margin/calculate/${targetPeriod}`)
+        
+        if (response.ok) {
+            const result = await response.json()
+            if (result.success && result.data && result.data.items) {
+                // 将计算结果赋值到当期实际字段
+                result.data.items.forEach((calculatedItem: any) => {
+                    const existingItem = profitMarginData.value.items.find(item => 
+                        item.segmentAttribute === calculatedItem.segmentAttribute && 
+                        item.customerAttribute === calculatedItem.customerAttribute
+                    )
+                    if (existingItem) {
+                        existingItem.currentActual = Number(calculatedItem.currentActual) || 0
+                        existingItem.deviation = Number(calculatedItem.deviation) || 0
+                    }
+                })
+                
+                console.log('✓ 自动计算毛利率完成')
+            }
+        } else {
+            console.log('无法自动计算毛利率：可能缺少基础数据')
+        }
+    } catch (error) {
+        console.error('自动计算毛利率失败:', error)
+    }
+}
+
 // 加载数据
 const loadData = async (targetPeriod: string) => {
     try {
@@ -182,6 +205,9 @@ const loadData = async (targetPeriod: string) => {
             }
             console.log(`${targetPeriod}期间无数据，重置为默认状态`)
             resetToDefaultData()
+            
+            // 尝试自动计算毛利率
+            await autoCalculateProfitMargin(targetPeriod)
             return
         }
         const result = await response.json()
@@ -197,9 +223,17 @@ const loadData = async (targetPeriod: string) => {
         
         // 重新计算偏差
         calculateDeviation()
+        
+        // 如果当期实际值都为0，尝试自动计算
+        const hasActualValues = profitMarginData.value.items.some(item => item.currentActual > 0)
+        if (!hasActualValues) {
+            await autoCalculateProfitMargin(targetPeriod)
+        }
     } catch (error) {
         console.error('加载数据失败:', error)
         resetToDefaultData()
+        // 即使加载失败也尝试自动计算
+        await autoCalculateProfitMargin(targetPeriod)
     }
 }
 
@@ -241,6 +275,16 @@ watch(period, async (newPeriod, oldPeriod) => {
         loadRemarksAndSuggestions(newPeriod)
     }
 })
+
+const handleCalculate = async () => {
+    try {
+        await autoCalculateProfitMargin(period.value)
+        alert('自动计算完成！')
+    } catch (error) {
+        console.error('手动计算失败:', error)
+        alert('计算失败: ' + (error as Error).message)
+    }
+}
 
 const handleSave = async () => {
     try {

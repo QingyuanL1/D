@@ -131,6 +131,41 @@ export const frameIn: Array<RouteRecordRaw> = [
         },
       },
       {
+        path: 'changzhou-tuoyuan-incomestatement',
+        name: 'ChangzhouTuoyuanIncomeStatement',
+        component: () => import('@/views/example/ChangzhouTuoyuanIncomeStatement.vue'),
+        meta: {
+          title: '常州拓源利润表',
+        },
+      },
+      {
+        path: 'changzhou-tuoyuan-cashflow',
+        name: 'ChangzhouTuoyuanCashFlow',
+        component: () =>
+          import('@/views/example/ChangzhouTuoyuanCashFlowStatement.vue'),
+        meta: {
+          title: '常州拓源现金流量表',
+        },
+      },
+      {
+        path: 'shanghai-nanhua-lanling-incomestatement',
+        name: 'ShanghaiNanhuaLanlingIncomeStatement',
+        component: () =>
+          import('@/views/example/ShanghaiNanhuaLanlingIncomeStatement.vue'),
+        meta: {
+          title: '上海南华兰陵实业有限公司利润表',
+        },
+      },
+      {
+        path: 'shanghai-nanhua-lanling-cashflow',
+        name: 'ShanghaiNanhuaLanlingCashFlow',
+        component: () =>
+          import('@/views/example/ShanghaiNanhuaLanlingCashFlowStatement.vue'),
+        meta: {
+          title: '上海南华兰陵实业有限公司现金流量表',
+        },
+      },
+      {
         path: 'cost-center-structure',
         name: 'CostCenterStructure',
         component: () => import('@/views/newTable/CostCenterStructure.vue'),
@@ -617,7 +652,8 @@ export const frameIn: Array<RouteRecordRaw> = [
       {
         path: 'nanhua/non-main-business-net-profit-contribution',
         name: 'NanhuaNonMainBusinessNetProfitContribution',
-        component: () => import('@/views/nanhua/NonMainBusinessNetProfitContribution.vue'),
+        component: () =>
+          import('@/views/nanhua/NonMainBusinessNetProfitContribution.vue'),
         meta: {
           title: '上海南华实业公司-非主营业务净利润贡献情况',
         },
@@ -867,7 +903,8 @@ export const frameIn: Array<RouteRecordRaw> = [
       {
         path: 'tuoyuan/main-business-net-profit-contribution',
         name: 'TuoyuanMainBusinessNetProfitContribution',
-        component: () => import('@/views/tuoyuan/MainBusinessNetProfitContribution.vue'),
+        component: () =>
+          import('@/views/tuoyuan/MainBusinessNetProfitContribution.vue'),
         meta: {
           title: '拓源公司-主营业务净利润贡献情况',
         },
@@ -923,7 +960,8 @@ export const frameIn: Array<RouteRecordRaw> = [
       {
         path: 'tuoyuan/main-business-production-value-self-construction',
         name: 'TuoyuanMainBusinessProductionValueSelfConstruction',
-        component: () => import('@/views/tuoyuan/MainBusinessProductionValueSelfConstruction.vue'),
+        component: () =>
+          import('@/views/tuoyuan/MainBusinessProductionValueSelfConstruction.vue'),
         meta: {
           title: '拓源公司-主营业务产值--自行施工情况分析',
         },
@@ -1030,7 +1068,10 @@ export const frameIn: Array<RouteRecordRaw> = [
       {
         path: 'shanghai-nanhua-lanling-industry/balance-sheet',
         name: 'ShanghaiNanhuaLanlingIndustryBalanceSheet',
-        component: () => import('@/views/companies/financial-reports/ShanghaiNanhuaLanlingIndustryBalanceSheet.vue'),
+        component: () =>
+          import(
+            '@/views/companies/financial-reports/ShanghaiNanhuaLanlingIndustryBalanceSheet.vue'
+          ),
         meta: {
           title: '上海南华兰陵实业有限公司-资产负债表',
         },
@@ -1038,7 +1079,10 @@ export const frameIn: Array<RouteRecordRaw> = [
       {
         path: 'shanghai-nanhua-lanling-industry/cash-flow',
         name: 'ShanghaiNanhuaLanlingIndustryCashFlow',
-        component: () => import('@/views/companies/financial-reports/ShanghaiNanhuaLanlingIndustryCashFlow.vue'),
+        component: () =>
+          import(
+            '@/views/companies/financial-reports/ShanghaiNanhuaLanlingIndustryCashFlow.vue'
+          ),
         meta: {
           title: '上海南华兰陵实业有限公司-现金流量表',
         },
@@ -1046,7 +1090,10 @@ export const frameIn: Array<RouteRecordRaw> = [
       {
         path: 'shanghai-nanhua-lanling-industry/income-statement',
         name: 'ShanghaiNanhuaLanlingIndustryIncomeStatement',
-        component: () => import('@/views/companies/financial-reports/ShanghaiNanhuaLanlingIndustryIncomeStatement.vue'),
+        component: () =>
+          import(
+            '@/views/companies/financial-reports/ShanghaiNanhuaLanlingIndustryIncomeStatement.vue'
+          ),
         meta: {
           title: '上海南华兰陵实业有限公司-利润表',
         },
@@ -1056,7 +1103,10 @@ export const frameIn: Array<RouteRecordRaw> = [
       {
         path: 'changzhou-tuoyuan-electric/balance-sheet',
         name: 'ChangzhouTuoyuanElectricBalanceSheet',
-        component: () => import('@/views/companies/financial-reports/ChangzhouTuoyuanElectricBalanceSheet.vue'),
+        component: () =>
+          import(
+            '@/views/companies/financial-reports/ChangzhouTuoyuanElectricBalanceSheet.vue'
+          ),
         meta: {
           title: '常州拓源电气有限公司-资产负债表',
         },
@@ -1064,7 +1114,10 @@ export const frameIn: Array<RouteRecordRaw> = [
       {
         path: 'changzhou-tuoyuan-electric/cash-flow',
         name: 'ChangzhouTuoyuanElectricCashFlow',
-        component: () => import('@/views/companies/financial-reports/ChangzhouTuoyuanElectricCashFlow.vue'),
+        component: () =>
+          import(
+            '@/views/companies/financial-reports/ChangzhouTuoyuanElectricCashFlow.vue'
+          ),
         meta: {
           title: '常州拓源电气有限公司-现金流量表',
         },
@@ -1072,7 +1125,10 @@ export const frameIn: Array<RouteRecordRaw> = [
       {
         path: 'changzhou-tuoyuan-electric/income-statement',
         name: 'ChangzhouTuoyuanElectricIncomeStatement',
-        component: () => import('@/views/companies/financial-reports/ChangzhouTuoyuanElectricIncomeStatement.vue'),
+        component: () =>
+          import(
+            '@/views/companies/financial-reports/ChangzhouTuoyuanElectricIncomeStatement.vue'
+          ),
         meta: {
           title: '常州拓源电气有限公司-利润表',
         },
@@ -1135,8 +1191,4 @@ const errorPage = [
   },
 ];
 
-export default [
-  ...frameIn,
-  ...frameOut,
-  ...errorPage,
-];
+export default [...frameIn, ...frameOut, ...errorPage];

@@ -119,8 +119,8 @@ const fixedPlanData: CostEstimationData = {
         { segmentAttribute: '设备', customerAttribute: '用户项目', yearBeginningAmount: 0.00, currentPeriodNewAmount: 0, currentYearCumulative: 0, provisionRate: 0 },
         { segmentAttribute: '设备', customerAttribute: '贸易', yearBeginningAmount: 0.00, currentPeriodNewAmount: 0, currentYearCumulative: 0, provisionRate: 0 },
         { segmentAttribute: '设备', customerAttribute: '代理设备', yearBeginningAmount: 0.00, currentPeriodNewAmount: 0, currentYearCumulative: 0, provisionRate: 0 },
-        { segmentAttribute: '设备', customerAttribute: '代理工程', yearBeginningAmount: 0.00, currentPeriodNewAmount: 0, currentYearCumulative: 0, provisionRate: 0 },
-        { segmentAttribute: '设备', customerAttribute: '代理设计', yearBeginningAmount: 0.00, currentPeriodNewAmount: 0, currentYearCumulative: 0, provisionRate: 0 }
+        { segmentAttribute: '其他', customerAttribute: '代理工程', yearBeginningAmount: 0.00, currentPeriodNewAmount: 0, currentYearCumulative: 0, provisionRate: 0 },
+        { segmentAttribute: '其他', customerAttribute: '代理设计', yearBeginningAmount: 0.00, currentPeriodNewAmount: 0, currentYearCumulative: 0, provisionRate: 0 }
     ]
 }
 

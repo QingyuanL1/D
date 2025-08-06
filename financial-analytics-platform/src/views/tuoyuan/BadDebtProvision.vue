@@ -4,7 +4,7 @@
             <h1 class="text-2xl font-bold">坏账准备情况</h1>
             <div class="flex items-center space-x-4">
                 <span class="text-sm text-gray-600">（单位：万元）</span>
-                <span class="text-xs text-gray-500">累计已收款=前面各月当期已收款之和</span>
+                <span class="text-xs text-gray-500">本年新增=后端自动计算 | 累计已收款=历史月份+当期已收款</span>
                 <input v-model="period" type="month" class="px-3 py-2 border rounded" />
             </div>
         </div>
@@ -37,7 +37,8 @@
                                 {{ formatNumber(item.yearBeginningBalance) }}
                             </td>
                             <td class="border border-gray-300 px-4 py-2 text-right bg-gray-50">
-                                {{ formatNumber(item.yearNewIncrease) }}
+                                <span class="text-blue-600 font-medium">{{ formatNumber(item.yearNewIncrease) }}</span>
+                                <span class="text-xs text-gray-500 ml-1">(计算值)</span>
                             </td>
                             <td class="border border-gray-300 px-4 py-2">
                                 <input 
@@ -132,8 +133,8 @@ const fixedPlanData: BadDebtProvisionData = {
         { segmentAttribute: '设备', customerAttribute: '用户项目', yearBeginningBalance: 0, yearNewIncrease: 0, currentCollected: 0, cumulativeCollected: 0, provisionBalance: 0 },
         { segmentAttribute: '设备', customerAttribute: '贸易', yearBeginningBalance: 0, yearNewIncrease: 0, currentCollected: 0, cumulativeCollected: 0, provisionBalance: 0 },
         { segmentAttribute: '设备', customerAttribute: '代理设备', yearBeginningBalance: 0, yearNewIncrease: 0, currentCollected: 0, cumulativeCollected: 0, provisionBalance: 0 },
-        { segmentAttribute: '设备', customerAttribute: '代理工程', yearBeginningBalance: 0, yearNewIncrease: 0, currentCollected: 0, cumulativeCollected: 0, provisionBalance: 0 },
-        { segmentAttribute: '设备', customerAttribute: '代理设计', yearBeginningBalance: 0, yearNewIncrease: 0, currentCollected: 0, cumulativeCollected: 0, provisionBalance: 0 }
+        { segmentAttribute: '其他', customerAttribute: '代理工程', yearBeginningBalance: 0, yearNewIncrease: 0, currentCollected: 0, cumulativeCollected: 0, provisionBalance: 0 },
+        { segmentAttribute: '其他', customerAttribute: '代理设计', yearBeginningBalance: 0, yearNewIncrease: 0, currentCollected: 0, cumulativeCollected: 0, provisionBalance: 0 }
     ]
 }
 
@@ -173,8 +174,8 @@ const calculateCumulativeCollected = async (targetPeriod: string) => {
         for (let item of badDebtProvisionData.value.items) {
             let totalCollected = 0
             
-            // 从1月累计到当前月份的所有当期已收款
-            for (let m = 1; m <= currentMonth; m++) {
+            // 从1月累计到当前月份前一个月的历史数据，加上当前月份的当期已收款
+            for (let m = 1; m < currentMonth; m++) {
                 const monthPeriod = `${year}-${m.toString().padStart(2, '0')}`
                 try {
                     const response = await fetch(`http://127.0.0.1:3000/tuoyuan-bad-debt-provision/${monthPeriod}`)
@@ -193,6 +194,9 @@ const calculateCumulativeCollected = async (targetPeriod: string) => {
                 }
             }
             
+            // 加上当前月份的当期已收款
+            totalCollected += item.currentCollected || 0
+            
             item.cumulativeCollected = totalCollected
             
             // 计算坏账准备余额 = 年初余额 + 本年新增 - 累计已收款
@@ -203,6 +207,8 @@ const calculateCumulativeCollected = async (targetPeriod: string) => {
         console.error('计算累计已收款失败:', error)
     }
 }
+
+
 
 // 监听数据变化，自动重新计算
 watch(() => badDebtProvisionData.value.items, async (newItems) => {
@@ -265,6 +271,7 @@ const loadData = async (targetPeriod: string) => {
 
 const resetToDefaultData = () => {
     badDebtProvisionData.value = JSON.parse(JSON.stringify(fixedPlanData))
+    // 注意：本年新增由后端自动计算
 }
 
 // 加载备注和建议
@@ -286,10 +293,10 @@ const loadRemarksAndSuggestions = async (targetPeriod: string) => {
 watch(() => route.query.period, async (newPeriod) => {
     if (newPeriod) {
         period.value = newPeriod.toString()
-        resetToDefaultData()
-        await loadData(newPeriod.toString())
-        await calculateCumulativeCollected(newPeriod.toString())
-        loadRemarksAndSuggestions(newPeriod.toString())
+            resetToDefaultData()
+    await loadData(newPeriod.toString())
+    await calculateCumulativeCollected(newPeriod.toString())
+    loadRemarksAndSuggestions(newPeriod.toString())
     }
 })
 
