@@ -18,18 +18,25 @@
                         <th class="border border-gray-300 px-4 py-2">年初余额</th>
                         <th class="border border-gray-300 px-4 py-2">本年累计收款</th>
                         <th class="border border-gray-300 px-4 py-2">当期累计已收款</th>
+                        <th class="border border-gray-300 px-4 py-2">累计新增逾期</th>
                         <th class="border border-gray-300 px-4 py-2">收款进度</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <!-- 工程板块项目 -->
+                    <!-- 工程板块项目（包含自建项目） -->
                     <template v-for="(item, index) in overdueData.items" :key="`item-${index}`">
                         <tr>
                             <td v-if="index === 0" :rowspan="overdueData.items.length" class="border border-gray-300 px-4 py-2 font-medium text-center">
                                 工程
                             </td>
                             <td class="border border-gray-300 px-4 py-2">
-                                {{ item.customerAttribute }}
+                                <!-- 自建项目需要缩进显示 -->
+                                <span v-if="item.customerAttribute === '自建项目'" class="ml-4">
+                                    {{ item.customerAttribute }}
+                                </span>
+                                <span v-else>
+                                    {{ item.customerAttribute }}
+                                </span>
                             </td>
                             <td class="border border-gray-300 px-4 py-2 text-right">
                                 {{ formatNumber(item.yearBeginningBalance) }}
@@ -40,25 +47,14 @@
                             <td class="border border-gray-300 px-4 py-2">
                                 <input v-model="item.currentPeriodAccumulatedCollection" type="number" class="w-full px-2 py-1 border rounded text-right" step="0.01" />
                             </td>
+                            <td class="border border-gray-300 px-4 py-2">
+                                <input v-model="item.cumulativeNewOverdue" type="number" class="w-full px-2 py-1 border rounded text-right" step="0.01" />
+                            </td>
                             <td class="border border-gray-300 px-4 py-2 text-right">
                                 <span class="text-sm font-medium">{{ formatPercentage(item.collectionProgress) }}%</span>
                             </td>
                         </tr>
                     </template>
-
-                    <!-- 自建项目行 -->
-                    <tr>
-                        <td class="border border-gray-300 px-4 py-2 font-medium text-center">自建项目</td>
-                        <td class="border border-gray-300 px-4 py-2">自建项目</td>
-                        <td class="border border-gray-300 px-4 py-2 text-right">{{ formatNumber(selfBuiltProject.yearBeginningBalance) }}</td>
-                        <td class="border border-gray-300 px-4 py-2 text-right">{{ formatNumber(selfBuiltProject.yearNewAddition) }}</td>
-                        <td class="border border-gray-300 px-4 py-2">
-                            <input v-model="selfBuiltProject.currentPeriodAccumulatedCollection" type="number" class="w-full px-2 py-1 border rounded text-right" step="0.01" />
-                        </td>
-                        <td class="border border-gray-300 px-4 py-2 text-right">
-                            <span class="text-sm font-medium">{{ formatPercentage(selfBuiltProject.collectionProgress) }}%</span>
-                        </td>
-                    </tr>
 
                     <!-- 合计行 -->
                     <tr class="bg-gray-50 font-bold">
@@ -71,6 +67,9 @@
                         </td>
                         <td class="border border-gray-300 px-4 py-2 text-right">
                             {{ formatNumber(totalData.currentPeriodAccumulatedCollection) }}
+                        </td>
+                        <td class="border border-gray-300 px-4 py-2 text-right">
+                            {{ formatNumber(totalData.cumulativeNewOverdue) }}
                         </td>
                         <td class="border border-gray-300 px-4 py-2 text-right">
                             <span class="text-sm font-bold">{{ formatPercentage(totalData.collectionProgress) }}%</span>
@@ -115,6 +114,7 @@ interface OverdueItem {
     currentPeriodAccumulatedCollection: number;
     yearNewAddition: number;
     collectionProgress: number;
+    cumulativeNewOverdue: number;
 }
 
 interface OverdueData {
@@ -123,25 +123,19 @@ interface OverdueData {
 
 const fixedPlanData: OverdueData = {
     items: [
-        { customerAttribute: '一包项目', yearBeginningBalance: 0.00, currentPeriodNewAddition: 0, currentPeriodAccumulatedCollection: 0, yearNewAddition: 0, collectionProgress: 0 },
-        { customerAttribute: '二包项目', yearBeginningBalance: 5.94, currentPeriodNewAddition: 0, currentPeriodAccumulatedCollection: 0, yearNewAddition: 0, collectionProgress: 0 },
-        { customerAttribute: '域内合作项目', yearBeginningBalance: 129.30, currentPeriodNewAddition: 0, currentPeriodAccumulatedCollection: 0, yearNewAddition: 0, collectionProgress: 0 },
-        { customerAttribute: '域外合作项目', yearBeginningBalance: 12.28, currentPeriodNewAddition: 0, currentPeriodAccumulatedCollection: 0, yearNewAddition: 0, collectionProgress: 0 },
-        { customerAttribute: '新能源项目', yearBeginningBalance: 1.42, currentPeriodNewAddition: 0, currentPeriodAccumulatedCollection: 0, yearNewAddition: 0, collectionProgress: 0 },
-        { customerAttribute: '苏州项目', yearBeginningBalance: 0.00, currentPeriodNewAddition: 0, currentPeriodAccumulatedCollection: 0, yearNewAddition: 0, collectionProgress: 0 },
-        { customerAttribute: '抢修项目', yearBeginningBalance: 0.00, currentPeriodNewAddition: 0, currentPeriodAccumulatedCollection: 0, yearNewAddition: 0, collectionProgress: 0 },
-        { customerAttribute: '运检项目', yearBeginningBalance: 0.00, currentPeriodNewAddition: 0, currentPeriodAccumulatedCollection: 0, yearNewAddition: 0, collectionProgress: 0 }
+        { customerAttribute: '一包项目', yearBeginningBalance: 0.00, currentPeriodNewAddition: 0, currentPeriodAccumulatedCollection: 0, yearNewAddition: 0, collectionProgress: 0, cumulativeNewOverdue: 0 },
+        { customerAttribute: '二包项目', yearBeginningBalance: 5.94, currentPeriodNewAddition: 0, currentPeriodAccumulatedCollection: 0, yearNewAddition: 0, collectionProgress: 0, cumulativeNewOverdue: 0 },
+        { customerAttribute: '域内合作项目', yearBeginningBalance: 129.30, currentPeriodNewAddition: 0, currentPeriodAccumulatedCollection: 0, yearNewAddition: 0, collectionProgress: 0, cumulativeNewOverdue: 0 },
+        { customerAttribute: '域外合作项目', yearBeginningBalance: 12.28, currentPeriodNewAddition: 0, currentPeriodAccumulatedCollection: 0, yearNewAddition: 0, collectionProgress: 0, cumulativeNewOverdue: 0 },
+        { customerAttribute: '新能源项目', yearBeginningBalance: 1.42, currentPeriodNewAddition: 0, currentPeriodAccumulatedCollection: 0, yearNewAddition: 0, collectionProgress: 0, cumulativeNewOverdue: 0 },
+        { customerAttribute: '苏州项目', yearBeginningBalance: 0.00, currentPeriodNewAddition: 0, currentPeriodAccumulatedCollection: 0, yearNewAddition: 0, collectionProgress: 0, cumulativeNewOverdue: 0 },
+        { customerAttribute: '抢修项目', yearBeginningBalance: 0.00, currentPeriodNewAddition: 0, currentPeriodAccumulatedCollection: 0, yearNewAddition: 0, collectionProgress: 0, cumulativeNewOverdue: 0 },
+        { customerAttribute: '运检项目', yearBeginningBalance: 0.00, currentPeriodNewAddition: 0, currentPeriodAccumulatedCollection: 0, yearNewAddition: 0, collectionProgress: 0, cumulativeNewOverdue: 0 },
+        { customerAttribute: '自建项目', yearBeginningBalance: 0.00, currentPeriodNewAddition: 0, currentPeriodAccumulatedCollection: 0, yearNewAddition: 0, collectionProgress: 0, cumulativeNewOverdue: 0 }
     ]
 }
 
 const overdueData = ref<OverdueData>(JSON.parse(JSON.stringify(fixedPlanData)))
-const selfBuiltProject = ref({
-    yearBeginningBalance: 0.00,
-    currentPeriodNewAddition: 0,
-    currentPeriodAccumulatedCollection: 0,
-    yearNewAddition: 0,
-    collectionProgress: 0
-})
 const remarks = ref('')
 const suggestions = ref('')
 
@@ -188,28 +182,6 @@ const calculateYearNewAddition = async (targetPeriod: string) => {
             customer.collectionProgress = totalAmount > 0 ? (customer.currentPeriodAccumulatedCollection / totalAmount) * 100 : 0
         }
         
-        // 计算自建项目的本年新增
-        let selfBuiltYearNewAddition = 0
-        for (let m = 1; m <= currentMonth; m++) {
-            const monthPeriod = `${year}-${m.toString().padStart(2, '0')}`
-            try {
-                const response = await fetch(`http://127.0.0.1:3000/nanhua-overdue-receivables/${monthPeriod}`)
-                if (response.ok) {
-                    const result = await response.json()
-                    if (result.data.selfBuiltProject) {
-                        selfBuiltYearNewAddition += result.data.selfBuiltProject.currentPeriodAccumulatedCollection || 0
-                    }
-                }
-            } catch (error) {
-                console.warn(`无法加载${monthPeriod}的自建项目数据:`, error)
-            }
-        }
-        
-        selfBuiltProject.value.yearNewAddition = selfBuiltYearNewAddition
-        // 计算自建项目收款进度
-        const selfBuiltTotalAmount = selfBuiltProject.value.yearBeginningBalance + selfBuiltProject.value.yearNewAddition
-        selfBuiltProject.value.collectionProgress = selfBuiltTotalAmount > 0 ? (selfBuiltProject.value.currentPeriodAccumulatedCollection / selfBuiltTotalAmount) * 100 : 0
-        
     } catch (error) {
         console.error('计算本年新增失败:', error)
     }
@@ -223,18 +195,13 @@ watch(() => overdueData.value.items, (newItems) => {
     })
 }, { deep: true })
 
-// 监听自建项目数据变化
-watch(() => selfBuiltProject.value, (newProject) => {
-    const totalAmount = newProject.yearBeginningBalance + newProject.yearNewAddition
-    newProject.collectionProgress = totalAmount > 0 ? (newProject.currentPeriodAccumulatedCollection / totalAmount) * 100 : 0
-}, { deep: true })
-
 // 计算合计数据
 const totalData = computed(() => {
     const total = {
         yearBeginningBalance: 0,
         yearNewAddition: 0,
         currentPeriodAccumulatedCollection: 0,
+        cumulativeNewOverdue: 0,
         collectionProgress: 0
     }
     
@@ -242,12 +209,8 @@ const totalData = computed(() => {
         total.yearBeginningBalance += item.yearBeginningBalance || 0
         total.yearNewAddition += item.yearNewAddition || 0
         total.currentPeriodAccumulatedCollection += item.currentPeriodAccumulatedCollection || 0
+        total.cumulativeNewOverdue += item.cumulativeNewOverdue || 0
     })
-    
-    // 加上自建项目
-    total.yearBeginningBalance += selfBuiltProject.value.yearBeginningBalance || 0
-    total.yearNewAddition += selfBuiltProject.value.yearNewAddition || 0
-    total.currentPeriodAccumulatedCollection += selfBuiltProject.value.currentPeriodAccumulatedCollection || 0
     
     // 计算总收款进度
     const totalAmount = total.yearBeginningBalance + total.yearNewAddition
@@ -269,26 +232,16 @@ const loadData = async (targetPeriod: string) => {
             return
         }
         const result = await response.json()
-        if (result.data) {
-            if (result.data.items) {
-                overdueData.value.items = result.data.items.map((item: any) => ({
-                    customerAttribute: item.customerAttribute,
-                    yearBeginningBalance: Number(item.yearBeginningBalance) || 0,
-                    currentPeriodNewAddition: Number(item.currentPeriodNewAddition) || 0,
-                    currentPeriodAccumulatedCollection: Number(item.currentPeriodAccumulatedCollection) || 0,
-                    yearNewAddition: Number(item.yearNewAddition) || 0,
-                    collectionProgress: Number(item.collectionProgress) || 0
-                }))
-            }
-            if (result.data.selfBuiltProject) {
-                selfBuiltProject.value = {
-                    yearBeginningBalance: Number(result.data.selfBuiltProject.yearBeginningBalance) || 0,
-                    currentPeriodNewAddition: Number(result.data.selfBuiltProject.currentPeriodNewAddition) || 0,
-                    currentPeriodAccumulatedCollection: Number(result.data.selfBuiltProject.currentPeriodAccumulatedCollection) || 0,
-                    yearNewAddition: Number(result.data.selfBuiltProject.yearNewAddition) || 0,
-                    collectionProgress: Number(result.data.selfBuiltProject.collectionProgress) || 0
-                }
-            }
+        if (result.data && result.data.items) {
+            overdueData.value.items = result.data.items.map((item: any) => ({
+                customerAttribute: item.customerAttribute,
+                yearBeginningBalance: Number(item.yearBeginningBalance) || 0,
+                currentPeriodNewAddition: Number(item.currentPeriodNewAddition) || 0,
+                currentPeriodAccumulatedCollection: Number(item.currentPeriodAccumulatedCollection) || 0,
+                yearNewAddition: Number(item.yearNewAddition) || 0,
+                collectionProgress: Number(item.collectionProgress) || 0,
+                cumulativeNewOverdue: Number(item.cumulativeNewOverdue) || 0
+            }))
         }
         
         // 加载完数据后重新计算本年新增
@@ -301,13 +254,6 @@ const loadData = async (targetPeriod: string) => {
 
 const resetToDefaultData = () => {
     overdueData.value = JSON.parse(JSON.stringify(fixedPlanData))
-    selfBuiltProject.value = {
-        yearBeginningBalance: 0.00,
-        currentPeriodNewAddition: 0,
-        currentPeriodAccumulatedCollection: 0,
-        yearNewAddition: 0,
-        collectionProgress: 0
-    }
 }
 
 // 加载备注和建议
@@ -356,8 +302,7 @@ const handleSave = async () => {
             body: JSON.stringify({
                 period: period.value,
                 data: {
-                    items: overdueData.value.items,
-                    selfBuiltProject: selfBuiltProject.value
+                    items: overdueData.value.items
                 }
             })
         })
@@ -366,7 +311,7 @@ const handleSave = async () => {
             throw new Error('保存失败')
         }
 
-        await recordFormSubmission(MODULE_IDS.NANHUA_OVERDUE_RECEIVABLES, period.value, { items: overdueData.value.items, selfBuiltProject: selfBuiltProject.value }, remarks.value, suggestions.value)
+        await recordFormSubmission(MODULE_IDS.NANHUA_OVERDUE_RECEIVABLES, period.value, { items: overdueData.value.items }, remarks.value, suggestions.value)
         alert('保存成功')
     } catch (error) {
         console.error('保存失败:', error)

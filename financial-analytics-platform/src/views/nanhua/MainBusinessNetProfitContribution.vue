@@ -34,8 +34,8 @@
                             <td class="border border-gray-300 px-4 py-2 text-right">
                                 {{ formatNumber(item.yearlyPlan) }}
                             </td>
-                            <td class="border border-gray-300 px-4 py-2">
-                                <input v-model="item.currentPeriod" type="number" class="w-full px-2 py-1 border rounded text-right" step="0.01" />
+                            <td class="border border-gray-300 px-4 py-2 text-right">
+                                <span class="font-medium">{{ formatNumber(item.currentPeriod) }}</span>
                             </td>
                             <td class="border border-gray-300 px-4 py-2 text-right">
                                 {{ formatNumber(item.cumulative) }}
@@ -124,6 +124,7 @@ const fixedCustomerData: NetProfitContributionData = {
         { customerName: '苏州项目', yearlyPlan: 0, currentPeriod: 0, cumulative: 0, decompositionRatio: 0, annualRatio: 0 },
         { customerName: '抢修项目', yearlyPlan: 0, currentPeriod: 0, cumulative: 0, decompositionRatio: 0, annualRatio: 0 },
         { customerName: '运检项目', yearlyPlan: 0, currentPeriod: 0, cumulative: 0, decompositionRatio: 0, annualRatio: 0 },
+        { customerName: '运检', yearlyPlan: 0, currentPeriod: 0, cumulative: 0, decompositionRatio: 0, annualRatio: 0 },
         { customerName: '派遣', yearlyPlan: 0, currentPeriod: 0, cumulative: 0, decompositionRatio: 0, annualRatio: 0 },
         { customerName: '自建', yearlyPlan: 0, currentPeriod: 0, cumulative: 0, decompositionRatio: 0, annualRatio: 0 }
     ]
@@ -222,6 +223,39 @@ const totalData = computed(() => {
     return total
 })
 
+// 加载计算出的净利润数据
+const loadCalculatedData = async (targetPeriod: string) => {
+    try {
+        console.log(`正在调用计算接口，期间: ${targetPeriod}`);
+        const response = await fetch(`http://127.0.0.1:3000/nanhua-main-business-net-profit/calculate/${targetPeriod}`)
+        
+        if (!response.ok) {
+            if (response.status !== 404) {
+                console.error('计算接口调用失败:', response.status);
+            }
+            return;
+        }
+        
+        const result = await response.json();
+        if (result.success && result.data && result.data.customers) {
+            console.log('计算结果:', result);
+            
+            // 更新计算出的当期净利润值
+            result.data.customers.forEach((calculatedItem: any) => {
+                const customerInList = netProfitData.value.customers.find(
+                    (customer: any) => customer.customerName === calculatedItem.customerName
+                );
+                if (customerInList) {
+                    customerInList.currentPeriod = calculatedItem.currentPeriod;
+                    console.log(`更新 ${calculatedItem.customerName} 当期净利润: ${calculatedItem.currentPeriod}`);
+                }
+            });
+        }
+    } catch (error) {
+        console.error('加载计算数据失败:', error);
+    }
+}
+
 // 加载数据
 const loadData = async (targetPeriod: string) => {
     try {
@@ -250,6 +284,9 @@ const loadData = async (targetPeriod: string) => {
     } catch (error) {
         console.error('加载数据失败:', error)
     }
+    
+    // 加载计算出的净利润数据
+    await loadCalculatedData(targetPeriod);
 }
 
 // 加载已保存的备注和建议
@@ -274,6 +311,7 @@ watch(() => route.query.period, async (newPeriod) => {
         period.value = newPeriod.toString()
         await loadData(newPeriod.toString())
         await calculateCumulative(newPeriod.toString())
+        await loadCalculatedData(newPeriod.toString())
         loadRemarksAndSuggestions(newPeriod.toString())
     }
 })
@@ -284,6 +322,7 @@ watch(period, async (newPeriod, oldPeriod) => {
         console.log(`期间发生变化: ${oldPeriod} -> ${newPeriod}`)
         await loadData(newPeriod)
         await calculateCumulative(newPeriod)
+        await loadCalculatedData(newPeriod)
         loadRemarksAndSuggestions(newPeriod)
     }
 })
@@ -325,10 +364,12 @@ onMounted(async () => {
     if (route.query.period) {
         await loadData(route.query.period.toString())
         await calculateCumulative(route.query.period.toString())
+        await loadCalculatedData(route.query.period.toString())
         loadRemarksAndSuggestions(route.query.period.toString())
     } else {
         await loadData(period.value)
         await calculateCumulative(period.value)
+        await loadCalculatedData(period.value)
         loadRemarksAndSuggestions(period.value)
     }
 })

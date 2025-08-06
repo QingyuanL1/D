@@ -12,6 +12,17 @@
             对应主营收入：
         </div>
 
+        <!-- 计算状态提示 -->
+        <div v-if="calculating" class="mb-4 p-3 bg-blue-50 border border-blue-200 rounded">
+            <div class="flex items-center">
+                <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span class="text-blue-700">正在自动计算边际贡献率...</span>
+            </div>
+        </div>
+
         <div class="overflow-x-auto my-6">
             <table class="w-full border-collapse border border-gray-300">
                 <thead class="sticky top-0 bg-white">
@@ -42,8 +53,8 @@
                             <td class="border border-gray-300 px-4 py-2 text-right">
                                 {{ formatPercentage(item.yearlyPlan) }}
                             </td>
-                            <td class="border border-gray-300 px-4 py-2">
-                                <input v-model="item.current" type="number" class="w-full px-2 py-1 border rounded text-right" step="0.01" max="100" />
+                            <td class="border border-gray-300 px-4 py-2 text-right bg-gray-50">
+                                <span class="px-2 py-1 text-blue-600 font-medium">{{ formatPercentage(item.current) }}</span>
                             </td>
                             <td class="border border-gray-300 px-4 py-2 text-right">
                                 {{ formatPercentage(calculateDeviation(item.yearlyPlan, item.current)) }}
@@ -68,6 +79,13 @@
             </table>
         </div>
 
+        <!-- 说明文字 -->
+        <div class="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded">
+            <p class="text-sm text-yellow-700">
+                <strong>说明：</strong>当期实际数值为系统自动计算结果，计算公式为：边际贡献率 = (累计收入 - 累计成本) / 累计收入 × 100%
+            </p>
+        </div>
+
         <!-- 文件上传和备注组件 -->
         <FormAttachmentAndRemarks 
             :module-id="MODULE_IDS.NANHUA_BUSINESS_CONTRIBUTION_WITH_SELF_BUILT"
@@ -77,10 +95,13 @@
         />
 
         <div class="mt-4 flex justify-end space-x-4">
-            <button @click="handleSave" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+            <button @click="handleRecalculate" :disabled="calculating" class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 disabled:bg-gray-400">
+                {{ calculating ? '计算中...' : '重新计算' }}
+            </button>
+            <button @click="handleSave" :disabled="calculating" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:bg-gray-400">
                 保存
             </button>
-            <button @click="handleReset" class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600">
+            <button @click="handleReset" :disabled="calculating" class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 disabled:bg-gray-400">
                 重置
             </button>
         </div>
@@ -95,6 +116,7 @@ import FormAttachmentAndRemarks from '@/components/FormAttachmentAndRemarks.vue'
 
 const route = useRoute()
 const period = ref(route.query.period?.toString() || new Date().toISOString().slice(0, 7))
+const calculating = ref(false)
 
 interface IncomeItem {
     customerName: string;
@@ -158,28 +180,70 @@ const totalData = computed(() => {
     return total
 })
 
+// 自动计算边际贡献率
+const calculateContributionRates = async (targetPeriod: string) => {
+    calculating.value = true
+    try {
+        console.log('尝试自动计算南华边际贡献率...')
+        const calculateResponse = await fetch(`http://127.0.0.1:3000/nanhua-business-contribution-with-self-built/calculate/${targetPeriod}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+
+        if (calculateResponse.ok) {
+            const calculateResult = await calculateResponse.json()
+            if (calculateResult.success) {
+                console.log('南华边际贡献率自动计算成功:', calculateResult.data)
+                return calculateResult.data
+            }
+        } else {
+            const errorResult = await calculateResponse.json()
+            console.log('自动计算失败，将使用现有数据:', errorResult.error)
+        }
+    } catch (calcError) {
+        console.log('自动计算失败，将使用现有数据:', calcError.message)
+    } finally {
+        calculating.value = false
+    }
+    return null
+}
+
 // 加载数据
 const loadData = async (targetPeriod: string) => {
     try {
-        const response = await fetch(`http://127.0.0.1:3000/nanhua-business-contribution-with-self-built/${targetPeriod}`)
-        if (!response.ok) {
-            if (response.status !== 404) {
-                throw new Error('加载数据失败')
+        // 首先尝试自动计算边际贡献率
+        let calculatedData = await calculateContributionRates(targetPeriod)
+        
+        // 如果自动计算成功，使用计算结果；否则加载现有数据
+        let finalData = calculatedData
+        
+        if (!finalData) {
+            const response = await fetch(`http://127.0.0.1:3000/nanhua-business-contribution-with-self-built/${targetPeriod}`)
+            if (response.ok) {
+                const result = await response.json()
+                finalData = result.data
+                console.log('加载现有数据:', finalData)
             }
-            return
         }
-        const result = await response.json()
-        if (result.data && result.data.customers) {
+
+        if (finalData && finalData.customers) {
             // 直接使用后端返回的数据
-            incomeData.value.customers = result.data.customers.map((item: any) => ({
+            incomeData.value.customers = finalData.customers.map((item: any) => ({
                 customerName: item.customerName,
                 yearlyPlan: Number(item.yearlyPlan) || 0,
                 current: Number(item.current) || 0,
                 deviation: Number(item.deviation) || 0
             }))
+        } else {
+            // 重置为默认数据
+            incomeData.value = JSON.parse(JSON.stringify(fixedPlanData))
         }
     } catch (error) {
         console.error('加载数据失败:', error)
+        // 重置为默认数据
+        incomeData.value = JSON.parse(JSON.stringify(fixedPlanData))
     }
 }
 
@@ -197,6 +261,12 @@ const loadRemarksAndSuggestions = async (targetPeriod: string) => {
     } catch (error) {
         console.error('加载备注失败:', error)
     }
+}
+
+// 重新计算
+const handleRecalculate = async () => {
+    await calculateContributionRates(period.value)
+    await loadData(period.value)
 }
 
 // 监听路由参数变化

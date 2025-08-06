@@ -123,4 +123,119 @@ router.post('/', async (req, res) => {
   }
 });
 
+// 为南华公司提供计算净利润的接口
+router.get('/calculate/:period', async (req, res) => {
+    const { period } = req.params;
+
+    // 验证period格式 (YYYY-MM)
+    if (!/^\d{4}-\d{2}$/.test(period)) {
+        return res.status(400).json({ error: '无效的期间格式，应为YYYY-MM' });
+    }
+
+    try {
+        console.log(`开始计算南华主营业务净利润，期间: ${period}`);
+
+        // 1. 获取南华营业收入数据
+        const [incomeRows] = await pool.execute(
+            'SELECT customer_name, current_amount, accumulated_amount FROM nanhua_business_income WHERE period = ? AND category = "工程"',
+            [period]
+        );
+
+        // 2. 获取南华主营业务成本数据
+        const [costRows] = await pool.execute(
+            'SELECT customer_type, current_material_cost, current_labor_cost FROM nanhua_main_business_cost WHERE period = ? AND category = "工程"',
+            [period]
+        );
+
+        // 3. 获取南华成本中心结构数据
+        const [centerRows] = await pool.execute(
+            'SELECT customer_name, current_income, accumulated_income FROM nanhua_cost_center_structure WHERE period = ? AND category = "工程"',
+            [period]
+        );
+
+        console.log(`数据获取结果: 收入${incomeRows.length}条, 成本${costRows.length}条, 成本中心${centerRows.length}条`);
+
+        // 构建成本数据映射
+        const costMap = {};
+        costRows.forEach(row => {
+            // 匹配客户类型，处理不同命名方式
+            const key = row.customer_type;
+            costMap[key] = {
+                materialCost: parseFloat(row.current_material_cost) || 0,
+                laborCost: parseFloat(row.current_labor_cost) || 0
+            };
+        });
+
+        // 构建成本中心数据映射
+        const centerMap = {};
+        centerRows.forEach(row => {
+            const key = row.customer_name;
+            centerMap[key] = parseFloat(row.current_income) || 0;
+        });
+
+        // 计算净利润数据
+        const result = {
+            customers: []
+        };
+
+        // 处理工程板块数据
+        incomeRows.forEach(incomeItem => {
+            const customerName = incomeItem.customer_name;
+            const currentAmount = parseFloat(incomeItem.current_amount) || 0;
+            
+            // 查找对应的成本数据（处理不同的命名映射）
+            let materialCost = 0;
+            let laborCost = 0;
+            
+            // 尝试多种匹配方式
+            const costData = costMap[customerName] || 
+                            costMap[customerName.replace('项目', '')] || 
+                            costMap[customerName + '项目'] ||
+                            { materialCost: 0, laborCost: 0 };
+            
+            materialCost = costData.materialCost;
+            laborCost = costData.laborCost;
+
+            // 查找成本中心数据
+            const centerIncome = centerMap[customerName] || 0;
+
+            // 计算净利润：当期收入 - 材料成本 - 人工成本 - 成本中心收入
+            const netProfit = currentAmount - materialCost - laborCost - centerIncome;
+
+            result.customers.push({
+                customerName: customerName,
+                yearlyPlan: 0, // 暂时设为0，可以后续从预算数据获取
+                currentPeriod: netProfit,
+                cumulative: 0, // 将在前端或后续计算
+                decompositionRatio: 0,
+                annualRatio: 0,
+                // 调试信息
+                debug: {
+                    currentAmount: currentAmount,
+                    materialCost: materialCost,
+                    laborCost: laborCost,
+                    centerIncome: centerIncome,
+                    calculation: `${currentAmount} - ${materialCost} - ${laborCost} - ${centerIncome} = ${netProfit}`
+                }
+            });
+        });
+
+        console.log(`计算完成，期间: ${period}, 结果数量: ${result.customers.length}`);
+
+        res.json({
+            success: true,
+            data: result,
+            period: period,
+            calculation: {
+                formula: '净利润 = 当期收入 - 材料成本 - 人工成本 - 成本中心收入',
+                description: '基于nanhua_business_income.current_amount - nanhua_main_business_cost.current_material_cost - nanhua_main_business_cost.current_labor_cost - nanhua_cost_center_structure.current_income计算'
+            }
+        });
+
+    } catch (error) {
+        console.error('计算南华主营业务净利润失败:', error);
+        res.status(500).json({ error: '计算失败: ' + error.message });
+    }
+});
+
 module.exports = router;
