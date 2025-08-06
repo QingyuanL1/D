@@ -1059,6 +1059,22 @@ export const frameIn: Array<RouteRecordRaw> = [
         },
       },
       {
+        path: 'analytics/nanhua-profit-margin-chart',
+        name: 'NanhuaProfitMarginChart',
+        component: () => import('@/views/analytics/NanhuaProfitMarginChart.vue'),
+        meta: {
+          title: '南华毛利率分析',
+        },
+      },
+      {
+        path: 'analytics/nanhua-business-income-chart',
+        name: 'NanhuaBusinessIncomeChart',
+        component: () => import('@/views/analytics/NanhuaBusinessIncomeChart.vue'),
+        meta: {
+          title: '南华营业收入分析',
+        },
+      },
+      {
         path: 'analytics/net-profit-margin-chart',
         name: 'NetProfitMarginChart',
         component: () => import('@/views/analytics/NetProfitMarginChart.vue'),
@@ -1080,6 +1096,14 @@ export const frameIn: Array<RouteRecordRaw> = [
         component: () => import('@/views/analytics/InventoryMetricsChart.vue'),
         meta: {
           title: '存量指标分析',
+        },
+      },
+      {
+        path: 'analytics/tuoyuan-profit-margin-chart',
+        name: 'TuoyuanProfitMarginChart',
+        component: () => import('@/views/analytics/TuoyuanProfitMarginChart.vue'),
+        meta: {
+          title: '拓源毛利率分析',
         },
       },
       // ==================== 上海南华兰陵实业有限公司财务报表 ====================

@@ -154,11 +154,26 @@ const totalData = computed(() => {
         deviation: 0
     }
     
+    // 毛利率应该使用加权平均计算，而不是简单相加
+    let totalPlanWeight = 0
+    let totalActualWeight = 0
+    let totalPlanValue = 0
+    let totalActualValue = 0
+    
     profitMarginData.value.items.forEach(item => {
-        total.yearlyPlan += item.yearlyPlan || 0
-        total.currentActual += item.currentActual || 0
+        const planWeight = Math.max(item.yearlyPlan || 0, 1) // 使用计划值作为权重，最小为1
+        const actualWeight = Math.max(item.yearlyPlan || 0, 1) // 使用计划值作为权重
+        
+        totalPlanValue += (item.yearlyPlan || 0) * planWeight
+        totalPlanWeight += planWeight
+        
+        totalActualValue += (item.currentActual || 0) * actualWeight
+        totalActualWeight += actualWeight
     })
     
+    // 计算加权平均
+    total.yearlyPlan = totalPlanWeight > 0 ? Number((totalPlanValue / totalPlanWeight).toFixed(2)) : 0
+    total.currentActual = totalActualWeight > 0 ? Number((totalActualValue / totalActualWeight).toFixed(2)) : 0
     total.deviation = total.currentActual - total.yearlyPlan
     
     return total

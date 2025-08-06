@@ -144,7 +144,7 @@
       <!-- 数据分析入口 -->
       <div class="bg-white p-6 rounded-lg shadow-sm mb-8">
         <h3 class="text-lg font-semibold text-gray-900 mb-4">南华兰陵实业数据分析中心</h3>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <!-- ROE分析卡片 -->
           <div class="bg-white p-6 rounded-lg border border-gray-200 hover:border-blue-400 hover:shadow-sm transition-all relative">
             <div class="flex items-center justify-between mb-4">
@@ -225,6 +225,62 @@
               </div>
             </div>
             <router-link to="/analytics/asset-liability-ratio-chart?company=nanhua" class="block w-full text-center py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors" @click="handleNavigation">
+              查看详情
+            </router-link>
+          </div>
+
+          <!-- 南华毛利率分析卡片 -->
+          <div class="bg-white p-6 rounded-lg border border-gray-200 hover:border-blue-400 hover:shadow-sm transition-all relative">
+            <div class="flex items-center justify-between mb-4">
+              <div class="p-2 bg-blue-100 rounded-md">
+                <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                </svg>
+              </div>
+              <div class="text-right">
+                <div class="text-sm font-semibold text-blue-600">{{ Math.min(Math.max(nanhuaProfitMarginRate / 24 * 100, 3), 100).toFixed(1) }}%</div>
+                <div class="text-xs text-gray-500">完成度</div>
+              </div>
+            </div>
+            <h4 class="text-lg font-medium text-gray-900 mb-2">南华毛利率分析</h4>
+            <p class="text-sm text-gray-600 mb-3 h-12">分析南华各客户类型毛利率结构与趋势</p>
+            <div class="mb-4">
+              <div style="width: 100%; height: 8px; background-color: #e5e7eb; border-radius: 4px;">
+                <div
+                  style="height: 8px; border-radius: 4px; background-color: #2563eb; transition: width 0.3s ease;"
+                  :style="`width: ${Math.min(Math.max(nanhuaProfitMarginRate / 24 * 100, 3), 100)}%;`"
+                ></div>
+              </div>
+            </div>
+            <router-link to="/analytics/nanhua-profit-margin-chart" class="block w-full text-center py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors" @click="handleNavigation">
+              查看详情
+            </router-link>
+          </div>
+
+          <!-- 南华营业收入分析卡片 -->
+          <div class="bg-white p-6 rounded-lg border border-gray-200 hover:border-blue-400 hover:shadow-sm transition-all relative">
+            <div class="flex items-center justify-between mb-4">
+              <div class="p-2 bg-blue-100 rounded-md">
+                <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+                </svg>
+              </div>
+              <div class="text-right">
+                <div class="text-sm font-semibold text-blue-600">{{ Math.min(Math.max(nanhuaBusinessIncomeRate / 20843.54 * 100, 3), 100).toFixed(1) }}%</div>
+                <div class="text-xs text-gray-500">完成度</div>
+              </div>
+            </div>
+            <h4 class="text-lg font-medium text-gray-900 mb-2">南华营业收入分析</h4>
+            <p class="text-sm text-gray-600 mb-3 h-12">分析南华各客户营业收入结构与完成情况</p>
+            <div class="mb-4">
+              <div style="width: 100%; height: 8px; background-color: #e5e7eb; border-radius: 4px;">
+                <div
+                  style="height: 8px; border-radius: 4px; background-color: #2563eb; transition: width 0.3s ease;"
+                  :style="`width: ${Math.min(Math.max(nanhuaBusinessIncomeRate / 20843.54 * 100, 3), 100)}%;`"
+                ></div>
+              </div>
+            </div>
+            <router-link to="/analytics/nanhua-business-income-chart" class="block w-full text-center py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors" @click="handleNavigation">
               查看详情
             </router-link>
           </div>
@@ -454,6 +510,12 @@ const netProfitMarginRate = ref(0)
 
 // 资产负债率数据
 const assetLiabilityRatio = ref(0)
+
+// 南华毛利率数据
+const nanhuaProfitMarginRate = ref(0)
+
+// 南华营业收入数据
+const nanhuaBusinessIncomeRate = ref(0)
 
 
 // 公告详情相关
@@ -842,6 +904,59 @@ const fetchAssetLiabilityRatioData = async () => {
   }
 }
 
+// 获取南华毛利率数据
+const fetchNanhuaProfitMarginData = async () => {
+  try {
+    const currentYear = new Date().getFullYear()
+    const response = await fetch(`http://127.0.0.1:3000/analytics/nanhua-profit-margin/${currentYear}`)
+    
+    if (!response.ok) {
+      throw new Error('获取南华毛利率数据失败')
+    }
+    
+    const result = await response.json()
+    if (result.success && result.data) {
+      nanhuaProfitMarginRate.value = result.data.currentRate || 0
+    } else {
+      console.warn('南华毛利率数据获取失败:', result.message)
+      nanhuaProfitMarginRate.value = 0
+    }
+  } catch (error) {
+    console.error('获取南华毛利率数据失败:', error)
+    nanhuaProfitMarginRate.value = 0
+  }
+}
+
+// 获取南华营业收入数据
+const fetchNanhuaBusinessIncomeData = async () => {
+  try {
+    const currentYear = new Date().getFullYear()
+    const currentMonth = new Date().getMonth() + 1
+    const period = `${currentYear}-${currentMonth.toString().padStart(2, '0')}`
+    
+    const response = await fetch(`http://127.0.0.1:3000/nanhua-business-income/${period}`)
+    
+    if (!response.ok) {
+      throw new Error('获取南华营业收入数据失败')
+    }
+    
+    const result = await response.json()
+    if (result.success && result.data && result.data.customers) {
+      // 计算总累计收入
+      const totalAccumulated = result.data.customers.reduce((sum: number, customer: any) => {
+        return sum + (customer.accumulated || 0)
+      }, 0)
+      nanhuaBusinessIncomeRate.value = totalAccumulated
+    } else {
+      console.warn('南华营业收入数据获取失败:', result.message)
+      nanhuaBusinessIncomeRate.value = 0
+    }
+  } catch (error) {
+    console.error('获取南华营业收入数据失败:', error)
+    nanhuaBusinessIncomeRate.value = 0
+  }
+}
+
 
 // 显示ROE详情
 const showROEDetail = () => {
@@ -1138,7 +1253,9 @@ onMounted(async () => {
     fetchAnalysisCompletionRates(),
     fetchROEData(),
     fetchNetProfitMarginData(),
-    fetchAssetLiabilityRatioData()
+    fetchAssetLiabilityRatioData(),
+    fetchNanhuaProfitMarginData(),
+    fetchNanhuaBusinessIncomeData()
   ])
   
   // 先获取图表数据，再初始化图表

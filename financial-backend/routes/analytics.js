@@ -1786,6 +1786,139 @@ router.get('/profit-margin/:year', async (req, res) => {
   }
 });
 
+// 获取南华毛利率数据 - 年度分析
+router.get('/nanhua-profit-margin/:year', async (req, res) => {
+  try {
+    const { year } = req.params;
+    const fetch = require('node-fetch');
+
+    // 获取该年度的月份列表（1-12月）
+    const months = [];
+    const monthlyData = [];
+    const customerAccumulator = {
+      '一包项目': { total: 0, count: 0, plan: 14.54 },
+      '二包项目': { total: 0, count: 0, plan: 15.50 },
+      '域内合作项目': { total: 0, count: 0, plan: 8.00 },
+      '域外合作项目': { total: 0, count: 0, plan: 5.48 },
+      '新能源项目': { total: 0, count: 0, plan: 17.25 },
+      '苏州项目': { total: 0, count: 0, plan: 6.00 },
+      '抢修': { total: 0, count: 0, plan: 33.52 },
+      '运检项目': { total: 0, count: 0, plan: 13.60 },
+      '自建项目': { total: 0, count: 0, plan: 0 }
+    };
+
+    let hasAnyData = false;
+
+    // 遍历12个月，获取每月的计算数据
+    for (let month = 1; month <= 12; month++) {
+      const period = `${year}-${month.toString().padStart(2, '0')}`;
+      
+      try {
+        // 调用计算API获取该月数据
+        const response = await fetch(`http://127.0.0.1:3000/nanhua-business-profit-margin-with-self-built/calculate/${period}`);
+        
+        if (response.ok) {
+          const result = await response.json();
+          
+          if (result.success && result.data && result.data.customers) {
+            const monthLabel = `${month.toString().padStart(2, '0')}月`;
+            months.push(monthLabel);
+            
+                         // 计算该月的平均毛利率（包括所有客户，即使是0）
+             let totalRate = 0;
+             let totalCustomers = 0;
+             
+             result.data.customers.forEach(customer => {
+               const rate = customer.current || 0;
+               totalRate += rate;
+               totalCustomers++;
+               
+               // 累计各客户数据
+               if (customerAccumulator[customer.customerName]) {
+                 customerAccumulator[customer.customerName].total += rate;
+                 customerAccumulator[customer.customerName].count += 1;
+               }
+             });
+             
+                          const monthRate = totalCustomers > 0 ? totalRate / totalCustomers : 0;
+             monthlyData.push(Number(monthRate.toFixed(2)));
+             
+             if (totalCustomers > 0) {
+               hasAnyData = true;
+             }
+          }
+        }
+      } catch (error) {
+        console.error(`获取${period}数据失败:`, error);
+        // 月份没有数据时跳过，不添加到months和monthlyData中
+      }
+    }
+
+    if (!hasAnyData) {
+      // 如果没有数据，返回空数据状态
+      return res.json({
+        success: true,
+        data: {
+          months: [],
+          monthlyData: [],
+          currentRate: 0,
+          targetRate: 24.00,
+          customerData: [
+            { name: '一包项目', plan: 14.54, actual: 0, rate: 0 },
+            { name: '二包项目', plan: 15.50, actual: 0, rate: 0 },
+            { name: '域内合作项目', plan: 8.00, actual: 0, rate: 0 },
+            { name: '域外合作项目', plan: 5.48, actual: 0, rate: 0 },
+            { name: '新能源项目', plan: 17.25, actual: 0, rate: 0 },
+            { name: '苏州项目', plan: 6.00, actual: 0, rate: 0 },
+            { name: '抢修', plan: 33.52, actual: 0, rate: 0 },
+            { name: '运检项目', plan: 13.60, actual: 0, rate: 0 },
+            { name: '自建项目', plan: 0, actual: 0, rate: 0 }
+          ],
+          hasData: false,
+          message: '该年份暂无南华毛利率数据'
+        }
+      });
+    }
+
+    // 生成客户数据
+    const customerData = Object.keys(customerAccumulator).map(customerName => {
+      const acc = customerAccumulator[customerName];
+      const avgRate = acc.count > 0 ? acc.total / acc.count : 0;
+      
+      return {
+        name: customerName,
+        plan: acc.plan,
+        actual: Number(avgRate.toFixed(2)),
+        rate: Number(avgRate.toFixed(2))
+      };
+    });
+
+    // 计算当前毛利率（最新月份的数据）
+    const currentRate = monthlyData.length > 0 ? monthlyData[monthlyData.length - 1] : 0;
+    const targetRate = 24.00; // 固定目标值
+
+    res.json({
+      success: true,
+      data: {
+        months,
+        monthlyData,
+        currentRate,
+        targetRate,
+        customerData,
+        hasData: true
+      }
+    });
+
+  } catch (error) {
+    console.error('获取南华毛利率数据失败:', error);
+    res.status(500).json({
+      success: false,
+      message: '获取南华毛利率数据失败',
+      error: error.message
+    });
+  }
+});
+
 // 获取净资产收益率数据
 router.get('/roe/:year', async (req, res) => {
   try {
@@ -2385,6 +2518,122 @@ router.get('/inventory-metrics/:year', async (req, res) => {
     res.status(500).json({
       success: false,
       message: '获取存量指标数据失败',
+      error: error.message
+    });
+  }
+});
+
+// 获取拓源毛利率数据 - 年度分析
+router.get('/tuoyuan-profit-margin/:year', async (req, res) => {
+  try {
+    const { year } = req.params;
+
+    // 获取该年度所有月份的拓源毛利率数据
+    const [rows] = await pool.execute(`
+      SELECT period, segment_attribute, customer_attribute, yearly_plan, current_actual, deviation
+      FROM tuoyuan_main_business_profit_margin
+      WHERE YEAR(CONCAT(period, '-01')) = ?
+      ORDER BY period, segment_attribute, customer_attribute
+    `, [year]);
+
+    if (rows.length === 0) {
+      // 如果没有数据，返回空数据状态
+      return res.json({
+        success: true,
+        data: {
+          months: [],
+          monthlyData: [],
+          currentRate: 0,
+          targetRate: 24.99,
+          segmentData: [
+            { name: '设备', plan: 8.25, actual: 0, rate: 0 },
+            { name: '其他', plan: 50.00, actual: 0, rate: 0 }
+          ],
+          hasData: false,
+          message: '该年份暂无拓源毛利率数据'
+        }
+      });
+    }
+
+    // 处理数据 - 按月份和板块分组
+    const monthlyMap = new Map();
+    const segmentAccumulator = {
+      '设备': { total: 0, count: 0, plan: 8.25 },
+      '其他': { total: 0, count: 0, plan: 50.00 }
+    };
+
+    rows.forEach(row => {
+      const period = row.period;
+      const segmentAttribute = row.segment_attribute;
+      const currentActual = parseFloat(row.current_actual) || 0;
+
+      // 按月份分组计算加权平均
+      if (!monthlyMap.has(period)) {
+        monthlyMap.set(period, { totalValue: 0, totalWeight: 0 });
+      }
+      
+      const monthData = monthlyMap.get(period);
+      // 使用yearly_plan作为权重，如果为0则使用1作为基础权重
+      const weight = Math.max(parseFloat(row.yearly_plan) || 0, 1);
+      monthData.totalValue += currentActual * weight;
+      monthData.totalWeight += weight;
+
+      // 累计各板块数据用于最终平均值计算
+      if (segmentAccumulator[segmentAttribute] && currentActual > 0) {
+        segmentAccumulator[segmentAttribute].total += currentActual;
+        segmentAccumulator[segmentAttribute].count += 1;
+      }
+    });
+
+    // 生成月份和月度数据
+    const months = [];
+    const monthlyData = [];
+    
+    const sortedPeriods = Array.from(monthlyMap.keys()).sort();
+    sortedPeriods.forEach(period => {
+      const monthLabel = period.split('-')[1] + '月';
+      months.push(monthLabel);
+      
+      const monthInfo = monthlyMap.get(period);
+      const monthRate = monthInfo.totalWeight > 0 ? 
+        monthInfo.totalValue / monthInfo.totalWeight : 0;
+      monthlyData.push(Number(monthRate.toFixed(2)));
+    });
+
+    // 生成板块数据
+    const segmentData = Object.keys(segmentAccumulator).map(segmentName => {
+      const acc = segmentAccumulator[segmentName];
+      const avgRate = acc.count > 0 ? acc.total / acc.count : 0;
+      
+      return {
+        name: segmentName,
+        plan: acc.plan,
+        actual: Number(avgRate.toFixed(2)),
+        rate: Number(avgRate.toFixed(2))
+      };
+    });
+
+    // 计算当前毛利率（最新月份的数据）
+    const currentRate = monthlyData.length > 0 ? monthlyData[monthlyData.length - 1] : 0;
+    const targetRate = 24.99; // 固定目标值
+
+    res.json({
+      success: true,
+      data: {
+        months,
+        monthlyData,
+        currentRate,
+        targetRate,
+        segmentData,
+        hasData: true
+      }
+    });
+
+  } catch (error) {
+    console.error('获取拓源毛利率数据失败:', error);
+    res.status(500).json({
+      success: false,
+      message: '获取拓源毛利率数据失败',
       error: error.message
     });
   }
