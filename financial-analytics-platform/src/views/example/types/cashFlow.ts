@@ -2,7 +2,7 @@
 export interface CashFlowStatement {
   id?: number;                  // 主键ID
   period: string;              // 期间（如：2024-03）
-  data: string;                // JSON格式的表单数据
+  data: string | CashFlowFormData; // JSON格式的表单数据或对象
   created_at?: string;         // 创建时间
   updated_at?: string;         // 更新时间
 }

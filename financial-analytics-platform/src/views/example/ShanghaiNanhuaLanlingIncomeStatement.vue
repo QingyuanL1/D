@@ -12,9 +12,8 @@
                 <thead class="sticky top-0 bg-white">
                     <tr class="bg-gray-50">
                         <th class="border border-gray-300 px-4 py-2">项目</th>
-                        <th class="border border-gray-300 px-4 py-2 w-40">行次</th>
-                        <th class="border border-gray-300 px-4 py-2 w-40">本月数</th>
-                        <th class="border border-gray-300 px-4 py-2 w-40">本年累计数</th>
+                        <th class="border border-gray-300 px-4 py-2 w-24">本月数</th>
+                        <th class="border border-gray-300 px-4 py-2 w-24">本年累计</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -26,17 +25,19 @@
                                     item.isBold ? 'font-bold' : '']">
                                     {{ section.title }}
                                 </td>
-                                <td class="border border-gray-300 px-4 py-2 text-center">
-                                    {{ sectionIndex + 1 }}
-                                </td>
                                 <td class="border border-gray-300 px-4 py-2">
                                     <input v-model="item.currentAmount" type="number"
-                                        class="w-full px-2 py-1 border rounded" step="0.01" :data-field="item.field" />
+                                        class="w-full px-2 py-1 border rounded text-sm" step="0.01" 
+                                        :data-field="item.field"
+                                        @input="onCurrentAmountChange(item)" />
                                 </td>
                                 <td class="border border-gray-300 px-4 py-2">
-                                    <input v-model="item.yearAmount" type="number"
-                                        class="w-full px-2 py-1 border rounded" step="0.01"
-                                        :data-field="`${item.field}_year`" />
+                                    <span 
+                                        class="block w-full px-2 py-1 text-sm text-right text-gray-700"
+                                        title="本年累计数"
+                                    >
+                                        {{ formatAmount(item.yearAmount) }}
+                                    </span>
                                 </td>
                             </tr>
                         </template>
@@ -46,8 +47,8 @@
         </div>
 
         <div class="mt-4 flex justify-end space-x-4">
-            <button @click="handleSave" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
-                保存
+            <button @click="handleSave" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600" :disabled="isSaving">
+                {{ isSaving ? '保存中...' : '保存' }}
             </button>
             <button @click="handleReset" class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600">
                 重置
@@ -79,6 +80,78 @@ const moduleId = 999 // 暂用数字ID，需要添加到MODULE_IDS中
 const remarks = ref('')
 const suggestions = ref('')
 
+// 状态管理
+const isCalculating = ref(false)
+const isSaving = ref(false)
+
+// 格式化金额显示
+const formatAmount = (amount: number | null): string => {
+  if (amount === null || amount === undefined) {
+    return ''
+  }
+  return amount.toLocaleString('zh-CN', { 
+    minimumFractionDigits: 0, 
+    maximumFractionDigits: 2 
+  })
+}
+
+// 当期金额变化时的处理
+const onCurrentAmountChange = (item: any) => {
+  // 清除该项的计算标记
+  item.isCalculated = false
+}
+
+// 静默计算本年累计值
+const calculateCumulative = async (silent = true) => {
+  if (isCalculating.value) return
+  
+  try {
+    isCalculating.value = true
+    
+    // 收集当前数据
+    const currentData = convertToStorageFormat(period.value)
+    
+    const response = await fetch('http://127.0.0.1:3000/shanghai-nanhua-lanling-income-statement/calculate-cumulative', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        period: period.value,
+        data: JSON.parse(currentData.data)
+      })
+    })
+
+    if (!response.ok) {
+      if (!silent) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || '计算累计值失败')
+      }
+      return
+    }
+
+    const result = await response.json()
+    
+    // 更新累计值到表单中
+    const calculatedData = result.data
+    Object.keys(calculatedData).forEach(key => {
+      const item = incomeStatementData.value.flatMap(section => section.items)
+        .find(item => item.field === key)
+      if (item) {
+        item.yearAmount = calculatedData[key].cumulative_amount
+        item.isCalculated = true
+      }
+    })
+    
+  } catch (error) {
+    if (!silent) {
+      console.error('计算累计值失败:', error)
+    }
+  } finally {
+    isCalculating.value = false
+  }
+}
+
 // 加载数据
 const loadData = async (targetPeriod: string) => {
   try {
@@ -87,6 +160,10 @@ const loadData = async (targetPeriod: string) => {
       if (response.status !== 404) { // 404是正常的（新建报表时）
         throw new Error('加载数据失败')
       }
+      // 如果没有数据，自动计算累计值
+      setTimeout(() => {
+        calculateCumulative()
+      }, 500)
       return
     }
     const result = await response.json()
@@ -99,9 +176,14 @@ const loadData = async (targetPeriod: string) => {
           .find(item => item.field === key)
         if (item) {
           item.currentAmount = parsedData[key].current_amount
-          item.yearAmount = parsedData[key].year_amount
+          item.yearAmount = parsedData[key].year_amount || parsedData[key].cumulative_amount
         }
       })
+      
+      // 加载数据后，自动刷新累计值
+      setTimeout(() => {
+        calculateCumulative()
+      }, 500)
     }
   } catch (error) {
     console.error('加载数据失败:', error)
@@ -125,7 +207,14 @@ watch(() => route.query.period, (newPeriod) => {
 })
 
 const handleSave = async () => {
+  if (isSaving.value) return
+  
   try {
+    isSaving.value = true
+    
+    // 保存前自动计算累计值
+    await calculateCumulative()
+    
     const dataToSave = convertToStorageFormat(period.value)
 
     const response = await fetch('http://127.0.0.1:3000/shanghai-nanhua-lanling-income-statement', {
@@ -133,7 +222,10 @@ const handleSave = async () => {
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(dataToSave)
+      body: JSON.stringify({
+        ...dataToSave,
+        autoCalculateCumulative: true
+      })
     })
 
     if (!response.ok) {
@@ -146,11 +238,25 @@ const handleSave = async () => {
     // 记录表单提交
     await recordFormSubmission(moduleId, period.value, dataToSave, remarks.value, suggestions.value)
     
+    // 如果返回了计算后的数据，更新表单
+    if (result.calculatedData) {
+      Object.keys(result.calculatedData).forEach(key => {
+        const item = incomeStatementData.value.flatMap(section => section.items)
+          .find(item => item.field === key)
+        if (item) {
+          item.yearAmount = result.calculatedData[key].cumulative_amount
+          item.isCalculated = true
+        }
+      })
+    }
+    
     alert('保存成功')
     console.log('保存成功:', result.message)
   } catch (error) {
     console.error('保存失败:', error)
     alert('保存失败: ' + (error as Error).message)
+  } finally {
+    isSaving.value = false
   }
 }
 
@@ -159,6 +265,7 @@ const handleReset = () => {
     section.items.forEach(item => {
       item.currentAmount = null
       item.yearAmount = null
+      item.isCalculated = false
     })
   })
 }

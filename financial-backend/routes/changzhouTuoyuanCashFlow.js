@@ -77,7 +77,7 @@ router.post('/', async (req, res) => {
                 SET data = ?, updated_at = CURRENT_TIMESTAMP
                 WHERE period = ?
             `;
-            params = [JSON.stringify(data), period];
+            params = [typeof data === 'string' ? data : JSON.stringify(data), period];
             console.log('更新现有数据');
         } else {
             // 插入新数据
@@ -85,7 +85,7 @@ router.post('/', async (req, res) => {
                 INSERT INTO changzhou_tuoyuan_cash_flow (period, data, created_at, updated_at)
                 VALUES (?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
             `;
-            params = [period, JSON.stringify(data)];
+            params = [period, typeof data === 'string' ? data : JSON.stringify(data)];
             console.log('插入新数据');
         }
 
@@ -206,7 +206,7 @@ router.post('/batch-import', async (req, res) => {
 
                 await pool.execute(insertQuery, [
                     item.period,
-                    JSON.stringify(item.data)
+                    typeof item.data === 'string' ? item.data : JSON.stringify(item.data)
                 ]);
                 successCount++;
             } catch (error) {

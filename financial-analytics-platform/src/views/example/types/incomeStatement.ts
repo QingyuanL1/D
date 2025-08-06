@@ -11,6 +11,6 @@ export interface IncomeStatement {
 export interface IncomeStatementFormData {
   [key: string]: {
     current_amount: number | null;
-    year_amount: number | null;
+    cumulative_amount: number | null;
   };
 } 

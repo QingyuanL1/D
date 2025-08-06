@@ -8,6 +8,7 @@ export interface IncomeStatementItem {
     yearAmount: number | null
     isSubItem?: boolean
     isBold?: boolean
+    isCalculated?: boolean // 标记累计值是否由系统自动计算
 }
 
 export interface IncomeStatementSection {
@@ -274,7 +275,7 @@ export const useShanghaiNanhuaLanlingIncomeStatementData = () => {
             section.items.forEach(item => {
                 formData[item.field] = {
                     current_amount: item.currentAmount,
-                    year_amount: item.yearAmount
+                    cumulative_amount: item.yearAmount
                 }
             })
         })
@@ -294,7 +295,7 @@ export const useShanghaiNanhuaLanlingIncomeStatementData = () => {
                 const data = formData[item.field]
                 if (data) {
                     item.currentAmount = data.current_amount
-                    item.yearAmount = data.year_amount
+                    item.yearAmount = data.cumulative_amount
                 }
             })
         })

@@ -1,206 +1,163 @@
 <template>
-    <div class="min-h-screen bg-gray-50 py-8">
-        <div class="max-w-[1400px] mx-auto px-4">
-            <!-- 页面头部 -->
-            <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-                <div class="flex justify-between items-start mb-4">
-                    <div class="text-center flex-1">
-                        <h1 class="text-3xl font-bold text-gray-800 mb-2">现金流量表</h1>
-                        <div class="text-sm text-gray-600 space-y-1">
-                            <div class="font-medium">编制单位：常州拓源电气有限公司</div>
-                            <div>2025年2月</div>
-                            <div>单位：元</div>
-                        </div>
-                    </div>
-                    <div class="flex items-center space-x-4">
-                        <label class="text-sm font-medium text-gray-700">选择期间：</label>
-                        <input 
-                            v-model="period" 
-                            type="month" 
-                            class="px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
-                        />
-                    </div>
-                </div>
-            </div>
-
-            <!-- 现金流量表主体 -->
-            <div class="bg-white rounded-lg shadow-md overflow-hidden">
-                <div class="overflow-x-auto">
-                    <table class="w-full border-collapse">
-                        <thead>
-                            <tr class="bg-gradient-to-r from-blue-50 to-indigo-50">
-                                <th class="border border-gray-300 px-3 py-3 text-sm font-semibold text-gray-700 w-80">项目</th>
-                                <th class="border border-gray-300 px-2 py-3 text-sm font-semibold text-gray-700 w-16">行次</th>
-                                <th class="border border-gray-300 px-3 py-3 text-sm font-semibold text-gray-700 w-32">本期金额</th>
-                                <th class="border border-gray-300 px-3 py-3 text-sm font-semibold text-gray-700 w-32">本年累计金额</th>
-                                <th class="border border-gray-300 px-3 py-3 text-sm font-semibold text-gray-700 w-80">项目</th>
-                                <th class="border border-gray-300 px-2 py-3 text-sm font-semibold text-gray-700 w-16">行次</th>
-                                <th class="border border-gray-300 px-3 py-3 text-sm font-semibold text-gray-700 w-32">本期金额</th>
-                                <th class="border border-gray-300 px-3 py-3 text-sm font-semibold text-gray-700 w-32">本年累计金额</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <template v-for="(section, sectionIndex) in cashFlowData" :key="sectionIndex">
-                                <!-- 章节标题 -->
-                                <tr class="bg-gray-50">
-                                    <td 
-                                        class="border border-gray-300 px-3 py-2 font-bold text-gray-800 text-sm" 
-                                        :colspan="section.rightItems ? 4 : 8"
-                                    >
-                                        {{ section.title }}
-                                    </td>
-                                    <template v-if="section.rightItems">
-                                        <td class="border border-gray-300 px-3 py-2"></td>
-                                        <td class="border border-gray-300 px-3 py-2"></td>
-                                        <td class="border border-gray-300 px-3 py-2"></td>
-                                        <td class="border border-gray-300 px-3 py-2"></td>
-                                    </template>
-                                </tr>
-
-                                <!-- 左列和右列内容 -->
-                                <template v-for="(item, itemIndex) in section.leftItems" :key="`${sectionIndex}-left-${itemIndex}`">
-                                    <tr class="hover:bg-blue-50 transition-colors duration-150">
-                                        <!-- 左列 -->
-                                        <td :class="[
-                                            'border border-gray-300 px-3 py-2 text-sm',
-                                            item.isSubItem ? 'pl-6 text-gray-600' : 'text-gray-700',
-                                            item.isBold ? 'font-bold bg-gray-50' : ''
-                                        ]">
-                                            {{ item.name }}
-                                        </td>
-                                        <td class="border border-gray-300 px-2 py-2 text-center text-sm text-gray-600">
-                                            {{ item.rowNumber }}
-                                        </td>
-                                        <td class="border border-gray-300 px-1 py-1">
-                                            <input 
-                                                v-model="item.currentAmount" 
-                                                type="number"
-                                                class="w-full px-2 py-1 text-sm border-0 focus:ring-1 focus:ring-blue-400 rounded"
-                                                step="0.01" 
-                                                :data-field="item.field"
-                                                :class="item.isBold ? 'font-bold bg-gray-50' : ''"
-                                            />
-                                        </td>
-                                        <td class="border border-gray-300 px-1 py-1">
-                                            <input 
-                                                v-model="item.yearAmount" 
-                                                type="number"
-                                                class="w-full px-2 py-1 text-sm border-0 focus:ring-1 focus:ring-blue-400 rounded"
-                                                step="0.01"
-                                                :data-field="`${item.field}_year`"
-                                                :class="item.isBold ? 'font-bold bg-gray-50' : ''"
-                                            />
-                                        </td>
-
-                                        <!-- 右列 -->
-                                        <template v-if="section.rightItems && section.rightItems[itemIndex]">
-                                            <td :class="[
-                                                'border border-gray-300 px-3 py-2 text-sm',
-                                                section.rightItems[itemIndex].isSubItem ? 'pl-6 text-gray-600' : 'text-gray-700',
-                                                section.rightItems[itemIndex].isBold ? 'font-bold bg-gray-50' : ''
-                                            ]">
-                                                {{ section.rightItems[itemIndex].name }}
-                                            </td>
-                                            <td class="border border-gray-300 px-2 py-2 text-center text-sm text-gray-600">
-                                                {{ section.rightItems[itemIndex].rowNumber }}
-                                            </td>
-                                            <td class="border border-gray-300 px-1 py-1">
-                                                <input 
-                                                    v-model="section.rightItems[itemIndex].currentAmount" 
-                                                    type="number"
-                                                    class="w-full px-2 py-1 text-sm border-0 focus:ring-1 focus:ring-blue-400 rounded"
-                                                    step="0.01" 
-                                                    :data-field="section.rightItems[itemIndex].field"
-                                                    :class="section.rightItems[itemIndex].isBold ? 'font-bold bg-gray-50' : ''"
-                                                />
-                                            </td>
-                                            <td class="border border-gray-300 px-1 py-1">
-                                                <input 
-                                                    v-model="section.rightItems[itemIndex].yearAmount" 
-                                                    type="number"
-                                                    class="w-full px-2 py-1 text-sm border-0 focus:ring-1 focus:ring-blue-400 rounded"
-                                                    step="0.01"
-                                                    :data-field="`${section.rightItems[itemIndex].field}_year`"
-                                                    :class="section.rightItems[itemIndex].isBold ? 'font-bold bg-gray-50' : ''"
-                                                />
-                                            </td>
-                                        </template>
-                                        <template v-else>
-                                            <td class="border border-gray-300 px-3 py-2 bg-gray-25"></td>
-                                            <td class="border border-gray-300 px-2 py-2 bg-gray-25"></td>
-                                            <td class="border border-gray-300 px-1 py-1 bg-gray-25"></td>
-                                            <td class="border border-gray-300 px-1 py-1 bg-gray-25"></td>
-                                        </template>
-                                    </tr>
-                                </template>
-
-                                <!-- 处理右列剩余项 -->
-                                <template v-if="section.rightItems && section.rightItems.length > section.leftItems.length">
-                                    <template v-for="(item, itemIndex) in section.rightItems.slice(section.leftItems.length)" :key="`${sectionIndex}-right-${itemIndex + section.leftItems.length}`">
-                                        <tr class="hover:bg-blue-50 transition-colors duration-150">
-                                            <td class="border border-gray-300 px-3 py-2 bg-gray-25"></td>
-                                            <td class="border border-gray-300 px-2 py-2 bg-gray-25"></td>
-                                            <td class="border border-gray-300 px-1 py-1 bg-gray-25"></td>
-                                            <td class="border border-gray-300 px-1 py-1 bg-gray-25"></td>
-                                            <td :class="[
-                                                'border border-gray-300 px-3 py-2 text-sm',
-                                                item.isSubItem ? 'pl-6 text-gray-600' : 'text-gray-700',
-                                                item.isBold ? 'font-bold bg-gray-50' : ''
-                                            ]">
-                                                {{ item.name }}
-                                            </td>
-                                            <td class="border border-gray-300 px-2 py-2 text-center text-sm text-gray-600">
-                                                {{ item.rowNumber }}
-                                            </td>
-                                            <td class="border border-gray-300 px-1 py-1">
-                                                <input 
-                                                    v-model="item.currentAmount" 
-                                                    type="number"
-                                                    class="w-full px-2 py-1 text-sm border-0 focus:ring-1 focus:ring-blue-400 rounded"
-                                                    step="0.01" 
-                                                    :data-field="item.field"
-                                                    :class="item.isBold ? 'font-bold bg-gray-50' : ''"
-                                                />
-                                            </td>
-                                            <td class="border border-gray-300 px-1 py-1">
-                                                <input 
-                                                    v-model="item.yearAmount" 
-                                                    type="number"
-                                                    class="w-full px-2 py-1 text-sm border-0 focus:ring-1 focus:ring-blue-400 rounded"
-                                                    step="0.01"
-                                                    :data-field="`${item.field}_year`"
-                                                    :class="item.isBold ? 'font-bold bg-gray-50' : ''"
-                                                />
-                                            </td>
-                                        </tr>
-                                    </template>
-                                </template>
-                            </template>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- 操作按钮区域 -->
-            <div class="mt-6 flex justify-center">
-                <button 
-                    @click="handleSave" 
-                    class="px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-medium rounded-lg shadow-md hover:from-blue-600 hover:to-blue-700 transform hover:scale-105 transition-all duration-200 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                >
-                    <i class="fas fa-save mr-2"></i>保存数据
-                </button>
-            </div>
-
-            <!-- 附件和备注组件 -->
-            <div class="mt-8">
-                <FormAttachmentAndRemarks
-                  :module-id="moduleId"
-                  :period="period"
-                  v-model:remarks="remarks"
-                  v-model:suggestions="suggestions"
-                />
+    <div class="max-w-[1200px] mx-auto bg-white rounded-lg shadow-lg p-6">
+        <div class="flex justify-between items-center mb-6">
+            <h1 class="text-2xl font-bold">现金流量表（常州拓源电气有限公司）（单位：元）</h1>
+            <div class="flex items-center space-x-4">
+                <input v-model="period" type="month" class="px-3 py-2 border rounded" />
             </div>
         </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full border-collapse border border-gray-300">
+                <thead class="sticky top-0 bg-white">
+                    <tr class="bg-gray-50">
+                        <th class="border border-gray-300 px-4 py-2 w-60">项目</th>
+                        <th class="border border-gray-300 px-4 py-2 w-16">行次</th>
+                        <th class="border border-gray-300 px-4 py-2 w-40">本期金额</th>
+                        <th class="border border-gray-300 px-4 py-2 w-40">本年累计金额</th>
+                        <th class="border border-gray-300 px-4 py-2 w-60">项目</th>
+                        <th class="border border-gray-300 px-4 py-2 w-16">行次</th>
+                        <th class="border border-gray-300 px-4 py-2 w-40">本期金额</th>
+                        <th class="border border-gray-300 px-4 py-2 w-40">本年累计金额</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <template v-for="(section, sectionIndex) in cashFlowData" :key="sectionIndex">
+                        <tr>
+                            <td 
+                                class="border border-gray-300 px-4 py-2 font-bold" 
+                                :colspan="section.rightItems ? 4 : 8"
+                            >
+                                {{ section.title }}
+                            </td>
+                            <template v-if="section.rightItems">
+                                <td class="border border-gray-300 px-4 py-2"></td>
+                                <td class="border border-gray-300 px-4 py-2"></td>
+                                <td class="border border-gray-300 px-4 py-2"></td>
+                                <td class="border border-gray-300 px-4 py-2"></td>
+                            </template>
+                        </tr>
+
+                        <template v-for="(item, itemIndex) in section.leftItems" :key="`${sectionIndex}-left-${itemIndex}`">
+                            <tr>
+                                <td :class="[
+                                    'border border-gray-300 px-4 py-2',
+                                    item.isSubItem ? 'pl-8' : '',
+                                    item.isBold ? 'font-bold' : ''
+                                ]">
+                                    {{ item.name }}
+                                </td>
+                                <td class="border border-gray-300 px-4 py-2 text-center">
+                                    {{ item.rowNumber }}
+                                </td>
+                                <td class="border border-gray-300 px-4 py-2">
+                                    <input 
+                                        v-model="item.currentAmount" 
+                                        type="number"
+                                        class="w-full px-2 py-1 border rounded"
+                                        step="0.01" 
+                                        :data-field="item.field"
+                                        @input="onCurrentAmountChange"
+                                    />
+                                </td>
+                                <td class="border border-gray-300 px-4 py-2">
+                                    <span class="w-full px-2 py-1 text-right block">
+                                        {{ item.yearAmount ? item.yearAmount.toLocaleString() : '' }}
+                                    </span>
+                                </td>
+
+                                <template v-if="section.rightItems && section.rightItems[itemIndex]">
+                                    <td :class="[
+                                        'border border-gray-300 px-4 py-2',
+                                        section.rightItems[itemIndex].isSubItem ? 'pl-8' : '',
+                                        section.rightItems[itemIndex].isBold ? 'font-bold' : ''
+                                    ]">
+                                        {{ section.rightItems[itemIndex].name }}
+                                    </td>
+                                    <td class="border border-gray-300 px-4 py-2 text-center">
+                                        {{ section.rightItems[itemIndex].rowNumber }}
+                                    </td>
+                                    <td class="border border-gray-300 px-4 py-2">
+                                        <input 
+                                            v-model="section.rightItems[itemIndex].currentAmount" 
+                                            type="number"
+                                            class="w-full px-2 py-1 border rounded"
+                                            step="0.01" 
+                                            :data-field="section.rightItems[itemIndex].field"
+                                            @input="onCurrentAmountChange"
+                                        />
+                                    </td>
+                                    <td class="border border-gray-300 px-4 py-2">
+                                        <span class="w-full px-2 py-1 text-right block">
+                                            {{ section.rightItems[itemIndex].yearAmount ? section.rightItems[itemIndex].yearAmount.toLocaleString() : '' }}
+                                        </span>
+                                    </td>
+                                </template>
+                                <template v-else>
+                                    <td class="border border-gray-300 px-4 py-2"></td>
+                                    <td class="border border-gray-300 px-4 py-2"></td>
+                                    <td class="border border-gray-300 px-4 py-2"></td>
+                                    <td class="border border-gray-300 px-4 py-2"></td>
+                                </template>
+                            </tr>
+                        </template>
+
+                        <template v-if="section.rightItems && section.rightItems.length > section.leftItems.length">
+                            <template v-for="(item, itemIndex) in section.rightItems.slice(section.leftItems.length)" :key="`${sectionIndex}-right-${itemIndex + section.leftItems.length}`">
+                                <tr>
+                                    <td class="border border-gray-300 px-4 py-2"></td>
+                                    <td class="border border-gray-300 px-4 py-2"></td>
+                                    <td class="border border-gray-300 px-4 py-2"></td>
+                                    <td class="border border-gray-300 px-4 py-2"></td>
+                                    <td :class="[
+                                        'border border-gray-300 px-4 py-2',
+                                        item.isSubItem ? 'pl-8' : '',
+                                        item.isBold ? 'font-bold' : ''
+                                    ]">
+                                        {{ item.name }}
+                                    </td>
+                                    <td class="border border-gray-300 px-4 py-2 text-center">
+                                        {{ item.rowNumber }}
+                                    </td>
+                                    <td class="border border-gray-300 px-4 py-2">
+                                        <input 
+                                            v-model="item.currentAmount" 
+                                            type="number"
+                                            class="w-full px-2 py-1 border rounded"
+                                            step="0.01" 
+                                            :data-field="item.field"
+                                            @input="onCurrentAmountChange"
+                                        />
+                                    </td>
+                                    <td class="border border-gray-300 px-4 py-2">
+                                        <span class="w-full px-2 py-1 text-right block">
+                                            {{ item.yearAmount ? item.yearAmount.toLocaleString() : '' }}
+                                        </span>
+                                    </td>
+                                </tr>
+                            </template>
+                        </template>
+                    </template>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="mt-4 flex justify-end space-x-4">
+           
+            <button @click="handleSave" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                保存
+            </button>
+            <button @click="handleReset" class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600">
+                重置
+            </button>
+        </div>
+
+        <FormAttachmentAndRemarks
+          :module-id="moduleId"
+          :period="period"
+          v-model:remarks="remarks"
+          v-model:suggestions="suggestions"
+        />
     </div>
 </template>
 
@@ -219,8 +176,81 @@ const moduleId = MODULE_IDS.TUOYUAN_CASH_FLOW
 const remarks = ref('')
 const suggestions = ref('')
 
+let calculateTimeout: NodeJS.Timeout | null = null
+
+const onCurrentAmountChange = () => {
+    if (calculateTimeout) {
+        clearTimeout(calculateTimeout)
+    }
+    calculateTimeout = setTimeout(() => {
+        calculateYearAmounts(period.value)
+    }, 1000)
+}
+
+const calculateYearAmounts = async (targetPeriod: string) => {
+    try {
+        const currentYear = targetPeriod.substring(0, 4)
+        const currentMonth = parseInt(targetPeriod.substring(5, 7))
+        
+        console.log(`计算${currentYear}年累计金额，截止到${currentMonth}月`)
+        
+        const yearAmounts: { [key: string]: number } = {}
+        
+        for (let month = 1; month <= currentMonth; month++) {
+            const monthPeriod = `${currentYear}-${month.toString().padStart(2, '0')}`
+            
+            try {
+                const response = await fetch(`http://127.0.0.1:3000/changzhou-tuoyuan-cash-flow/${monthPeriod}`)
+                if (response.ok) {
+                    const result = await response.json()
+                    if (result.success && result.data) {
+                        let parsedData
+                        if (typeof result.data === 'string') {
+                            parsedData = JSON.parse(result.data)
+                            if (typeof parsedData === 'string') {
+                                parsedData = JSON.parse(parsedData)
+                            }
+                        } else {
+                            parsedData = result.data
+                        }
+                        
+                        Object.keys(parsedData).forEach(key => {
+                            const currentAmount = parsedData[key].current_amount
+                            if (currentAmount && !isNaN(currentAmount)) {
+                                yearAmounts[key] = (yearAmounts[key] || 0) + parseFloat(currentAmount)
+                            }
+                        })
+                    }
+                }
+            } catch (error) {
+                console.warn(`无法获取${monthPeriod}的数据:`, error)
+            }
+        }
+        
+        cashFlowData.value.forEach(section => {
+            section.leftItems.forEach(item => {
+                if (yearAmounts[item.field] !== undefined) {
+                    item.yearAmount = yearAmounts[item.field]
+                }
+            })
+            if (section.rightItems) {
+                section.rightItems.forEach(item => {
+                    if (yearAmounts[item.field] !== undefined) {
+                        item.yearAmount = yearAmounts[item.field]
+                    }
+                })
+            }
+        })
+        
+        console.log('本年累计金额计算完成:', yearAmounts)
+        
+    } catch (error) {
+        console.error('计算本年累计金额失败:', error)
+    }
+}
+
 // 加载数据
-const loadData = async (targetPeriod: string) => {
+const loadData = async (targetPeriod: string): Promise<void> => {
     try {
         console.log(`正在加载常州拓源现金流量表数据，期间: ${targetPeriod}`)
         
@@ -238,9 +268,24 @@ const loadData = async (targetPeriod: string) => {
         
         if (result.success && result.data) {
             console.log('成功获取数据，开始恢复...')
-            // 解析JSON字符串
-            const parsedData = typeof result.data === 'string' ? JSON.parse(result.data) : result.data
-            console.log('解析后的数据:', parsedData)
+            
+            let parsedData
+            try {
+                // 处理可能的双重JSON编码
+                if (typeof result.data === 'string') {
+                    parsedData = JSON.parse(result.data)
+                    // 如果解析结果仍然是字符串，说明有双重编码
+                    if (typeof parsedData === 'string') {
+                        parsedData = JSON.parse(parsedData)
+                    }
+                } else {
+                    parsedData = result.data
+                }
+                console.log('解析后的数据:', parsedData)
+            } catch (error) {
+                console.error('数据解析失败:', error)
+                return
+            }
             
             // 将数据恢复到表单中
             Object.keys(parsedData).forEach(key => {
@@ -263,14 +308,18 @@ const loadData = async (targetPeriod: string) => {
 watch(() => route.query.period, (newPeriod) => {
     if (newPeriod) {
         period.value = newPeriod.toString()
-        loadData(newPeriod.toString())
+        loadData(newPeriod.toString()).then(() => {
+            calculateYearAmounts(newPeriod.toString())
+        })
         loadRemarksData()
     }
 })
 
 // 监听期间变化
 watch(period, (newPeriod) => {
-    loadData(newPeriod)
+    loadData(newPeriod).then(() => {
+        calculateYearAmounts(newPeriod)
+    })
     loadRemarksData()
 })
 
@@ -297,26 +346,26 @@ const handleSave = async () => {
         // 记录表单提交
         await recordFormSubmission(moduleId, period.value, dataToSave, remarks.value, suggestions.value)
 
-        // 显示成功提示
-        showSuccessMessage('数据保存成功！')
+        alert('保存成功')
     } catch (error) {
         console.error('保存失败:', error)
-        showErrorMessage('保存失败: ' + (error instanceof Error ? error.message : '未知错误'))
+        alert('保存失败: ' + (error instanceof Error ? error.message : '未知错误'))
     }
 }
 
-
-
-// 显示成功消息
-const showSuccessMessage = (message: string) => {
-    // 这里可以集成更好的通知组件，暂时使用alert
-    alert(`✅ ${message}`)
-}
-
-// 显示错误消息
-const showErrorMessage = (message: string) => {
-    // 这里可以集成更好的通知组件，暂时使用alert
-    alert(`❌ ${message}`)
+const handleReset = () => {
+    cashFlowData.value.forEach(section => {
+        section.leftItems.forEach(item => {
+            item.currentAmount = null
+            item.yearAmount = null
+        })
+        if (section.rightItems) {
+            section.rightItems.forEach(item => {
+                item.currentAmount = null
+                item.yearAmount = null
+            })
+        }
+    })
 }
 
 // 加载备注和建议
@@ -326,59 +375,20 @@ const loadRemarksData = async () => {
   suggestions.value = loadedSuggestions
 }
 
-onMounted(() => {
+onMounted(async () => {
     console.log('常州拓源现金流量表组件挂载，当前期间:', period.value)
     // 加载当前期间的数据
     if (route.query.period) {
-        loadData(route.query.period.toString())
+        await loadData(route.query.period.toString())
+        await calculateYearAmounts(route.query.period.toString())
     } else {
-        loadData(period.value)
+        await loadData(period.value)
+        await calculateYearAmounts(period.value)
     }
     loadRemarksData()
 })
 </script>
 
 <style scoped>
-/* 自定义样式 */
-.bg-gray-25 {
-    background-color: #fafafa;
-}
-
-/* 输入框聚焦效果 */
-input[type="number"]:focus {
-    outline: none;
-    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
-}
-
-/* 表格行hover效果 */
-tbody tr:hover {
-    background-color: rgba(59, 130, 246, 0.02);
-}
-
-/* 粗体项目特殊样式 */
-.font-bold {
-    background-color: rgba(243, 244, 246, 0.5);
-}
-
-/* 响应式优化 */
-@media (max-width: 1200px) {
-    .max-w-\[1400px\] {
-        max-width: 100%;
-    }
-}
-
-/* 打印样式 */
-@media print {
-    .bg-gradient-to-r {
-        background: #f8fafc !important;
-    }
-    
-    button {
-        display: none !important;
-    }
-    
-    .shadow-md {
-        box-shadow: none !important;
-    }
-}
+/* 可以添加需要的样式 */
 </style> 

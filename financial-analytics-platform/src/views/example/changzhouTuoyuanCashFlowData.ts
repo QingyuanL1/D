@@ -498,7 +498,7 @@ export const useChangzhouTuoyuanCashFlowData = () => {
     ])
 
     // 将当前数据转换为可存储格式
-    const convertToStorageFormat = (period: string): CashFlowStatement => {
+    const convertToStorageFormat = (period: string) => {
         const formData: CashFlowFormData = {}
         
         cashFlowData.value.forEach(section => {
@@ -520,13 +520,19 @@ export const useChangzhouTuoyuanCashFlowData = () => {
 
         return {
             period,
-            data: JSON.stringify(formData)
+            data: formData
         }
     }
 
     // 从存储格式恢复数据
     const restoreFromStorageFormat = (statement: CashFlowStatement) => {
-        const formData: CashFlowFormData = JSON.parse(statement.data)
+        let formData: CashFlowFormData
+        
+        if (typeof statement.data === 'string') {
+            formData = JSON.parse(statement.data)
+        } else {
+            formData = statement.data
+        }
         
         cashFlowData.value.forEach(section => {
             section.leftItems.forEach(item => {

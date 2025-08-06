@@ -10,6 +10,7 @@ export interface ShanghaiNanhuaLanlingCashFlowItem {
     isBold?: boolean
     lineNumber?: string
     isTitle?: boolean
+    isCalculated?: boolean // 标记累计值是否由系统自动计算
 }
 
 export interface ShanghaiNanhuaLanlingCashFlowSection {
@@ -528,7 +529,7 @@ export const useShanghaiNanhuaLanlingCashFlowData = () => {
 
     // 从存储格式恢复数据
     const restoreFromStorageFormat = (statement: CashFlowStatement) => {
-        const formData: CashFlowFormData = JSON.parse(statement.data)
+        const formData: CashFlowFormData = typeof statement.data === 'string' ? JSON.parse(statement.data) : statement.data
         
         // 恢复主要数据和补充数据
         const allData = [...cashFlowData.value, ...supplementaryData.value]
