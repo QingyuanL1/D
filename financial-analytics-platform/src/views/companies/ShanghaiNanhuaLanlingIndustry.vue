@@ -942,11 +942,11 @@ const fetchNanhuaBusinessIncomeData = async () => {
     
     const result = await response.json()
     if (result.success && result.data && result.data.customers) {
-      // 计算总累计收入
-      const totalAccumulated = result.data.customers.reduce((sum: number, customer: any) => {
-        return sum + (customer.accumulated || 0)
+      // 计算总当期收入（基于订单转收入的实时计算）
+      const totalCurrent = result.data.customers.reduce((sum: number, customer: any) => {
+        return sum + (customer.current || 0)
       }, 0)
-      nanhuaBusinessIncomeRate.value = totalAccumulated
+      nanhuaBusinessIncomeRate.value = totalCurrent
     } else {
       console.warn('南华营业收入数据获取失败:', result.message)
       nanhuaBusinessIncomeRate.value = 0
