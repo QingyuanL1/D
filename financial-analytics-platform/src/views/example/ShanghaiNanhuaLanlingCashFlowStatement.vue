@@ -129,7 +129,7 @@
 <script lang="ts" setup>
 import { ref, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useShanghaiNanhuaLanlingCashFlowData } from './shanghaiNanhuaLanlingCashFlowData'
+import { useShanghaiNanhuaLanlingCashFlowData } from '@/views/companies/financial-reports/shanghaiNanhuaLanlingCashFlowData'
 import FormAttachmentAndRemarks from '@/components/FormAttachmentAndRemarks.vue'
 import { recordFormSubmission, loadRemarksAndSuggestions, MODULE_IDS } from '@/utils/formSubmissionHelper'
 
@@ -234,7 +234,23 @@ const loadData = async (targetPeriod: string) => {
         const response = await fetch(`http://127.0.0.1:3000/shanghai-nanhua-lanling-cash-flow/${targetPeriod}`)
         if (!response.ok) {
             if (response.status === 404) {
-                console.log('该期间暂无数据，使用初始模板')
+                console.log('该期间暂无数据，清空表单')
+                // 清空主表数据
+                cashFlowData.value.forEach(section => {
+                    section.items.forEach(item => {
+                        item.currentAmount = null
+                        item.yearAmount = null
+                        item.isCalculated = false
+                    })
+                })
+                // 清空补充资料数据
+                supplementaryData.value.forEach(section => {
+                    section.items.forEach(item => {
+                        item.currentAmount = null
+                        item.yearAmount = null
+                        item.isCalculated = false
+                    })
+                })
                 // 自动计算累计值
                 setTimeout(() => {
                     calculateCumulative()

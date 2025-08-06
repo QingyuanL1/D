@@ -34,13 +34,14 @@
                                     {{ item.name }}
                                 </td>
                                 <td class="border border-gray-300 px-4 py-2">
-                                    <input v-model="item.currentAmount" type="number"
-                                        class="w-full px-2 py-1 border rounded" step="0.01" :data-field="item.field" />
+                                    <input v-model.number="item.currentAmount" type="number"
+                                        class="w-full px-2 py-1 border rounded" step="0.01" :data-field="item.field" 
+                                        placeholder="0" @input="onCurrentAmountChange" />
                                 </td>
                                 <td class="border border-gray-300 px-4 py-2">
-                                    <input v-model="item.yearAmount" type="number"
-                                        class="w-full px-2 py-1 border rounded" step="0.01"
-                                        :data-field="`${item.field}_year`" />
+                                    <span class="w-full px-2 py-1 text-right block">
+                                        {{ item.yearAmount !== null && item.yearAmount !== undefined ? item.yearAmount.toLocaleString() : '' }}
+                                    </span>
                                 </td>
                             </tr>
                         </template>
@@ -71,7 +72,7 @@
 <script lang="ts" setup>
 import { ref, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useIncomeStatementData } from './incomeStatementData'
+import { useIncomeStatementData } from './ShanghaiincomeStatementData'
 import FormAttachmentAndRemarks from '@/components/FormAttachmentAndRemarks.vue'
 import { recordFormSubmission, loadRemarksAndSuggestions, MODULE_IDS } from '@/utils/formSubmissionHelper'
 
@@ -92,7 +93,13 @@ const loadData = async (targetPeriod: string) => {
       return
     }
 
-    const response = await fetch(`http://127.0.0.1:3000/financial-reports/nanhua/income-statement/${targetPeriod}`, {
+    console.log(`正在加载上海南华兰陵利润表数据，期间: ${targetPeriod}`)
+    
+    // 首先清空所有本期金额，累计金额将重新计算
+    resetAllAmounts()
+    console.log('已清空本期金额，准备加载新数据')
+
+    const response = await fetch(`http://127.0.0.1:3000/shanghai-nanhua-lanling-income-statement/${targetPeriod}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -101,29 +108,129 @@ const loadData = async (targetPeriod: string) => {
     })
 
     if (!response.ok) {
-      if (response.status !== 404) { // 404是正常的（新建报表时）
+      if (response.status === 404) {
+        console.log('该期间暂无数据，使用初始模板')
+        // 即使没有数据，也要重新计算累计金额
+        await calculateYearAmounts(targetPeriod)
+        return
+      } else {
         throw new Error(`加载数据失败: ${response.status} ${response.statusText}`)
       }
-      return
     }
+    
     const result = await response.json()
-    if (result.data && Object.keys(result.data).length > 0) {
+    console.log('API返回数据:', result)
+    
+    if (result.success && result.data && Object.keys(result.data).length > 0) {
+      console.log('成功获取数据，开始恢复...')
+      
       // 解析JSON字符串
-      const parsedData = typeof result.data === 'string' ? JSON.parse(result.data) : result.data
+      let parsedData
+      try {
+        // 处理可能的双重JSON编码
+        if (typeof result.data === 'string') {
+          parsedData = JSON.parse(result.data)
+          if (typeof parsedData === 'string') {
+            parsedData = JSON.parse(parsedData)
+          }
+        } else {
+          parsedData = result.data
+        }
+        console.log('解析后的数据:', parsedData)
+      } catch (error) {
+        console.error('数据解析失败:', error)
+        return
+      }
+      
       // 将数据恢复到表单中
       Object.keys(parsedData).forEach(key => {
         const item = incomeStatementData.value.flatMap(section => section.items)
           .find(item => item.field === key)
         if (item) {
-          item.currentAmount = parsedData[key].current_amount
-          item.yearAmount = parsedData[key].year_amount
+          // 只恢复本期金额，累计金额将通过calculateYearAmounts重新计算
+          item.currentAmount = parsedData[key].current_amount !== null ? 
+            parsedData[key].current_amount : null
+          console.log(`恢复字段 ${key} 本期金额:`, parsedData[key].current_amount)
         }
       })
+      console.log('数据恢复完成')
     } else {
       console.log('该期间暂无数据，使用初始模板')
     }
+    
+    // 计算累计金额
+    await calculateYearAmounts(targetPeriod)
+    
   } catch (error) {
     console.error('加载数据失败:', error)
+  }
+}
+
+// 重置本期金额为null，累计金额保持不变（将通过calculateYearAmounts重新计算）
+const resetAllAmounts = () => {
+  incomeStatementData.value.forEach(section => {
+    section.items.forEach(item => {
+      item.currentAmount = null
+    })
+  })
+}
+
+// 计算累计金额
+const calculateYearAmounts = async (targetPeriod: string) => {
+  try {
+    const currentYear = targetPeriod.substring(0, 4)
+    const currentMonth = parseInt(targetPeriod.substring(5, 7))
+    
+    console.log(`计算${currentYear}年累计金额，截止到${currentMonth}月`)
+    
+    const yearAmounts: { [key: string]: number } = {}
+    
+    for (let month = 1; month <= currentMonth; month++) {
+      const monthPeriod = `${currentYear}-${month.toString().padStart(2, '0')}`
+      
+      try {
+                 const response = await fetch(`http://127.0.0.1:3000/shanghai-nanhua-lanling-income-statement/${monthPeriod}`)
+        if (response.ok) {
+          const result = await response.json()
+          if (result.success && result.data) {
+            let parsedData
+            if (typeof result.data === 'string') {
+              parsedData = JSON.parse(result.data)
+              if (typeof parsedData === 'string') {
+                parsedData = JSON.parse(parsedData)
+              }
+            } else {
+              parsedData = result.data
+            }
+            
+            Object.keys(parsedData).forEach(key => {
+              const currentAmount = parsedData[key].current_amount
+              if (currentAmount !== null && currentAmount !== undefined && !isNaN(currentAmount)) {
+                yearAmounts[key] = (yearAmounts[key] || 0) + parseFloat(currentAmount)
+              }
+            })
+          }
+        }
+      } catch (error) {
+        console.warn(`无法获取${monthPeriod}的数据:`, error)
+      }
+    }
+    
+    // 更新累计金额
+    incomeStatementData.value.forEach(section => {
+      section.items.forEach(item => {
+        if (yearAmounts.hasOwnProperty(item.field)) {
+          item.yearAmount = yearAmounts[item.field]
+        } else {
+          item.yearAmount = 0
+        }
+      })
+    })
+    
+    console.log('本年累计金额计算完成:', yearAmounts)
+    
+  } catch (error) {
+    console.error('计算本年累计金额失败:', error)
   }
 }
 
@@ -133,6 +240,19 @@ const handlePeriodChange = () => {
     query: { ...route.query, period: period.value }
   })
   loadData(period.value)
+  loadRemarksData()
+}
+
+// 当本期金额变化时重新计算累计金额
+let calculateTimeout: NodeJS.Timeout | null = null
+
+const onCurrentAmountChange = () => {
+  if (calculateTimeout) {
+    clearTimeout(calculateTimeout)
+  }
+  calculateTimeout = setTimeout(() => {
+    calculateYearAmounts(period.value)
+  }, 1000)
 }
 
 // 监听路由参数变化
@@ -140,6 +260,7 @@ watch(() => route.query.period, (newPeriod) => {
   if (newPeriod) {
     period.value = newPeriod.toString()
     loadData(newPeriod.toString())
+    loadRemarksData()
   }
 })
 
@@ -147,7 +268,7 @@ const handleSave = async () => {
   try {
     const dataToSave = convertToStorageFormat(period.value)
 
-    const response = await fetch('http://127.0.0.1:3000/financial-reports/nanhua/income-statement', {
+    const response = await fetch('http://127.0.0.1:3000/shanghai-nanhua-lanling-income-statement', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'

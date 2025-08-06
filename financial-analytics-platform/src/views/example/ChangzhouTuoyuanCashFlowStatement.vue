@@ -12,11 +12,9 @@
                 <thead class="sticky top-0 bg-white">
                     <tr class="bg-gray-50">
                         <th class="border border-gray-300 px-4 py-2 w-60">项目</th>
-                        <th class="border border-gray-300 px-4 py-2 w-16">行次</th>
                         <th class="border border-gray-300 px-4 py-2 w-40">本期金额</th>
                         <th class="border border-gray-300 px-4 py-2 w-40">本年累计金额</th>
                         <th class="border border-gray-300 px-4 py-2 w-60">项目</th>
-                        <th class="border border-gray-300 px-4 py-2 w-16">行次</th>
                         <th class="border border-gray-300 px-4 py-2 w-40">本期金额</th>
                         <th class="border border-gray-300 px-4 py-2 w-40">本年累计金额</th>
                     </tr>
@@ -164,8 +162,8 @@
 <script lang="ts" setup>
 import { ref, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import { useChangzhouTuoyuanCashFlowData } from './changzhouTuoyuanCashFlowData'
-import type { CashFlowStatement } from './types/cashFlow'
+import { useChangzhouTuoyuanCashFlowData } from '@/views/companies/financial-reports/changzhouTuoyuanCashFlowData'
+import type { CashFlowStatement } from '@/views/companies/financial-reports/types/cashFlow'
 import FormAttachmentAndRemarks from '@/components/FormAttachmentAndRemarks.vue'
 import { recordFormSubmission, loadRemarksAndSuggestions, MODULE_IDS } from '@/utils/formSubmissionHelper'
 
@@ -257,7 +255,20 @@ const loadData = async (targetPeriod: string): Promise<void> => {
         const response = await fetch(`http://127.0.0.1:3000/changzhou-tuoyuan-cash-flow/${targetPeriod}`)
         if (!response.ok) {
             if (response.status === 404) {
-                console.log('该期间暂无数据，使用初始模板')
+                console.log('该期间暂无数据，清空表单')
+                // 清空表单数据
+                cashFlowData.value.forEach(section => {
+                    section.leftItems.forEach(item => {
+                        item.currentAmount = null
+                        item.yearAmount = null
+                    })
+                    if (section.rightItems) {
+                        section.rightItems.forEach(item => {
+                            item.currentAmount = null
+                            item.yearAmount = null
+                        })
+                    }
+                })
                 return
             }
             throw new Error('加载数据失败')

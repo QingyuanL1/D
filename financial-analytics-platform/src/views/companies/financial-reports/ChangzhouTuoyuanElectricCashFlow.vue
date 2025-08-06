@@ -1,7 +1,7 @@
 <template>
     <div class="max-w-[1200px] mx-auto bg-white rounded-lg shadow-lg p-6">
         <div class="flex justify-between items-center mb-6">
-            <h1 class="text-2xl font-bold">常州拓源电气有限公司 - 现金流量表(主表)（单位：万元）</h1>
+            <h1 class="text-2xl font-bold">现金流量表（常州拓源电气有限公司）（单位：元）</h1>
             <div class="flex items-center space-x-4">
                 <input v-model="period" type="month" class="px-3 py-2 border rounded" />
             </div>
@@ -11,39 +11,123 @@
             <table class="w-full border-collapse border border-gray-300">
                 <thead class="sticky top-0 bg-white">
                     <tr class="bg-gray-50">
-                        <th class="border border-gray-300 px-4 py-2">项目</th>
+                        <th class="border border-gray-300 px-4 py-2 w-60">项目</th>
                         <th class="border border-gray-300 px-4 py-2 w-40">本期金额</th>
-                        <th class="border border-gray-300 px-4 py-2 w-40">本年累计</th>
+                        <th class="border border-gray-300 px-4 py-2 w-40">本年累计金额</th>
+                        <th class="border border-gray-300 px-4 py-2 w-60">项目</th>
+                        <th class="border border-gray-300 px-4 py-2 w-40">本期金额</th>
+                        <th class="border border-gray-300 px-4 py-2 w-40">本年累计金额</th>
                     </tr>
                 </thead>
                 <tbody>
                     <template v-for="(section, sectionIndex) in cashFlowData" :key="sectionIndex">
                         <tr>
-                            <td class="border border-gray-300 px-4 py-2 font-bold">
+                            <td 
+                                class="border border-gray-300 px-4 py-2 font-bold" 
+                                :colspan="section.rightItems ? 3 : 6"
+                            >
                                 {{ section.title }}
                             </td>
-                            <td class="border border-gray-300 px-4 py-2"></td>
-                            <td class="border border-gray-300 px-4 py-2"></td>
+                            <template v-if="section.rightItems">
+                                <td class="border border-gray-300 px-4 py-2"></td>
+                                <td class="border border-gray-300 px-4 py-2"></td>
+                                <td class="border border-gray-300 px-4 py-2"></td>
+                            </template>
                         </tr>
 
-                        <!-- 章节内容 -->
-                        <template v-for="(item, itemIndex) in section.items" :key="`${sectionIndex}-${itemIndex}`">
+                        <template v-for="(item, itemIndex) in section.leftItems" :key="`${sectionIndex}-left-${itemIndex}`">
                             <tr>
-                                <td :class="['border border-gray-300 px-4 py-2',
+                                <td :class="[
+                                    'border border-gray-300 px-4 py-2',
                                     item.isSubItem ? 'pl-8' : '',
-                                    item.isBold ? 'font-bold' : '']">
+                                    item.isBold ? 'font-bold' : ''
+                                ]">
                                     {{ item.name }}
                                 </td>
+                             
                                 <td class="border border-gray-300 px-4 py-2">
-                                    <input v-model="item.currentAmount" type="number"
-                                        class="w-full px-2 py-1 border rounded" step="0.01" :data-field="item.field" />
+                                    <input 
+                                        v-model.number="item.currentAmount" 
+                                        type="number"
+                                        class="w-full px-2 py-1 border rounded"
+                                        step="0.01" 
+                                        :data-field="item.field"
+                                        @input="onCurrentAmountChange"
+                                        placeholder="0"
+                                    />
                                 </td>
                                 <td class="border border-gray-300 px-4 py-2">
-                                    <input v-model="item.yearAmount" type="number"
-                                        class="w-full px-2 py-1 border rounded" step="0.01"
-                                        :data-field="`${item.field}_year`" />
+                                    <span class="w-full px-2 py-1 text-right block">
+                                        {{ item.yearAmount !== null && item.yearAmount !== undefined ? item.yearAmount.toLocaleString() : '' }}
+                                    </span>
                                 </td>
+
+                                <template v-if="section.rightItems && section.rightItems[itemIndex]">
+                                    <td :class="[
+                                        'border border-gray-300 px-4 py-2',
+                                        section.rightItems[itemIndex].isSubItem ? 'pl-8' : '',
+                                        section.rightItems[itemIndex].isBold ? 'font-bold' : ''
+                                    ]">
+                                        {{ section.rightItems[itemIndex].name }}
+                                    </td>
+                              
+                                    <td class="border border-gray-300 px-4 py-2">
+                                        <input 
+                                            v-model.number="section.rightItems[itemIndex].currentAmount" 
+                                            type="number"
+                                            class="w-full px-2 py-1 border rounded"
+                                            step="0.01" 
+                                            :data-field="section.rightItems[itemIndex].field"
+                                            @input="onCurrentAmountChange"
+                                            placeholder="0"
+                                        />
+                                    </td>
+                                    <td class="border border-gray-300 px-4 py-2">
+                                        <span class="w-full px-2 py-1 text-right block">
+                                            {{ section.rightItems[itemIndex].yearAmount !== null && section.rightItems[itemIndex].yearAmount !== undefined ? section.rightItems[itemIndex].yearAmount.toLocaleString() : '' }}
+                                        </span>
+                                    </td>
+                                </template>
+                                <template v-else>
+                                    <td class="border border-gray-300 px-4 py-2"></td>
+                                    <td class="border border-gray-300 px-4 py-2"></td>
+                                    <td class="border border-gray-300 px-4 py-2"></td>
+                                </template>
                             </tr>
+                        </template>
+
+                        <template v-if="section.rightItems && section.rightItems.length > section.leftItems.length">
+                            <template v-for="(item, itemIndex) in section.rightItems.slice(section.leftItems.length)" :key="`${sectionIndex}-right-${itemIndex + section.leftItems.length}`">
+                                <tr>
+                                    <td class="border border-gray-300 px-4 py-2"></td>
+                                    <td class="border border-gray-300 px-4 py-2"></td>
+                                    <td class="border border-gray-300 px-4 py-2"></td>
+                                    <td :class="[
+                                        'border border-gray-300 px-4 py-2',
+                                        item.isSubItem ? 'pl-8' : '',
+                                        item.isBold ? 'font-bold' : ''
+                                    ]">
+                                        {{ item.name }}
+                                    </td>
+                                    
+                                    <td class="border border-gray-300 px-4 py-2">
+                                        <input 
+                                            v-model.number="item.currentAmount" 
+                                            type="number"
+                                            class="w-full px-2 py-1 border rounded"
+                                            step="0.01" 
+                                            :data-field="item.field"
+                                            @input="onCurrentAmountChange"
+                                            placeholder="0"
+                                        />
+                                    </td>
+                                    <td class="border border-gray-300 px-4 py-2">
+                                        <span class="w-full px-2 py-1 text-right block">
+                                            {{ item.yearAmount !== null && item.yearAmount !== undefined ? item.yearAmount.toLocaleString() : '' }}
+                                        </span>
+                                    </td>
+                                </tr>
+                            </template>
                         </template>
                     </template>
                 </tbody>
@@ -51,6 +135,7 @@
         </div>
 
         <div class="mt-4 flex justify-end space-x-4">
+           
             <button @click="handleSave" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
                 保存
             </button>
@@ -59,7 +144,6 @@
             </button>
         </div>
 
-        <!-- 附件和备注组件 -->
         <FormAttachmentAndRemarks
           :module-id="moduleId"
           :period="period"
@@ -72,85 +156,191 @@
 <script lang="ts" setup>
 import { ref, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import { useCashFlowData } from './cashFlowData'
+import { useChangzhouTuoyuanCashFlowData } from './changzhouTuoyuanCashFlowData'
 import type { CashFlowStatement } from './types/cashFlow'
 import FormAttachmentAndRemarks from '@/components/FormAttachmentAndRemarks.vue'
 import { recordFormSubmission, loadRemarksAndSuggestions, MODULE_IDS } from '@/utils/formSubmissionHelper'
 
 const route = useRoute()
 const period = ref(route.query.period?.toString() || new Date().toISOString().slice(0, 7))
-const { cashFlowData, convertToStorageFormat, restoreFromStorageFormat } = useCashFlowData()
+const { cashFlowData, convertToStorageFormat, restoreFromStorageFormat } = useChangzhouTuoyuanCashFlowData()
 const moduleId = MODULE_IDS.TUOYUAN_CASH_FLOW
 const remarks = ref('')
 const suggestions = ref('')
 
-// 加载数据
-const loadData = async (targetPeriod: string) => {
+let calculateTimeout: NodeJS.Timeout | null = null
+
+const onCurrentAmountChange = () => {
+    if (calculateTimeout) {
+        clearTimeout(calculateTimeout)
+    }
+    calculateTimeout = setTimeout(() => {
+        calculateYearAmounts(period.value)
+    }, 1000)
+}
+
+const calculateYearAmounts = async (targetPeriod: string) => {
     try {
-        console.log(`正在加载现金流量表数据，期间: ${targetPeriod}`)
-
-        // 验证期间格式
-        if (!targetPeriod || targetPeriod === 'undefined' || !/^\d{4}-\d{2}$/.test(targetPeriod)) {
-            console.error('无效的期间格式:', targetPeriod)
-            return
+        const currentYear = targetPeriod.substring(0, 4)
+        const currentMonth = parseInt(targetPeriod.substring(5, 7))
+        
+        console.log(`计算${currentYear}年累计金额，截止到${currentMonth}月`)
+        
+        const yearAmounts: { [key: string]: number } = {}
+        
+        for (let month = 1; month <= currentMonth; month++) {
+            const monthPeriod = `${currentYear}-${month.toString().padStart(2, '0')}`
+            
+            try {
+                const response = await fetch(`http://127.0.0.1:3000/changzhou-tuoyuan-cash-flow/${monthPeriod}`)
+                if (response.ok) {
+                    const result = await response.json()
+                    if (result.success && result.data) {
+                        let parsedData
+                        if (typeof result.data === 'string') {
+                            parsedData = JSON.parse(result.data)
+                            if (typeof parsedData === 'string') {
+                                parsedData = JSON.parse(parsedData)
+                            }
+                        } else {
+                            parsedData = result.data
+                        }
+                        
+                        Object.keys(parsedData).forEach(key => {
+                            const currentAmount = parsedData[key].current_amount
+                            if (currentAmount !== null && currentAmount !== undefined && !isNaN(currentAmount)) {
+                                yearAmounts[key] = (yearAmounts[key] || 0) + parseFloat(currentAmount)
+                            }
+                        })
+                    }
+                }
+            } catch (error) {
+                console.warn(`无法获取${monthPeriod}的数据:`, error)
+            }
         }
-
-        const response = await fetch(`http://127.0.0.1:3000/financial-reports/tuoyuan/cash-flow/${targetPeriod}`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            signal: AbortSignal.timeout(10000) // 10秒超时
+        
+        cashFlowData.value.forEach(section => {
+            section.leftItems.forEach(item => {
+                if (yearAmounts.hasOwnProperty(item.field)) {
+                    item.yearAmount = yearAmounts[item.field]
+                } else {
+                    item.yearAmount = 0
+                }
+            })
+            if (section.rightItems) {
+                section.rightItems.forEach(item => {
+                    if (yearAmounts.hasOwnProperty(item.field)) {
+                        item.yearAmount = yearAmounts[item.field]
+                    } else {
+                        item.yearAmount = 0
+                    }
+                })
+            }
         })
+        
+        console.log('本年累计金额计算完成:', yearAmounts)
+        
+    } catch (error) {
+        console.error('计算本年累计金额失败:', error)
+    }
+}
 
+// 加载数据
+const loadData = async (targetPeriod: string): Promise<void> => {
+    try {
+        console.log(`正在加载常州拓源现金流量表数据，期间: ${targetPeriod}`)
+        
+        // 首先清空所有本期金额，累计金额将重新计算
+        resetCurrentAmounts()
+        console.log('已清空本期金额，准备加载新数据')
+        
+        const response = await fetch(`http://127.0.0.1:3000/changzhou-tuoyuan-cash-flow/${targetPeriod}`)
         if (!response.ok) {
             if (response.status === 404) {
                 console.log('该期间暂无数据，使用初始模板')
+                // 即使没有数据，也要重新计算累计金额
+                await calculateYearAmounts(targetPeriod)
                 return
             }
-            throw new Error(`加载数据失败: ${response.status} ${response.statusText}`)
+            throw new Error('加载数据失败')
         }
         
         const result = await response.json()
         console.log('API返回数据:', result)
         
-        if (result.success && result.data && Object.keys(result.data).length > 0) {
+        if (result.success && result.data) {
             console.log('成功获取数据，开始恢复...')
-            // 解析JSON字符串
-            const parsedData = typeof result.data === 'string' ? JSON.parse(result.data) : result.data
-            console.log('解析后的数据:', parsedData)
-
+            
+            let parsedData
+            try {
+                // 处理可能的双重JSON编码
+                if (typeof result.data === 'string') {
+                    parsedData = JSON.parse(result.data)
+                    // 如果解析结果仍然是字符串，说明有双重编码
+                    if (typeof parsedData === 'string') {
+                        parsedData = JSON.parse(parsedData)
+                    }
+                } else {
+                    parsedData = result.data
+                }
+                console.log('解析后的数据:', parsedData)
+            } catch (error) {
+                console.error('数据解析失败:', error)
+                return
+            }
+            
             // 将数据恢复到表单中
             Object.keys(parsedData).forEach(key => {
-                const item = cashFlowData.value.flatMap(section => section.items)
+                const item = cashFlowData.value.flatMap(section => [...section.leftItems, ...(section.rightItems || [])])
                     .find(item => item.field === key)
                 if (item) {
-                    item.currentAmount = parsedData[key].current_amount
-                    item.yearAmount = parsedData[key].year_amount
-                    console.log(`恢复字段 ${key}:`, parsedData[key])
+                    // 只恢复本期金额，累计金额将通过calculateYearAmounts重新计算
+                    item.currentAmount = parsedData[key].current_amount !== null ? 
+                        parsedData[key].current_amount : null
+                    console.log(`恢复字段 ${key} 本期金额:`, parsedData[key].current_amount)
                 }
             })
             console.log('数据恢复完成')
-        } else {
-            console.log('该期间暂无数据，使用初始模板')
         }
+        
+        // 重新计算累计金额
+        await calculateYearAmounts(targetPeriod)
+        
     } catch (error) {
         console.error('加载数据失败:', error)
     }
+}
+
+// 重置本期金额为null，累计金额保持不变（将通过calculateYearAmounts重新计算）
+const resetCurrentAmounts = () => {
+    cashFlowData.value.forEach(section => {
+        section.leftItems.forEach(item => {
+            item.currentAmount = null
+        })
+        if (section.rightItems) {
+            section.rightItems.forEach(item => {
+                item.currentAmount = null
+            })
+        }
+    })
 }
 
 // 监听路由参数变化
 watch(() => route.query.period, (newPeriod) => {
     if (newPeriod) {
         period.value = newPeriod.toString()
-        loadData(newPeriod.toString())
+        loadData(newPeriod.toString()).then(() => {
+            calculateYearAmounts(newPeriod.toString())
+        })
         loadRemarksData()
     }
 })
 
 // 监听期间变化
 watch(period, (newPeriod) => {
-    loadData(newPeriod)
+    loadData(newPeriod).then(() => {
+        calculateYearAmounts(newPeriod)
+    })
     loadRemarksData()
 })
 
@@ -158,7 +348,7 @@ const handleSave = async () => {
     try {
         const dataToSave = convertToStorageFormat(period.value)
 
-        const response = await fetch('http://127.0.0.1:3000/financial-reports/tuoyuan/cash-flow', {
+        const response = await fetch('http://127.0.0.1:3000/changzhou-tuoyuan-cash-flow', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -186,10 +376,16 @@ const handleSave = async () => {
 
 const handleReset = () => {
     cashFlowData.value.forEach(section => {
-        section.items.forEach(item => {
+        section.leftItems.forEach(item => {
             item.currentAmount = null
             item.yearAmount = null
         })
+        if (section.rightItems) {
+            section.rightItems.forEach(item => {
+                item.currentAmount = null
+                item.yearAmount = null
+            })
+        }
     })
 }
 
@@ -200,13 +396,15 @@ const loadRemarksData = async () => {
   suggestions.value = loadedSuggestions
 }
 
-onMounted(() => {
-    console.log('现金流量表组件挂载，当前期间:', period.value)
+onMounted(async () => {
+    console.log('常州拓源现金流量表组件挂载，当前期间:', period.value)
     // 加载当前期间的数据
     if (route.query.period) {
-        loadData(route.query.period.toString())
+        await loadData(route.query.period.toString())
+        await calculateYearAmounts(route.query.period.toString())
     } else {
-        loadData(period.value)
+        await loadData(period.value)
+        await calculateYearAmounts(period.value)
     }
     loadRemarksData()
 })
@@ -214,4 +412,4 @@ onMounted(() => {
 
 <style scoped>
 /* 可以添加需要的样式 */
-</style>
+</style> 

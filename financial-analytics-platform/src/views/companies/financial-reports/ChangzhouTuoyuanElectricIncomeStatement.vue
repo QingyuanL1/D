@@ -101,10 +101,19 @@ const loadData = async (targetPeriod: string) => {
     })
 
     if (!response.ok) {
-      if (response.status !== 404) { // 404是正常的（新建报表时）
+      if (response.status === 404) {
+        console.log('该期间暂无数据，清空表单')
+        // 清空表单数据
+        incomeStatementData.value.forEach(section => {
+          section.items.forEach(item => {
+            item.currentAmount = null
+            item.yearAmount = null
+          })
+        })
+        return
+      } else {
         throw new Error(`加载数据失败: ${response.status} ${response.statusText}`)
       }
-      return
     }
     const result = await response.json()
     if (result.data && Object.keys(result.data).length > 0) {
@@ -133,6 +142,7 @@ const handlePeriodChange = () => {
     query: { ...route.query, period: period.value }
   })
   loadData(period.value)
+  loadRemarksData()
 }
 
 // 监听路由参数变化
@@ -140,6 +150,7 @@ watch(() => route.query.period, (newPeriod) => {
   if (newPeriod) {
     period.value = newPeriod.toString()
     loadData(newPeriod.toString())
+    loadRemarksData()
   }
 })
 
