@@ -24,9 +24,39 @@ router.get('/:period', async (req, res) => {
       return res.status(404).json({ error: '该期间的现金流量表数据不存在' });
     }
 
+    // 计算累计值
+    const year = period.split('-')[0];
+    const [cumulativeRows] = await pool.execute(
+      'SELECT period, data FROM cash_flow WHERE period >= ? AND period <= ? ORDER BY period',
+      [`${year}-01-01`, periodDate]
+    );
+
+    // 计算累计金额
+    const cumulativeData = {};
+    cumulativeRows.forEach(row => {
+      const data = typeof row.data === 'string' ? JSON.parse(row.data) : row.data;
+      Object.keys(data).forEach(key => {
+        if (!cumulativeData[key]) {
+          cumulativeData[key] = { current_amount: 0, year_amount: 0 };
+        }
+        cumulativeData[key].current_amount += (data[key].current_amount || 0);
+      });
+    });
+
+    // 合并当期数据和累计数据
+    const currentData = typeof rows[0].data === 'string' ? JSON.parse(rows[0].data) : rows[0].data;
+    const responseData = {};
+    
+    Object.keys(currentData).forEach(key => {
+      responseData[key] = {
+        current_amount: currentData[key].current_amount || 0,
+        year_amount: cumulativeData[key] ? cumulativeData[key].current_amount : (currentData[key].current_amount || 0)
+      };
+    });
+
     res.json({
       success: true,
-      data: rows[0].data,
+      data: responseData,
       period: rows[0].period,
       updated_at: rows[0].updated_at
     });

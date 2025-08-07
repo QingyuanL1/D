@@ -38,10 +38,8 @@
                                     <input v-model="item.currentAmount" type="number"
                                         class="w-full px-2 py-1 border rounded" step="0.01" :data-field="item.field" />
                                 </td>
-                                <td class="border border-gray-300 px-4 py-2">
-                                    <input v-model="item.yearAmount" type="number"
-                                        class="w-full px-2 py-1 border rounded" step="0.01"
-                                        :data-field="`${item.field}_year`" />
+                                <td class="border border-gray-300 px-4 py-2 text-right">
+                                    <span class="px-2 py-1">{{ formatNumber(item.yearAmount) }}</span>
                                 </td>
                             </tr>
                         </template>
@@ -83,6 +81,11 @@ const { cashFlowData, convertToStorageFormat, restoreFromStorageFormat } = useCa
 const moduleId = MODULE_IDS.CASH_FLOW
 const remarks = ref('')
 const suggestions = ref('')
+
+const formatNumber = (value: number | null) => {
+  if (value === null || value === undefined) return '0.00'
+  return Number(value).toFixed(2)
+}
 
 // 加载数据
 const loadData = async (targetPeriod: string) => {
@@ -141,7 +144,20 @@ watch(period, (newPeriod) => {
 
 const handleSave = async () => {
     try {
-        const dataToSave = convertToStorageFormat(period.value)
+        const dataToSave = {
+            period: period.value,
+            data: {}
+        }
+
+        cashFlowData.value.forEach(section => {
+            section.items.forEach(item => {
+                if (item.field) {
+                    dataToSave.data[item.field] = {
+                        current_amount: item.currentAmount || 0
+                    }
+                }
+            })
+        })
 
         const response = await fetch('http://127.0.0.1:3000/cash-flow', {
             method: 'POST',
@@ -159,7 +175,6 @@ const handleSave = async () => {
         const result = await response.json()
         console.log('保存成功:', result.message)
 
-        // 记录表单提交
         await recordFormSubmission(moduleId, period.value, dataToSave, remarks.value, suggestions.value)
 
         alert('保存成功')

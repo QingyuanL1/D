@@ -1,4 +1,4 @@
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import type { IncomeStatement, IncomeStatementFormData } from './types/incomeStatement'
 
 export interface IncomeStatementItem {
@@ -8,6 +8,7 @@ export interface IncomeStatementItem {
     yearAmount: number | null
     isSubItem?: boolean
     isBold?: boolean
+    isCalculated?: boolean
 }
 
 export interface IncomeStatementSection {
@@ -25,7 +26,8 @@ export const useIncomeStatementData = () => {
                     field: 'total_revenue',
                     currentAmount: null,
                     yearAmount: null,
-                    isBold: true
+                    isBold: true,
+                    isCalculated: true
                 },
                 {
                     name: '其中：主营业务收入',
@@ -51,13 +53,15 @@ export const useIncomeStatementData = () => {
                     field: 'total_cost',
                     currentAmount: null,
                     yearAmount: null,
-                    isBold: true
+                    isBold: true,
+                    isCalculated: true
                 },
                 {
                     name: '营业成本',
                     field: 'operating_cost',
                     currentAmount: null,
-                    yearAmount: null
+                    yearAmount: null,
+                    isCalculated: true
                 },
                 {
                     name: '其中：主营业务成本',
@@ -219,7 +223,8 @@ export const useIncomeStatementData = () => {
                     field: 'operating_profit',
                     currentAmount: null,
                     yearAmount: null,
-                    isBold: true
+                    isBold: true,
+                    isCalculated: true
                 }
             ]
         },
@@ -260,7 +265,8 @@ export const useIncomeStatementData = () => {
                     field: 'total_profit',
                     currentAmount: null,
                     yearAmount: null,
-                    isBold: true
+                    isBold: true,
+                    isCalculated: true
                 }
             ]
         },
@@ -283,7 +289,8 @@ export const useIncomeStatementData = () => {
                     field: 'net_profit',
                     currentAmount: null,
                     yearAmount: null,
-                    isBold: true
+                    isBold: true,
+                    isCalculated: true
                 },
                 {
                     name: '（一）按所有权归属分类：',
@@ -469,7 +476,8 @@ export const useIncomeStatementData = () => {
                     field: 'total_comprehensive_income',
                     currentAmount: null,
                     yearAmount: null,
-                    isBold: true
+                    isBold: true,
+                    isCalculated: true
                 }
             ]
         },
@@ -494,6 +502,88 @@ export const useIncomeStatementData = () => {
         }
     ])
 
+    // 计算合计值的函数 - 只计算当期金额，累计值由后端计算
+    const calculateTotals = () => {
+        const data = incomeStatementData.value
+
+        // 计算营业总收入
+        const totalRevenueItem = data[0].items[0]
+        const mainBusinessRevenueItem = data[0].items[1]
+        const otherBusinessRevenueItem = data[0].items[2]
+        
+        totalRevenueItem.currentAmount = (mainBusinessRevenueItem.currentAmount || 0) + (otherBusinessRevenueItem.currentAmount || 0)
+
+        // 计算营业成本
+        const operatingCostItem = data[1].items[1]
+        const mainBusinessCostItem = data[1].items[2]
+        const otherBusinessCostItem = data[1].items[3]
+        
+        operatingCostItem.currentAmount = (mainBusinessCostItem.currentAmount || 0) + (otherBusinessCostItem.currentAmount || 0)
+
+        // 计算营业总成本
+        const totalCostItem = data[1].items[0]
+        const costItems = data[1].items.slice(1, -4) // 排除最后4个子项目
+        
+        totalCostItem.currentAmount = costItems.reduce((sum, item) => sum + (item.currentAmount || 0), 0)
+
+        // 计算营业利润
+        const operatingProfitItem = data.find(section => section.title === '三、营业利润')?.items[0]
+        if (operatingProfitItem) {
+            const totalRevenue = totalRevenueItem.currentAmount || 0
+            const totalCost = totalCostItem.currentAmount || 0
+            const otherIncome = data.find(section => section.title === '加：其他收益')?.items[0]?.currentAmount || 0
+            const investmentIncome = data.find(section => section.title === '投资收益')?.items[0]?.currentAmount || 0
+            const fairValueIncome = data.find(section => section.title === '公允价值变动收益')?.items[0]?.currentAmount || 0
+            const creditLoss = data.find(section => section.title === '信用减值损失')?.items[0]?.currentAmount || 0
+            const assetLoss = data.find(section => section.title === '资产减值损失')?.items[0]?.currentAmount || 0
+            const assetDisposalIncome = data.find(section => section.title === '资产处置收益')?.items[0]?.currentAmount || 0
+
+            operatingProfitItem.currentAmount = totalRevenue - totalCost + otherIncome + investmentIncome + fairValueIncome + creditLoss + assetLoss + assetDisposalIncome
+        }
+
+        // 计算利润总额
+        const totalProfitItem = data.find(section => section.title === '四、利润总额')?.items[0]
+        if (totalProfitItem && operatingProfitItem) {
+            const nonOperatingIncome = data.find(section => section.title === '加：营业外收入')?.items[0]?.currentAmount || 0
+            const nonOperatingExpenses = data.find(section => section.title === '减：营业外支出')?.items[0]?.currentAmount || 0
+
+            totalProfitItem.currentAmount = (operatingProfitItem.currentAmount || 0) + nonOperatingIncome - nonOperatingExpenses
+        }
+
+        // 计算净利润
+        const netProfitItem = data.find(section => section.title === '五、净利润')?.items[0]
+        if (netProfitItem && totalProfitItem) {
+            const incomeTaxExpense = data.find(section => section.title === '减：所得税费用')?.items[0]?.currentAmount || 0
+            netProfitItem.currentAmount = (totalProfitItem.currentAmount || 0) - incomeTaxExpense
+        }
+
+        // 计算综合收益总额
+        const totalComprehensiveIncomeItem = data.find(section => section.title === '七、综合收益总额')?.items[0]
+        if (totalComprehensiveIncomeItem && netProfitItem) {
+            const otherComprehensiveIncome = data.find(section => section.title === '六、其他综合收益的税后净额')?.items[0]?.currentAmount || 0
+            totalComprehensiveIncomeItem.currentAmount = (netProfitItem.currentAmount || 0) + otherComprehensiveIncome
+        }
+    }
+
+    // 将当前数据转换为API格式
+    const convertToApiFormat = (period: string) => {
+        const formData: any = {}
+        
+        incomeStatementData.value.forEach(section => {
+            section.items.forEach(item => {
+                formData[item.field] = {
+                    current_amount: item.currentAmount,
+                    cumulative_amount: item.yearAmount
+                }
+            })
+        })
+
+        return {
+            period,
+            data: JSON.stringify(formData)
+        }
+    }
+
     // 将当前数据转换为可存储格式
     const convertToStorageFormat = (period: string): IncomeStatement => {
         const formData: IncomeStatementFormData = {}
@@ -502,7 +592,7 @@ export const useIncomeStatementData = () => {
             section.items.forEach(item => {
                 formData[item.field] = {
                     current_amount: item.currentAmount,
-                    year_amount: item.yearAmount
+                    cumulative_amount: item.yearAmount
                 }
             })
         })
@@ -522,7 +612,7 @@ export const useIncomeStatementData = () => {
                 const data = formData[item.field]
                 if (data) {
                     item.currentAmount = data.current_amount
-                    item.yearAmount = data.year_amount
+                    item.yearAmount = data.cumulative_amount
                 }
             })
         })
@@ -531,6 +621,8 @@ export const useIncomeStatementData = () => {
     return {
         incomeStatementData,
         convertToStorageFormat,
-        restoreFromStorageFormat
+        restoreFromStorageFormat,
+        calculateTotals,
+        convertToApiFormat
     }
 } 

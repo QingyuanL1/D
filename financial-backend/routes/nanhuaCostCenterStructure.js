@@ -177,4 +177,99 @@ router.post('/', async (req, res) => {
   }
 });
 
+// 获取南华成本中心月度趋势数据（年度汇总）
+router.get('/analytics/:year', async (req, res) => {
+  const { year } = req.params;
+  
+  try {
+    const months = [];
+    const monthlyData = {
+      engineering: {
+        cumulativeIncome: [],
+        currentPeriodTotal: []
+      },
+      nonMainBusiness: {
+        cumulativeIncome: [],
+        currentPeriodTotal: []
+      }
+    };
+    
+    // 获取12个月的数据
+    for (let month = 1; month <= 12; month++) {
+      const monthStr = month.toString().padStart(2, '0');
+      const period = `${year}-${monthStr}`;
+      months.push(`${month}月`);
+      
+      // 获取当月数据
+      const [currentRows] = await pool.execute(
+        'SELECT customer_name, category, current_income FROM nanhua_cost_center_structure WHERE period = ?',
+        [period]
+      );
+      
+      // 计算当月工程项目总计
+      const engineeringCurrent = currentRows
+        .filter(row => row.category === '工程')
+        .reduce((sum, row) => sum + parseFloat(row.current_income || 0), 0);
+      
+      // 计算当月非主营业务总计  
+      const nonMainBusinessCurrent = currentRows
+        .filter(row => row.category === '非主营业务')
+        .reduce((sum, row) => sum + parseFloat(row.current_income || 0), 0);
+      
+      monthlyData.engineering.currentPeriodTotal.push(engineeringCurrent);
+      monthlyData.nonMainBusiness.currentPeriodTotal.push(nonMainBusinessCurrent);
+      
+      // 计算累计数据（从年初到当前月）
+      const [accumulatedRows] = await pool.execute(
+        'SELECT category, SUM(current_income) as total_accumulated FROM nanhua_cost_center_structure WHERE period >= ? AND period <= ? GROUP BY category',
+        [`${year}-01`, period]
+      );
+      
+      // 工程项目累计
+      const engineeringAccumulated = accumulatedRows
+        .filter(row => row.category === '工程')
+        .reduce((sum, row) => sum + parseFloat(row.total_accumulated || 0), 0);
+      
+      // 非主营业务累计
+      const nonMainBusinessAccumulated = accumulatedRows
+        .filter(row => row.category === '非主营业务')
+        .reduce((sum, row) => sum + parseFloat(row.total_accumulated || 0), 0);
+      
+      monthlyData.engineering.cumulativeIncome.push(engineeringAccumulated);
+      monthlyData.nonMainBusiness.cumulativeIncome.push(nonMainBusinessAccumulated);
+    }
+    
+    // 计算汇总数据
+    const summary = {
+      engineering: {
+        cumulativeIncome: monthlyData.engineering.cumulativeIncome[11] || 0,
+        currentPeriodTotal: monthlyData.engineering.currentPeriodTotal.reduce((sum, val) => sum + val, 0)
+      },
+      nonMainBusiness: {
+        cumulativeIncome: monthlyData.nonMainBusiness.cumulativeIncome[11] || 0,
+        currentPeriodTotal: monthlyData.nonMainBusiness.currentPeriodTotal.reduce((sum, val) => sum + val, 0)
+      }
+    };
+    
+    // 年度计划总计
+    const yearlyPlan = 284.22 + 106.53 + 41.41 + 17.07 + 157.09 + 12.88 + 41.77 + 68.06 + 0.47 + 5.91;
+    
+    res.json({
+      success: true,
+      data: {
+        months,
+        monthlyData,
+        summary,
+        yearlyPlan
+      }
+    });
+  } catch (error) {
+    console.error('获取南华成本中心月度趋势数据失败:', error);
+    res.status(500).json({
+      success: false,
+      message: '获取数据失败'
+    });
+  }
+});
+
 module.exports = router;

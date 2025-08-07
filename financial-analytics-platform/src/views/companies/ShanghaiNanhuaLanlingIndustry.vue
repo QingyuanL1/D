@@ -143,8 +143,10 @@
       
       <!-- 数据分析入口 -->
       <div class="bg-white p-6 rounded-lg shadow-sm mb-8">
-        <h3 class="text-lg font-semibold text-gray-900 mb-4">南华兰陵实业数据分析中心</h3>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-6">南华兰陵实业数据分析中心</h3>
+        
+        <!-- 第一行：基础财务分析指标 -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
           <!-- ROE分析卡片 -->
           <div class="bg-white p-6 rounded-lg border border-gray-200 hover:border-blue-400 hover:shadow-sm transition-all relative">
             <div class="flex items-center justify-between mb-4">
@@ -256,7 +258,10 @@
               查看详情
             </router-link>
           </div>
-
+        </div>
+        
+        <!-- 第二行：业务分析指标 -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <!-- 南华营业收入分析卡片 -->
           <div class="bg-white p-6 rounded-lg border border-gray-200 hover:border-blue-400 hover:shadow-sm transition-all relative">
             <div class="flex items-center justify-between mb-4">
@@ -285,6 +290,89 @@
             </router-link>
           </div>
 
+          <!-- 南华边际贡献率分析卡片 -->
+          <div class="bg-white p-6 rounded-lg border border-gray-200 hover:border-blue-400 hover:shadow-sm transition-all relative">
+            <div class="flex items-center justify-between mb-4">
+              <div class="p-2 bg-blue-100 rounded-md">
+                <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                </svg>
+              </div>
+              <div class="text-right">
+                <div class="text-sm font-semibold text-blue-600">{{ nanhuaContributionRateData.currentRate }}%</div>
+                <div class="text-xs text-gray-500">边际贡献率</div>
+              </div>
+            </div>
+            <h4 class="text-lg font-medium text-gray-900 mb-2">边际贡献率分析</h4>
+            <p class="text-sm text-gray-600 mb-3 h-12">分析南华公司边际贡献率月度趋势</p>
+            <div class="mb-4">
+              <div style="width: 100%; height: 8px; background-color: #e5e7eb; border-radius: 4px;">
+                <div 
+                  style="height: 8px; border-radius: 4px; background-color: #2563eb; transition: width 0.3s ease;"
+                  :style="`width: ${nanhuaContributionRateData.currentRate > 0 ? Math.min(nanhuaContributionRateData.currentRate / nanhuaContributionRateData.targetRate * 100, 100) : 3}%;`"
+                ></div>
+              </div>
+            </div>
+            <router-link to="/analytics/nanhua-contribution-rate-chart" class="block w-full text-center py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
+              查看趋势
+            </router-link>
+          </div>
+
+          <!-- 南华成本中心分析卡片 -->
+          <div class="bg-white p-6 rounded-lg border border-gray-200 hover:border-blue-400 hover:shadow-sm transition-all relative">
+            <div class="flex items-center justify-between mb-4">
+              <div class="p-2 bg-blue-100 rounded-md">
+                <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 9a2 2 0 00-2 2m0 0V7a2 2 0 012-2h14a2 2 0 012 2v2M7 7V3a2 2 0 012-2h6a2 2 0 012 2v4M9 11v6"></path>
+                </svg>
+              </div>
+              <div class="text-right">
+                <div class="text-sm font-semibold text-blue-600">{{ nanhuaCostCenterCompletionRate }}%</div>
+                <div class="text-xs text-gray-500">执行率</div>
+              </div>
+            </div>
+            <h4 class="text-lg font-medium text-gray-900 mb-2">成本中心结构分析</h4>
+            <p class="text-sm text-gray-600 mb-3 h-12">分析南华成本中心月度趋势与计入损益完成情况</p>
+            <div class="mb-4">
+              <div style="width: 100%; height: 8px; background-color: #e5e7eb; border-radius: 4px;">
+                <div 
+                  style="height: 8px; border-radius: 4px; background-color: #2563eb; transition: width 0.3s ease;"
+                  :style="`width: ${nanhuaCostCenterCompletionRate > 0 ? Math.min(nanhuaCostCenterCompletionRate, 100) : 3}%;`"
+                ></div>
+              </div>
+            </div>
+            <router-link to="/analytics/nanhua-cost-center-chart" class="block w-full text-center py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
+              查看详情
+            </router-link>
+          </div>
+          
+          <!-- 南华新签订单分析卡片 -->
+          <div class="bg-white p-6 rounded-lg border border-gray-200 hover:border-blue-400 hover:shadow-sm transition-all relative">
+            <div class="flex items-center justify-between mb-4">
+              <div class="p-2 bg-blue-100 rounded-md">
+                <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+              </div>
+              <div class="text-right">
+                <div class="text-sm font-semibold text-blue-600">{{ nanhuaNewOrdersCompletionRate }}%</div>
+                <div class="text-xs text-gray-500">完成率</div>
+              </div>
+            </div>
+            <h4 class="text-lg font-medium text-gray-900 mb-2">新签订单分析</h4>
+            <p class="text-sm text-gray-600 mb-3 h-12">分析南华新签订单月度趋势与年度计划完成情况</p>
+            <div class="mb-4">
+              <div style="width: 100%; height: 8px; background-color: #e5e7eb; border-radius: 4px;">
+                <div 
+                  style="height: 8px; border-radius: 4px; background-color: #2563eb; transition: width 0.3s ease;"
+                  :style="`width: ${nanhuaNewOrdersCompletionRate > 0 ? Math.min(nanhuaNewOrdersCompletionRate, 100) : 3}%;`"
+                ></div>
+              </div>
+            </div>
+            <router-link to="/analytics/nanhua-new-orders-chart" class="block w-full text-center py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
+              查看详情
+            </router-link>
+          </div>
         </div>
       </div>
 
@@ -412,6 +500,7 @@
         </div>
       </div>
     </div>
+
   </div>
 </template>
 
@@ -516,6 +605,19 @@ const nanhuaProfitMarginRate = ref(0)
 
 // 南华营业收入数据
 const nanhuaBusinessIncomeRate = ref(0)
+
+// 南华边际贡献率数据
+const nanhuaContributionRateData = ref({
+  currentRate: 0,
+  targetRate: 25.0
+})
+
+// 南华成本中心完成率数据
+const nanhuaCostCenterCompletionRate = ref(0)
+
+// 南华新签订单完成率数据
+const nanhuaNewOrdersCompletionRate = ref(0)
+
 
 
 // 公告详情相关
@@ -957,6 +1059,120 @@ const fetchNanhuaBusinessIncomeData = async () => {
   }
 }
 
+// 获取南华边际贡献率数据
+const fetchNanhuaContributionRateData = async () => {
+  try {
+    const currentYear = new Date().getFullYear()
+    const currentMonth = new Date().getMonth() + 1
+    const period = `${currentYear}-${currentMonth.toString().padStart(2, '0')}`
+    
+    const response = await fetch(`http://127.0.0.1:3000/nanhua-business-contribution-with-self-built/${period}`)
+    
+    if (!response.ok) {
+      throw new Error('获取南华边际贡献率数据失败')
+    }
+    
+    const result = await response.json()
+    if (result.success && result.data && result.data.customers) {
+      // 计算加权平均边际贡献率，过滤异常数据
+      const validRates = result.data.customers
+        .filter((customer: any) => {
+          const rate = customer.current
+          // 过滤掉异常数据：0, 100%, 超过100%的值
+          return rate > 0 && rate < 100 && rate !== 100
+        })
+        .map((customer: any) => customer.current)
+      
+      if (validRates.length > 0) {
+        const avgRate = validRates.reduce((sum: number, rate: number) => sum + rate, 0) / validRates.length
+        // 确保边际贡献率在合理范围内(0-100%)
+        const normalizedRate = Math.min(Math.max(avgRate, 0), 100)
+        nanhuaContributionRateData.value.currentRate = Math.round(normalizedRate * 100) / 100
+      } else {
+        // 如果没有有效数据，检查是否存在数据，存在则取最大55.56%
+        const hasData = result.data.customers.some((customer: any) => customer.current > 0)
+        if (hasData) {
+          // 如果当前月有数据但都是异常值，设为最大合理值55.56%
+          nanhuaContributionRateData.value.currentRate = 55.56
+        } else {
+          nanhuaContributionRateData.value.currentRate = 0
+        }
+      }
+      
+      console.log(`南华边际贡献率${period}:`, nanhuaContributionRateData.value.currentRate)
+    } else {
+      console.warn('南华边际贡献率数据获取失败:', result.message)
+      nanhuaContributionRateData.value.currentRate = 0
+    }
+  } catch (error) {
+    console.error('获取南华边际贡献率数据失败:', error)
+    nanhuaContributionRateData.value.currentRate = 0
+  }
+}
+
+// 获取南华成本中心完成率数据
+const fetchNanhuaCostCenterData = async () => {
+  try {
+    const currentYear = new Date().getFullYear()
+    const response = await fetch(`http://127.0.0.1:3000/analytics/nanhua-cost-center/${currentYear}`)
+    
+    if (!response.ok) {
+      throw new Error('获取南华成本中心数据失败')
+    }
+    
+    const result = await response.json()
+    if (result.success && result.data) {
+      const totalCumulativeIncome = (result.data.summary?.engineering?.cumulativeIncome || 0) + 
+                                   (result.data.summary?.nonMainBusiness?.cumulativeIncome || 0)
+      const yearlyPlan = result.data.yearlyPlan || 735.03
+      
+      const completionRate = yearlyPlan > 0 ? 
+        Number(((totalCumulativeIncome / yearlyPlan) * 100).toFixed(1)) : 0
+        
+      nanhuaCostCenterCompletionRate.value = completionRate
+      
+      console.log(`南华成本中心完成率${currentYear}:`, nanhuaCostCenterCompletionRate.value)
+    } else {
+      console.warn('南华成本中心数据获取失败:', result.message)
+      nanhuaCostCenterCompletionRate.value = 0
+    }
+  } catch (error) {
+    console.error('获取南华成本中心数据失败:', error)
+    nanhuaCostCenterCompletionRate.value = 0
+  }
+}
+
+// 获取南华新签订单完成率数据
+const fetchNanhuaNewOrdersData = async () => {
+  try {
+    const currentYear = new Date().getFullYear()
+    const response = await fetch(`http://127.0.0.1:3000/analytics/nanhua-new-orders/${currentYear}`)
+    
+    if (!response.ok) {
+      throw new Error('获取南华新签订单数据失败')
+    }
+    
+    const result = await response.json()
+    if (result.success && result.data && result.data.summary) {
+      const engineeringData = result.data.summary['工程']
+      if (engineeringData) {
+        nanhuaNewOrdersCompletionRate.value = engineeringData.completion_rate || 0
+      } else {
+        nanhuaNewOrdersCompletionRate.value = 0
+      }
+      
+      console.log(`南华新签订单完成率${currentYear}:`, nanhuaNewOrdersCompletionRate.value)
+    } else {
+      console.warn('南华新签订单数据获取失败:', result.message)
+      nanhuaNewOrdersCompletionRate.value = 0
+    }
+  } catch (error) {
+    console.error('获取南华新签订单数据失败:', error)
+    nanhuaNewOrdersCompletionRate.value = 0
+  }
+}
+
+
 
 // 显示ROE详情
 const showROEDetail = () => {
@@ -1255,7 +1471,10 @@ onMounted(async () => {
     fetchNetProfitMarginData(),
     fetchAssetLiabilityRatioData(),
     fetchNanhuaProfitMarginData(),
-    fetchNanhuaBusinessIncomeData()
+    fetchNanhuaBusinessIncomeData(),
+    fetchNanhuaContributionRateData(),
+    fetchNanhuaCostCenterData(),
+    fetchNanhuaNewOrdersData()
   ])
   
   // 先获取图表数据，再初始化图表

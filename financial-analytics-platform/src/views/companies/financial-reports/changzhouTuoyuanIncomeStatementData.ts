@@ -1,5 +1,5 @@
 import { ref } from 'vue'
-import type { IncomeStatement, IncomeStatementFormData } from './types/incomeStatement'
+import type { IncomeStatement, IncomeStatementFormData } from '../../example/types/incomeStatement'
 
 export interface ChangzhouTuoyuanIncomeStatementItem {
     name: string

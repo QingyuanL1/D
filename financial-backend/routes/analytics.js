@@ -859,7 +859,7 @@ router.get('/net-profit/:year', async (req, res) => {
           summary: {
             yearlyPlan: monthlyData.yearlyPlan,
             currentTotal: latestCumulative,
-            completion_rate: completionRate,
+            completion_rate,
             previousYearSame: 0, // 暂无去年数据
             growth_amount: 0,
             growth_rate: 0
@@ -2634,6 +2634,389 @@ router.get('/tuoyuan-profit-margin/:year', async (req, res) => {
     res.status(500).json({
       success: false,
       message: '获取拓源毛利率数据失败',
+      error: error.message
+    });
+  }
+});
+
+// 获取南华成本中心月度趋势数据
+router.get('/nanhua-cost-center/:year', async (req, res) => {
+  try {
+    const { year } = req.params;
+    
+    const months = [];
+    const monthlyData = {
+      engineering: {
+        cumulativeIncome: [],
+        currentPeriodTotal: []
+      },
+      nonMainBusiness: {
+        cumulativeIncome: [],
+        currentPeriodTotal: []
+      }
+    };
+    
+    // 获取12个月的数据
+    for (let month = 1; month <= 12; month++) {
+      const monthStr = month.toString().padStart(2, '0');
+      const period = `${year}-${monthStr}`;
+      months.push(`${month}月`);
+      
+      // 获取当月数据
+      const [currentRows] = await pool.execute(
+        'SELECT customer_name, category, current_income FROM nanhua_cost_center_structure WHERE period = ?',
+        [period]
+      );
+      
+      // 计算当月工程项目总计
+      const engineeringCurrent = currentRows
+        .filter(row => row.category === '工程')
+        .reduce((sum, row) => sum + parseFloat(row.current_income || 0), 0);
+      
+      // 计算当月非主营业务总计  
+      const nonMainBusinessCurrent = currentRows
+        .filter(row => row.category === '非主营业务')
+        .reduce((sum, row) => sum + parseFloat(row.current_income || 0), 0);
+      
+      monthlyData.engineering.currentPeriodTotal.push(engineeringCurrent);
+      monthlyData.nonMainBusiness.currentPeriodTotal.push(nonMainBusinessCurrent);
+      
+      // 计算累计数据（从年初到当前月）
+      const [accumulatedRows] = await pool.execute(
+        'SELECT category, SUM(current_income) as total_accumulated FROM nanhua_cost_center_structure WHERE period >= ? AND period <= ? GROUP BY category',
+        [`${year}-01`, period]
+      );
+      
+      // 工程项目累计
+      const engineeringAccumulated = accumulatedRows
+        .filter(row => row.category === '工程')
+        .reduce((sum, row) => sum + parseFloat(row.total_accumulated || 0), 0);
+      
+      // 非主营业务累计
+      const nonMainBusinessAccumulated = accumulatedRows
+        .filter(row => row.category === '非主营业务')
+        .reduce((sum, row) => sum + parseFloat(row.total_accumulated || 0), 0);
+      
+      monthlyData.engineering.cumulativeIncome.push(engineeringAccumulated);
+      monthlyData.nonMainBusiness.cumulativeIncome.push(nonMainBusinessAccumulated);
+    }
+    
+    // 计算汇总数据
+    const summary = {
+      engineering: {
+        cumulativeIncome: monthlyData.engineering.cumulativeIncome[11] || 0,
+        currentPeriodTotal: monthlyData.engineering.currentPeriodTotal.reduce((sum, val) => sum + val, 0)
+      },
+      nonMainBusiness: {
+        cumulativeIncome: monthlyData.nonMainBusiness.cumulativeIncome[11] || 0,
+        currentPeriodTotal: monthlyData.nonMainBusiness.currentPeriodTotal.reduce((sum, val) => sum + val, 0)
+      }
+    };
+    
+    // 年度计划总计（基于固定数据计算）
+    const yearlyPlan = 284.22 + 106.53 + 41.41 + 17.07 + 157.09 + 12.88 + 41.77 + 68.06 + 0.47 + 5.91;
+    
+    res.json({
+      success: true,
+      data: {
+        months,
+        monthlyData,
+        summary,
+        yearlyPlan
+      }
+    });
+  } catch (error) {
+    console.error('获取南华成本中心月度趋势数据失败:', error);
+    res.status(500).json({
+      success: false,
+      message: '获取数据失败',
+      error: error.message
+    });
+  }
+});
+
+// 获取南华新签订单趋势分析数据
+router.get('/nanhua-new-orders/:year', async (req, res) => {
+  try {
+    const { year } = req.params;
+    
+    // 固定的客户列表和年度计划（基于NewOrderStructure.vue的固定数据）
+    const fixedPlanData = [
+      { customer: '一包项目', yearlyPlan: 7000.00, category: '工程' },
+      { customer: '二包项目', yearlyPlan: 2000.00, category: '工程' },
+      { customer: '域内合作项目', yearlyPlan: 6000.00, category: '工程' },
+      { customer: '域外合作项目', yearlyPlan: 2000.00, category: '工程' },
+      { customer: '新能源项目', yearlyPlan: 4000.00, category: '工程' },
+      { customer: '苏州项目', yearlyPlan: 1000.00, category: '工程' },
+      { customer: '自建项目', yearlyPlan: 0.00, category: '工程' }
+    ];
+
+    // 获取该年度所有期间的数据
+    const [allPeriodsData] = await pool.execute(`
+      SELECT
+        period,
+        customer,
+        current_amount,
+        accumulated,
+        category
+      FROM nanhua_new_orders
+      WHERE YEAR(CONCAT(period, '-01')) = ?
+      ORDER BY period, customer
+    `, [year]);
+
+    // 生成月份列表
+    const months = [];
+    for (let i = 1; i <= 12; i++) {
+      months.push(`${i}月`);
+    }
+
+    // 初始化月度数据结构
+    const monthlyData = {};
+    const categories = ['工程']; // 南华新签订单只有工程类别
+
+    categories.forEach(category => {
+      monthlyData[category] = {
+        current_total: new Array(12).fill(0),
+        cumulative: new Array(12).fill(0)
+      };
+    });
+
+    // 按月份整理数据
+    for (let monthIndex = 0; monthIndex < 12; monthIndex++) {
+      const month = String(monthIndex + 1).padStart(2, '0');
+      const targetPeriod = `${year}-${month}`;
+
+      // 计算当月各客户的总和
+      const monthData = allPeriodsData.filter(row => row.period === targetPeriod);
+      let monthTotal = 0;
+      let cumulativeTotal = 0;
+
+      monthData.forEach(row => {
+        monthTotal += parseFloat(row.current_amount) || 0;
+        cumulativeTotal += parseFloat(row.accumulated) || 0;
+      });
+
+      // 如果没有累计数据，则从第一个月开始累加当期数据
+      if (cumulativeTotal === 0 && monthIndex > 0) {
+        cumulativeTotal = (monthlyData['工程'].cumulative[monthIndex - 1] || 0) + monthTotal;
+      } else if (cumulativeTotal === 0) {
+        cumulativeTotal = monthTotal;
+      }
+
+      monthlyData['工程'].current_total[monthIndex] = monthTotal;
+      monthlyData['工程'].cumulative[monthIndex] = cumulativeTotal;
+    }
+
+    // 计算汇总数据
+    const totalYearlyPlan = fixedPlanData.reduce((sum, item) => sum + item.yearlyPlan, 0);
+    const totalCumulative = monthlyData['工程'].cumulative[11] || 0;
+    const completionRate = totalYearlyPlan > 0 ? Number(((totalCumulative / totalYearlyPlan) * 100).toFixed(2)) : 0;
+
+    const summary = {
+      '工程': {
+        yearly_plan: totalYearlyPlan,
+        current_total: totalCumulative,
+        completion_rate: completionRate
+      }
+    };
+
+    res.json({
+      success: true,
+      data: {
+        months,
+        monthlyData,
+        summary,
+        categories: ['工程']
+      }
+    });
+  } catch (error) {
+    console.error('获取南华新签订单趋势数据失败:', error);
+    res.status(500).json({
+      success: false,
+      message: '获取数据失败',
+      error: error.message
+    });
+  }
+});
+
+// 获取南华新签订单占比分析数据
+router.get('/nanhua-new-orders-breakdown/:year', async (req, res) => {
+  try {
+    const { year } = req.params;
+    
+    // 获取该年度最新期间的累计数据
+    const [latestData] = await pool.execute(`
+      SELECT
+        customer,
+        MAX(accumulated) as total_accumulated
+      FROM nanhua_new_orders
+      WHERE YEAR(CONCAT(period, '-01')) = ?
+      GROUP BY customer
+      HAVING MAX(accumulated) > 0
+      ORDER BY total_accumulated DESC
+    `, [year]);
+
+    // 计算总数和百分比
+    const totalAmount = latestData.reduce((sum, item) => sum + parseFloat(item.total_accumulated), 0);
+    
+    const pieData = latestData.map(item => ({
+      name: item.customer,
+      value: parseFloat(item.total_accumulated),
+      percentage: totalAmount > 0 ? Number(((parseFloat(item.total_accumulated) / totalAmount) * 100).toFixed(2)) : 0
+    }));
+
+    res.json({
+      success: true,
+      data: pieData
+    });
+  } catch (error) {
+    console.error('获取南华新签订单占比数据失败:', error);
+    res.status(500).json({
+      success: false,
+      message: '获取数据失败',
+      error: error.message
+    });
+  }
+});
+
+// 获取拓源新签订单趋势分析数据
+router.get('/tuoyuan-new-orders/:year', async (req, res) => {
+  try {
+    const { year } = req.params;
+    
+    // 固定的年度计划数据（基于tuoyuan-new-order-structure.js的默认数据）
+    const fixedPlanData = [
+      { customer: '电业项目', yearlyPlan: 7800.00, category: '设备' },
+      { customer: '用户项目', yearlyPlan: 0.00, category: '设备' },
+      { customer: '贸易', yearlyPlan: 800.00, category: '设备' },
+      { customer: '代理设备', yearlyPlan: 3000.00, category: '设备' },
+      { customer: '代理工程', yearlyPlan: 0.00, category: '设备' },
+      { customer: '代理设计', yearlyPlan: 0.00, category: '设备' }
+    ];
+
+    // 获取该年度所有期间的数据
+    const [allPeriodsData] = await pool.execute(`
+      SELECT
+        period,
+        customer_attribute as customer,
+        current_period,
+        current_cumulative,
+        segment_attribute as category
+      FROM tuoyuan_new_order_structure
+      WHERE YEAR(CONCAT(period, '-01')) = ?
+      ORDER BY period, customer_attribute
+    `, [year]);
+
+    // 生成月份列表
+    const months = [];
+    for (let i = 1; i <= 12; i++) {
+      months.push(`${i}月`);
+    }
+
+    // 初始化月度数据结构
+    const monthlyData = {};
+    const categories = ['设备']; // 拓源新签订单主要是设备类别
+
+    categories.forEach(category => {
+      monthlyData[category] = {
+        current_total: new Array(12).fill(0),
+        cumulative: new Array(12).fill(0)
+      };
+    });
+
+    // 按月份整理数据
+    for (let monthIndex = 0; monthIndex < 12; monthIndex++) {
+      const month = String(monthIndex + 1).padStart(2, '0');
+      const targetPeriod = `${year}-${month}`;
+
+      // 计算当月各客户的总和
+      const monthData = allPeriodsData.filter(row => row.period === targetPeriod);
+      let monthTotal = 0;
+      let cumulativeTotal = 0;
+
+      monthData.forEach(row => {
+        monthTotal += parseFloat(row.current_period) || 0;
+        cumulativeTotal += parseFloat(row.current_cumulative) || 0;
+      });
+
+      // 如果没有累计数据，则从第一个月开始累加当期数据
+      if (cumulativeTotal === 0 && monthIndex > 0) {
+        cumulativeTotal = (monthlyData['设备'].cumulative[monthIndex - 1] || 0) + monthTotal;
+      } else if (cumulativeTotal === 0) {
+        cumulativeTotal = monthTotal;
+      }
+
+      monthlyData['设备'].current_total[monthIndex] = monthTotal;
+      monthlyData['设备'].cumulative[monthIndex] = cumulativeTotal;
+    }
+
+    // 计算汇总数据
+    const totalYearlyPlan = fixedPlanData.reduce((sum, item) => sum + item.yearlyPlan, 0);
+    const totalCumulative = monthlyData['设备'].cumulative[11] || 0;
+    const completionRate = totalYearlyPlan > 0 ? Number(((totalCumulative / totalYearlyPlan) * 100).toFixed(2)) : 0;
+
+    const summary = {
+      '设备': {
+        yearly_plan: totalYearlyPlan,
+        current_total: totalCumulative,
+        completion_rate: completionRate
+      }
+    };
+
+    res.json({
+      success: true,
+      data: {
+        months,
+        monthlyData,
+        summary,
+        categories: ['设备']
+      }
+    });
+  } catch (error) {
+    console.error('获取拓源新签订单趋势数据失败:', error);
+    res.status(500).json({
+      success: false,
+      message: '获取数据失败',
+      error: error.message
+    });
+  }
+});
+
+// 获取拓源新签订单占比分析数据
+router.get('/tuoyuan-new-orders-breakdown/:year', async (req, res) => {
+  try {
+    const { year } = req.params;
+    
+    // 获取该年度最新期间的累计数据
+    const [latestData] = await pool.execute(`
+      SELECT
+        customer_attribute as customer,
+        MAX(current_cumulative) as total_accumulated
+      FROM tuoyuan_new_order_structure
+      WHERE YEAR(CONCAT(period, '-01')) = ?
+      GROUP BY customer_attribute
+      HAVING MAX(current_cumulative) > 0
+      ORDER BY total_accumulated DESC
+    `, [year]);
+
+    // 计算总数和百分比
+    const totalAmount = latestData.reduce((sum, item) => sum + parseFloat(item.total_accumulated), 0);
+    
+    const pieData = latestData.map(item => ({
+      name: item.customer,
+      value: parseFloat(item.total_accumulated),
+      percentage: totalAmount > 0 ? Number(((parseFloat(item.total_accumulated) / totalAmount) * 100).toFixed(2)) : 0
+    }));
+
+    res.json({
+      success: true,
+      data: pieData
+    });
+  } catch (error) {
+    console.error('获取拓源新签订单占比数据失败:', error);
+    res.status(500).json({
+      success: false,
+      message: '获取数据失败',
       error: error.message
     });
   }

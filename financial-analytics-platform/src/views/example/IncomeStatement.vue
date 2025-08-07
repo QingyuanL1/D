@@ -34,13 +34,27 @@
                                     {{ item.name }}
                                 </td>
                                 <td class="border border-gray-300 px-4 py-2">
-                                    <input v-model="item.currentAmount" type="number"
-                                        class="w-full px-2 py-1 border rounded" step="0.01" :data-field="item.field" />
+                                    <input 
+                                        v-if="!item.isCalculated" 
+                                        v-model="item.currentAmount" 
+                                        type="number"
+                                        class="w-full px-2 py-1 border rounded" 
+                                        step="0.01" 
+                                        :data-field="item.field" 
+                                        @input="handleInputChange" />
+                                    <span 
+                                        v-else 
+                                        class="w-full px-2 py-1 bg-gray-100 rounded inline-block font-semibold"
+                                        :class="{ 'text-blue-600': item.currentAmount !== null }">
+                                        {{ item.currentAmount?.toFixed(2) || '0.00' }}
+                                    </span>
                                 </td>
                                 <td class="border border-gray-300 px-4 py-2">
-                                    <input v-model="item.yearAmount" type="number"
-                                        class="w-full px-2 py-1 border rounded" step="0.01"
-                                        :data-field="`${item.field}_year`" />
+                                    <span 
+                                        class="w-full px-2 py-1 bg-gray-100 rounded inline-block font-semibold"
+                                        :class="{ 'text-blue-600': item.yearAmount !== null }">
+                                        {{ item.yearAmount?.toFixed(2) || '0.00' }}
+                                    </span>
                                 </td>
                             </tr>
                         </template>
@@ -78,34 +92,43 @@ import { recordFormSubmission, loadRemarksAndSuggestions, MODULE_IDS } from '@/u
 const route = useRoute()
 const router = useRouter()
 const period = ref(route.query.period?.toString() || new Date().toISOString().slice(0, 7))
-const { incomeStatementData, convertToStorageFormat, restoreFromStorageFormat } = useIncomeStatementData()
+const { 
+    incomeStatementData, 
+    convertToStorageFormat, 
+    restoreFromStorageFormat,
+    calculateTotals
+} = useIncomeStatementData()
 const moduleId = MODULE_IDS.INCOME_STATEMENT
 const remarks = ref('')
 const suggestions = ref('')
+
+// 处理输入变化，自动计算合计值
+const handleInputChange = () => {
+    calculateTotals()
+}
 
 // 加载数据
 const loadData = async (targetPeriod: string) => {
   try {
     const response = await fetch(`http://127.0.0.1:3000/income-statement/${targetPeriod}`)
     if (!response.ok) {
-      if (response.status !== 404) { // 404是正常的（新建报表时）
+      if (response.status !== 404) {
         throw new Error('加载数据失败')
       }
       return
     }
     const result = await response.json()
     if (result.data) {
-      // 解析JSON字符串
       const parsedData = typeof result.data === 'string' ? JSON.parse(result.data) : result.data
-      // 将数据恢复到表单中
       Object.keys(parsedData).forEach(key => {
         const item = incomeStatementData.value.flatMap(section => section.items)
           .find(item => item.field === key)
         if (item) {
           item.currentAmount = parsedData[key].current_amount
-          item.yearAmount = parsedData[key].year_amount
+          item.yearAmount = parsedData[key].cumulative_amount || parsedData[key].year_amount
         }
       })
+      calculateTotals()
     }
   } catch (error) {
     console.error('加载数据失败:', error)
@@ -147,14 +170,16 @@ const handleSave = async () => {
 
     const result = await response.json()
     
-    // 记录表单提交
     await recordFormSubmission(moduleId, period.value, dataToSave, remarks.value, suggestions.value)
     
     alert('保存成功')
     console.log('保存成功:', result.message)
+    
+    // 保存后重新加载数据以获取更新的累计值
+    await loadData(period.value)
   } catch (error) {
     console.error('保存失败:', error)
-    // 可以添加保存失败的提示
+    alert('保存失败: ' + error.message)
   }
 }
 
@@ -167,7 +192,6 @@ const handleReset = () => {
   })
 }
 
-// 加载备注和建议
 const loadRemarksData = async () => {
   const { remarks: loadedRemarks, suggestions: loadedSuggestions } = await loadRemarksAndSuggestions(moduleId, period.value)
   remarks.value = loadedRemarks
@@ -175,7 +199,6 @@ const loadRemarksData = async () => {
 }
 
 onMounted(() => {
-  // 组件挂载时加载数据
   loadData(period.value)
   loadRemarksData()
 })

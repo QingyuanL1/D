@@ -42,14 +42,14 @@
               </tr>
               <!-- 流动资产合计 -->
               <tr class="bg-yellow-50 font-bold">
-                <td class="border border-gray-300 px-4 py-2">流动资产合计</td>
+                <td class="border border-gray-300 px-4 py-2">流动资产合计 <span class="text-blue-600 text-xs">[自动计算]</span></td>
                 <td class="border border-gray-300 px-4 py-2">
                   <input type="number" v-model.number="data.assets.currentTotal.endBalance"
-                    class="w-full px-2 py-1 border rounded bg-yellow-50 font-bold" step="0.01" />
+                    class="w-full px-2 py-1 border rounded bg-yellow-50 font-bold text-blue-700" step="0.01" readonly />
                 </td>
                 <td class="border border-gray-300 px-4 py-2">
                   <input type="number" v-model.number="data.assets.currentTotal.beginBalance"
-                    class="w-full px-2 py-1 border rounded bg-yellow-50 font-bold" step="0.01" />
+                    class="w-full px-2 py-1 border rounded bg-yellow-50 font-bold text-blue-700" step="0.01" readonly />
                 </td>
               </tr>
               <!-- 非流动资产部分 -->
@@ -78,14 +78,14 @@
               </tr>
               <!-- 非流动资产合计 -->
               <tr class="bg-yellow-50 font-bold">
-                <td class="border border-gray-300 px-4 py-2">非流动资产合计</td>
+                <td class="border border-gray-300 px-4 py-2">非流动资产合计 <span class="text-blue-600 text-xs">[自动计算]</span></td>
                 <td class="border border-gray-300 px-4 py-2">
                   <input type="number" v-model.number="data.assets.nonCurrentTotal.endBalance"
-                    class="w-full px-2 py-1 border rounded bg-yellow-50 font-bold" step="0.01" />
+                    class="w-full px-2 py-1 border rounded bg-yellow-50 font-bold text-blue-700" step="0.01" readonly />
                 </td>
                 <td class="border border-gray-300 px-4 py-2">
                   <input type="number" v-model.number="data.assets.nonCurrentTotal.beginBalance"
-                    class="w-full px-2 py-1 border rounded bg-yellow-50 font-bold" step="0.01" />
+                    class="w-full px-2 py-1 border rounded bg-yellow-50 font-bold text-blue-700" step="0.01" readonly />
                 </td>
               </tr>
             </tbody>
@@ -131,14 +131,14 @@
               </tr>
               <!-- 流动负债合计 -->
               <tr class="bg-yellow-50 font-bold">
-                <td class="border border-gray-300 px-4 py-2">流动负债合计</td>
+                <td class="border border-gray-300 px-4 py-2">流动负债合计 <span class="text-blue-600 text-xs">[自动计算]</span></td>
                 <td class="border border-gray-300 px-4 py-2">
                   <input type="number" v-model.number="data.liabilities.currentTotal.endBalance"
-                    class="w-full px-2 py-1 border rounded bg-yellow-50 font-bold" step="0.01" />
+                    class="w-full px-2 py-1 border rounded bg-yellow-50 font-bold text-blue-700" step="0.01" readonly />
                 </td>
                 <td class="border border-gray-300 px-4 py-2">
                   <input type="number" v-model.number="data.liabilities.currentTotal.beginBalance"
-                    class="w-full px-2 py-1 border rounded bg-yellow-50 font-bold" step="0.01" />
+                    class="w-full px-2 py-1 border rounded bg-yellow-50 font-bold text-blue-700" step="0.01" readonly />
                 </td>
               </tr>
               <!-- 非流动负债部分 -->
@@ -167,14 +167,14 @@
               </tr>
               <!-- 非流动负债合计 -->
               <tr class="bg-yellow-50 font-bold">
-                <td class="border border-gray-300 px-4 py-2">非流动负债合计</td>
+                <td class="border border-gray-300 px-4 py-2">非流动负债合计 <span class="text-blue-600 text-xs">[自动计算]</span></td>
                 <td class="border border-gray-300 px-4 py-2">
                   <input type="number" v-model.number="data.liabilities.nonCurrentTotal.endBalance"
-                    class="w-full px-2 py-1 border rounded bg-yellow-50 font-bold" step="0.01" />
+                    class="w-full px-2 py-1 border rounded bg-yellow-50 font-bold text-blue-700" step="0.01" readonly />
                 </td>
                 <td class="border border-gray-300 px-4 py-2">
                   <input type="number" v-model.number="data.liabilities.nonCurrentTotal.beginBalance"
-                    class="w-full px-2 py-1 border rounded bg-yellow-50 font-bold" step="0.01" />
+                    class="w-full px-2 py-1 border rounded bg-yellow-50 font-bold text-blue-700" step="0.01" readonly />
                 </td>
               </tr>
               <!-- 所有者权益部分 -->
@@ -203,28 +203,28 @@
               </tr>
               <!-- 所有者权益合计 -->
               <tr class="bg-yellow-50 font-bold">
-                <td class="border border-gray-300 px-4 py-2">所有者权益合计</td>
+                <td class="border border-gray-300 px-4 py-2">所有者权益合计 <span class="text-blue-600 text-xs">[自动计算]</span></td>
                 <td class="border border-gray-300 px-4 py-2">
                   <input type="number" v-model.number="data.equityTotal.endBalance"
-                    class="w-full px-2 py-1 border rounded bg-yellow-50 font-bold" step="0.01" />
+                    class="w-full px-2 py-1 border rounded bg-yellow-50 font-bold text-blue-700" step="0.01" readonly />
                 </td>
                 <td class="border border-gray-300 px-4 py-2">
                   <input type="number" v-model.number="data.equityTotal.beginBalance"
-                    class="w-full px-2 py-1 border rounded bg-yellow-50 font-bold" step="0.01" />
+                    class="w-full px-2 py-1 border rounded bg-yellow-50 font-bold text-blue-700" step="0.01" readonly />
                 </td>
               </tr>
               <!-- 负债和所有者权益总计 -->
               <tr class="bg-yellow-50 font-bold">
                 <td class="border border-gray-300 px-4 py-2">
-                  负债和所有者权益总计
+                  负债和所有者权益总计 <span class="text-blue-600 text-xs">[自动计算]</span>
                 </td>
                 <td class="border border-gray-300 px-4 py-2">
                   <input type="number" v-model.number="data.total.endBalance"
-                    class="w-full px-2 py-1 border rounded bg-yellow-50 font-bold" step="0.01" />
+                    class="w-full px-2 py-1 border rounded bg-yellow-50 font-bold text-blue-700" step="0.01" readonly />
                 </td>
                 <td class="border border-gray-300 px-4 py-2">
                   <input type="number" v-model.number="data.total.beginBalance"
-                    class="w-full px-2 py-1 border rounded bg-yellow-50 font-bold" step="0.01" />
+                    class="w-full px-2 py-1 border rounded bg-yellow-50 font-bold text-blue-700" step="0.01" readonly />
                 </td>
               </tr>
             </tbody>
@@ -253,7 +253,7 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted } from 'vue'
+import { ref, watch, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import FormAttachmentAndRemarks from '@/components/FormAttachmentAndRemarks.vue'
 import { recordFormSubmission, loadRemarksAndSuggestions, MODULE_IDS } from '@/utils/formSubmissionHelper'
@@ -587,6 +587,95 @@ const data = ref({
         },
     })
 
+// 计算函数 - 使用computed实现自动计算
+const calculateCurrentAssets = () => {
+  // 计算流动资产合计（排除子项）
+  const total = data.value.assets.current
+    .filter(item => !item.indent) // 只计算主项，不包括子项
+    .reduce((sum, item) => ({
+      endBalance: sum.endBalance + (item.endBalance || 0),
+      beginBalance: sum.beginBalance + (item.beginBalance || 0)
+    }), { endBalance: 0, beginBalance: 0 })
+  
+  data.value.assets.currentTotal = total
+}
+
+const calculateNonCurrentAssets = () => {
+  // 计算非流动资产合计（排除子项）
+  const total = data.value.assets.nonCurrent
+    .filter(item => !item.indent) // 只计算主项，不包括子项
+    .reduce((sum, item) => ({
+      endBalance: sum.endBalance + (item.endBalance || 0),
+      beginBalance: sum.beginBalance + (item.beginBalance || 0)
+    }), { endBalance: 0, beginBalance: 0 })
+  
+  data.value.assets.nonCurrentTotal = total
+}
+
+const calculateCurrentLiabilities = () => {
+  // 计算流动负债合计（排除子项）
+  const total = data.value.liabilities.current
+    .filter(item => !item.indent) // 只计算主项，不包括子项
+    .reduce((sum, item) => ({
+      endBalance: sum.endBalance + (item.endBalance || 0),
+      beginBalance: sum.beginBalance + (item.beginBalance || 0)
+    }), { endBalance: 0, beginBalance: 0 })
+  
+  data.value.liabilities.currentTotal = total
+}
+
+const calculateNonCurrentLiabilities = () => {
+  // 计算非流动负债合计（排除子项）
+  const total = data.value.liabilities.nonCurrent
+    .filter(item => !item.indent) // 只计算主项，不包括子项
+    .reduce((sum, item) => ({
+      endBalance: sum.endBalance + (item.endBalance || 0),
+      beginBalance: sum.beginBalance + (item.beginBalance || 0)
+    }), { endBalance: 0, beginBalance: 0 })
+  
+  data.value.liabilities.nonCurrentTotal = total
+}
+
+const calculateEquityTotal = () => {
+  // 计算所有者权益合计（排除子项和特殊项）
+  const total = data.value.equity
+    .filter(item => !item.indent && !item.special && !item.total) // 只计算主项，排除子项、特殊项和已经是合计的项
+    .reduce((sum, item) => ({
+      endBalance: sum.endBalance + (item.endBalance || 0),
+      beginBalance: sum.beginBalance + (item.beginBalance || 0)
+    }), { endBalance: 0, beginBalance: 0 })
+  
+  data.value.equityTotal = total
+}
+
+const calculateGrandTotal = () => {
+  // 计算负债和所有者权益总计
+  const liabilitiesTotal = {
+    endBalance: (data.value.liabilities.currentTotal.endBalance || 0) + (data.value.liabilities.nonCurrentTotal.endBalance || 0),
+    beginBalance: (data.value.liabilities.currentTotal.beginBalance || 0) + (data.value.liabilities.nonCurrentTotal.beginBalance || 0)
+  }
+  
+  data.value.total = {
+    endBalance: liabilitiesTotal.endBalance + (data.value.equityTotal.endBalance || 0),
+    beginBalance: liabilitiesTotal.beginBalance + (data.value.equityTotal.beginBalance || 0)
+  }
+}
+
+// 统一的重新计算函数
+const recalculateAll = () => {
+  calculateCurrentAssets()
+  calculateNonCurrentAssets()
+  calculateCurrentLiabilities()
+  calculateNonCurrentLiabilities()
+  calculateEquityTotal()
+  calculateGrandTotal()
+}
+
+// 深度监听data变化，自动重新计算
+watch(data, () => {
+  recalculateAll()
+}, { deep: true })
+
 // 定义函数（需要在watch之前定义）
 const loadData = async () => {
   try {
@@ -612,6 +701,8 @@ const loadData = async () => {
       const parsedData = typeof result.data === 'string' ? JSON.parse(result.data) : result.data
       // 直接替换整个 data 对象
       data.value = parsedData
+      // 加载完成后重新计算合计值
+      recalculateAll()
       console.log('数据加载完成')
     }
   } catch (error) {

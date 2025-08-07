@@ -261,6 +261,93 @@
           </div>
 
         </div>
+        
+        <!-- 第二行卡片 -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-6">
+          <!-- 营业结构分析卡片 -->
+          <div class="bg-white p-6 rounded-lg border border-gray-200 hover:border-purple-400 hover:shadow-sm transition-all relative">
+            <div class="flex items-center justify-between mb-4">
+              <div class="p-2 bg-purple-100 rounded-md">
+                <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                </svg>
+              </div>
+              <div class="text-right">
+                <div class="text-sm font-semibold text-purple-600">实时</div>
+                <div class="text-xs text-gray-500">营业结构</div>
+              </div>
+            </div>
+            <h4 class="text-lg font-medium text-gray-900 mb-2">营业结构分析</h4>
+            <p class="text-sm text-gray-600 mb-3 h-12">分析设备板块与其他板块收入趋势</p>
+            <div class="mb-4">
+              <div style="width: 100%; height: 8px; background-color: #e5e7eb; border-radius: 4px;">
+                <div 
+                  style="height: 8px; border-radius: 4px; background-color: #9333ea; transition: width 0.3s ease; width: 85%;"
+                ></div>
+              </div>
+            </div>
+            <router-link to="/analytics/tuoyuan-business-structure" class="block w-full text-center py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors" @click="handleNavigation">
+              查看分析
+            </router-link>
+          </div>
+
+          <!-- 边际贡献率趋势分析卡片 -->
+          <div class="bg-white p-6 rounded-lg border border-gray-200 hover:border-orange-400 hover:shadow-sm transition-all relative">
+            <div class="flex items-center justify-between mb-4">
+              <div class="p-2 bg-orange-100 rounded-md">
+                <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                </svg>
+              </div>
+              <div class="text-right">
+                <div class="text-sm font-semibold text-orange-600">{{ tuoyuanContributionRateData.currentRate }}%</div>
+                <div class="text-xs text-gray-500">边际贡献率</div>
+              </div>
+            </div>
+            <h4 class="text-lg font-medium text-gray-900 mb-2">边际贡献率趋势</h4>
+            <p class="text-sm text-gray-600 mb-3 h-12">分析拓源公司边际贡献率月度趋势</p>
+            <div class="mb-4">
+              <div style="width: 100%; height: 8px; background-color: #e5e7eb; border-radius: 4px;">
+                <div 
+                  style="height: 8px; border-radius: 4px; background-color: #ea580c; transition: width 0.3s ease;"
+                  :style="`width: ${tuoyuanContributionRateData.currentRate > 0 ? Math.min(tuoyuanContributionRateData.currentRate / tuoyuanContributionRateData.targetRate * 100, 100) : 3}%;`"
+                ></div>
+              </div>
+            </div>
+            <router-link to="/analytics/tuoyuan-contribution-rate-chart" class="block w-full text-center py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 transition-colors" @click="handleNavigation">
+              趋势分析
+            </router-link>
+          </div>
+
+          <!-- 新签订单趋势分析卡片 -->
+          <div class="bg-white p-6 rounded-lg border border-gray-200 hover:border-indigo-400 hover:shadow-sm transition-all relative">
+            <div class="flex items-center justify-between mb-4">
+              <div class="p-2 bg-indigo-100 rounded-md">
+                <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+              </div>
+              <div class="text-right">
+                <div class="text-sm font-semibold text-indigo-600">{{ newOrdersProgress }}%</div>
+                <div class="text-xs text-gray-500">完成进度</div>
+              </div>
+            </div>
+            <h4 class="text-lg font-medium text-gray-900 mb-2">新签订单趋势</h4>
+            <p class="text-sm text-gray-600 mb-3 h-12">分析新签订单结构与质量趋势</p>
+            <div class="mb-4">
+              <div style="width: 100%; height: 8px; background-color: #e5e7eb; border-radius: 4px;">
+                <div 
+                  style="height: 8px; border-radius: 4px; background-color: #6366f1; transition: width 0.3s ease;"
+                  :style="`width: ${Math.max(newOrdersProgress, 3)}%;`"
+                ></div>
+              </div>
+            </div>
+            <router-link to="/analytics/tuoyuan-new-order-chart" class="block w-full text-center py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition-colors" @click="handleNavigation">
+              查看趋势
+            </router-link>
+          </div>
+
+        </div>
       </div>
 
       <!-- 完成率和未完成表单 -->
@@ -339,6 +426,8 @@
 
 
 
+
+
     </div>
     
     <!-- 公告详情模态框 -->
@@ -386,6 +475,8 @@
         </div>
       </div>
     </div>
+
+
   </div>
 </template>
 
@@ -395,6 +486,7 @@ import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import * as echarts from 'echarts'
 import storage from 'store'
+
 
 interface DashboardData {
   user: {
@@ -485,11 +577,20 @@ const tuoyuanProfitMarginData = ref({
   targetRate: 24.99
 })
 
+// 拓源边际贡献率数据
+const tuoyuanContributionRateData = ref({
+  currentRate: 0,
+  targetRate: 21.98
+})
+
 // 公告详情相关
 const showAnnouncementDetail = ref(false)
 const selectedAnnouncement = ref<Announcement | null>(null)
 const loading = ref(true)
 const loadingAnnouncements = ref(false)
+
+// 新签订单趋势相关
+const newOrdersProgress = ref(0)
 
 // 图表相关变量
 const revenueChartRef = ref<HTMLElement | null>(null)
@@ -612,6 +713,8 @@ const closeAnnouncementDetail = () => {
   showAnnouncementDetail.value = false
   selectedAnnouncement.value = null
 }
+
+
 
 // 标记已读并关闭详情
 const markAsReadAndClose = async (notificationId: number) => {
@@ -806,6 +909,104 @@ const fetchTuoyuanProfitMarginData = async () => {
   } catch (error) {
     console.error('获取拓源毛利率数据失败:', error)
     tuoyuanProfitMarginData.value.currentRate = 0
+  }
+}
+
+// 获取拓源边际贡献率数据
+const fetchTuoyuanContributionRateData = async () => {
+  try {
+    const currentMonth = new Date()
+    const period = `${currentMonth.getFullYear()}-${(currentMonth.getMonth() + 1).toString().padStart(2, '0')}`
+    const response = await fetch(`http://127.0.0.1:3000/tuoyuan-main-business-contribution-rate/${period}`)
+    
+    if (response.ok) {
+      const result = await response.json()
+      if (result.success && result.data && result.data.items) {
+        let totalActual = 0
+        let count = 0
+        
+        result.data.items.forEach((item: any) => {
+          if (item.currentActual > 0) {
+            totalActual += item.currentActual
+            count++
+          }
+        })
+        
+        const averageRate = count > 0 ? totalActual / count : 0
+        tuoyuanContributionRateData.value.currentRate = parseFloat(averageRate.toFixed(2))
+      } else {
+        tuoyuanContributionRateData.value.currentRate = 0
+      }
+    } else {
+      try {
+        const calculateResponse = await fetch(`http://127.0.0.1:3000/tuoyuan-main-business-contribution-rate/calculate/${period}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        })
+        
+        if (calculateResponse.ok) {
+          const calculateResult = await calculateResponse.json()
+          if (calculateResult.success && calculateResult.data && calculateResult.data.items) {
+            let totalActual = 0
+            let count = 0
+            
+            calculateResult.data.items.forEach((item: any) => {
+              if (item.currentActual > 0) {
+                totalActual += item.currentActual
+                count++
+              }
+            })
+            
+            const averageRate = count > 0 ? totalActual / count : 0
+            tuoyuanContributionRateData.value.currentRate = parseFloat(averageRate.toFixed(2))
+          } else {
+            tuoyuanContributionRateData.value.currentRate = 0
+          }
+        } else {
+          tuoyuanContributionRateData.value.currentRate = 0
+        }
+      } catch (calcError) {
+        console.error('自动计算拓源边际贡献率失败:', calcError)
+        tuoyuanContributionRateData.value.currentRate = 0
+      }
+    }
+  } catch (error) {
+    console.error('获取拓源边际贡献率数据失败:', error)
+    tuoyuanContributionRateData.value.currentRate = 0
+  }
+}
+
+// 获取新签订单进度数据
+const fetchNewOrdersProgress = async () => {
+  try {
+    const currentMonth = new Date()
+    const period = `${currentMonth.getFullYear()}-${(currentMonth.getMonth() + 1).toString().padStart(2, '0')}`
+    const response = await fetch(`http://127.0.0.1:3000/tuoyuan-new-order-structure/${period}`)
+    
+    if (response.ok) {
+      const result = await response.json()
+      if (result.success && result.data && result.data.items) {
+        let totalCumulative = 0
+        let totalAnnualPlan = 0
+        
+        result.data.items.forEach((item: any) => {
+          totalCumulative += item.currentCumulative || 0
+          totalAnnualPlan += item.annualPlan || 0
+        })
+        
+        const progress = totalAnnualPlan > 0 ? (totalCumulative / totalAnnualPlan) * 100 : 0
+        newOrdersProgress.value = parseFloat(progress.toFixed(2))
+      } else {
+        newOrdersProgress.value = 0
+      }
+    } else {
+      newOrdersProgress.value = 0
+    }
+  } catch (error) {
+    console.error('获取新签订单进度数据失败:', error)
+    newOrdersProgress.value = 0
   }
 }
 
@@ -1105,7 +1306,9 @@ onMounted(async () => {
     fetchAnalysisCompletionRates(),
     fetchROEData(),
     fetchAssetLiabilityRatioData(),
-    fetchTuoyuanProfitMarginData()
+    fetchTuoyuanProfitMarginData(),
+    fetchTuoyuanContributionRateData(),
+    fetchNewOrdersProgress()
   ])
   
   // 先获取图表数据，再初始化图表

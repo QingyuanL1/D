@@ -1075,6 +1075,30 @@ export const frameIn: Array<RouteRecordRaw> = [
         },
       },
       {
+        path: 'analytics/nanhua-contribution-rate-chart',
+        name: 'NanhuaContributionRateChart',
+        component: () => import('@/views/analytics/NanhuaContributionRateChart.vue'),
+        meta: {
+          title: '南华边际贡献率分析',
+        },
+      },
+      {
+        path: 'analytics/nanhua-new-orders-chart',
+        name: 'NanhuaNewOrdersChart',
+        component: () => import('@/views/analytics/NanhuaNewOrdersChart.vue'),
+        meta: {
+          title: '南华新签订单分析',
+        },
+      },
+      {
+        path: 'analytics/nanhua-cost-center-chart',
+        name: 'NanhuaCostCenterChart',
+        component: () => import('@/views/analytics/NanhuaCostCenterChart.vue'),
+        meta: {
+          title: '南华成本中心结构分析',
+        },
+      },
+      {
         path: 'analytics/net-profit-margin-chart',
         name: 'NetProfitMarginChart',
         component: () => import('@/views/analytics/NetProfitMarginChart.vue'),
@@ -1104,6 +1128,30 @@ export const frameIn: Array<RouteRecordRaw> = [
         component: () => import('@/views/analytics/TuoyuanProfitMarginChart.vue'),
         meta: {
           title: '拓源毛利率分析',
+        },
+      },
+      {
+        path: 'analytics/tuoyuan-contribution-rate-chart',
+        name: 'TuoyuanContributionRateChart',
+        component: () => import('@/views/analytics/TuoyuanContributionRateChart.vue'),
+        meta: {
+          title: '拓源公司边际贡献率趋势分析',
+        },
+      },
+      {
+        path: 'analytics/tuoyuan-business-structure',
+        name: 'TuoyuanBusinessStructureAnalysis',
+        component: () => import('@/views/analytics/TuoyuanBusinessStructureAnalysis.vue'),
+        meta: {
+          title: '拓源营业结构分析',
+        },
+      },
+      {
+        path: 'analytics/tuoyuan-new-order-chart',
+        name: 'TuoyuanNewOrderChart',
+        component: () => import('@/views/analytics/TuoyuanNewOrderChart.vue'),
+        meta: {
+          title: '拓源新签订单趋势',
         },
       },
       // ==================== 上海南华兰陵实业有限公司财务报表 ====================

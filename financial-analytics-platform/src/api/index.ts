@@ -6,3 +6,17 @@ export default function () {
     url: '/api',
   });
 }
+
+export const getNanhuaNewOrders = (period: string) => {
+  return request({
+    method: 'GET',
+    url: `/api/nanhua-new-orders/${period}`
+  });
+};
+
+export const getNanhuaCostCenterStructure = (period: string) => {
+  return request({
+    method: 'GET',
+    url: `/api/nanhua-cost-center-structure/${period}`
+  });
+};

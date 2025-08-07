@@ -1,244 +1,597 @@
 <template>
-  <div class="bg-gray-100 p-8">
-    <div class="max-w-[1600px] mx-auto bg-white rounded-lg shadow-lg p-6">
-      <h1 class="text-2xl font-bold text-center mb-6">常州拓源电气有限公司 - 资产负债表(主表)（单位：万元）</h1>
+  <div class="max-w-[1400px] mx-auto bg-white rounded-lg shadow-lg p-6">
+      <div class="flex justify-between items-center mb-6">
+          <h1 class="text-2xl font-bold text-center w-full">资产负债表</h1>
+          <div class="text-right text-sm">会企01表</div>
+      </div>
+      
+      <div class="text-center mb-4">
+          <div class="text-lg font-medium">编制单位：常州拓源电气集团有限公司</div>
+          <div class="flex justify-between items-center mt-2">
+              <div class="text-lg font-medium">2025/2/28</div>
+              <div class="text-lg font-medium">单位：元</div>
+          </div>
+      </div>
+
       <!-- 添加期间输入 -->
       <div class="mb-4">
-        <label class="block text-gray-700">期间：</label>
-        <input type="month" v-model="period" class="w-full px-2 py-1 border rounded" />
-      </div>
-      <div class="grid grid-cols-2 gap-6">
-        <!-- 左侧：资产部分 -->
-        <div class="overflow-y-auto">
-          <table class="w-full border-collapse border border-gray-300">
-            <thead class="sticky top-0 bg-white">
-              <tr class="bg-gray-50">
-                <th class="border border-gray-300 px-4 py-2">资产</th>
-                <th class="border border-gray-300 px-4 py-2 w-40">期末余额</th>
-                <th class="border border-gray-300 px-4 py-2 w-40">期初余额</th>
-              </tr>
-            </thead>
-            <tbody>
-              <!-- 流动资产部分 -->
-              <tr>
-                <td class="border border-gray-300 px-4 py-2 font-bold">
-                  流动资产：
-                </td>
-                <td class="border border-gray-300 px-4 py-2"></td>
-                <td class="border border-gray-300 px-4 py-2"></td>
-              </tr>
-              <tr v-for="(item, index) in data.assets.current" :key="`current-asset-${index}`">
-                <td class="border border-gray-300 px-4 py-2" :class="item.indent ? 'pl-8' : ''">
-                  {{ item.name }}
-                </td>
-                <td class="border border-gray-300 px-4 py-2">
-                  <input type="number" v-model.number="item.endBalance" class="w-full px-2 py-1 border rounded"
-                    step="0.01" />
-                </td>
-                <td class="border border-gray-300 px-4 py-2">
-                  <input type="number" v-model.number="item.beginBalance" class="w-full px-2 py-1 border rounded"
-                    step="0.01" />
-                </td>
-              </tr>
-              <!-- 流动资产合计 -->
-              <tr class="bg-yellow-50 font-bold">
-                <td class="border border-gray-300 px-4 py-2">流动资产合计</td>
-                <td class="border border-gray-300 px-4 py-2">
-                  <input type="number" v-model.number="data.assets.currentTotal.endBalance"
-                    class="w-full px-2 py-1 border rounded bg-yellow-50 font-bold" step="0.01" />
-                </td>
-                <td class="border border-gray-300 px-4 py-2">
-                  <input type="number" v-model.number="data.assets.currentTotal.beginBalance"
-                    class="w-full px-2 py-1 border rounded bg-yellow-50 font-bold" step="0.01" />
-                </td>
-              </tr>
-              <!-- 非流动资产部分 -->
-              <tr>
-                <td class="border border-gray-300 px-4 py-2 font-bold">
-                  非流动资产：
-                </td>
-                <td class="border border-gray-300 px-4 py-2"></td>
-                <td class="border border-gray-300 px-4 py-2"></td>
-              </tr>
-              <tr v-for="(item, index) in data.assets.nonCurrent" :key="`noncurrent-asset-${index}`">
-                <td class="border border-gray-300 px-4 py-2" :class="[
-                  item.indent ? 'pl-8' : '',
-                  item.highlight ? 'bg-gray-100' : '',
-                ]">
-                  {{ item.name }}
-                </td>
-                <td class="border border-gray-300 px-4 py-2">
-                  <input type="number" v-model.number="item.endBalance" class="w-full px-2 py-1 border rounded"
-                    step="0.01" />
-                </td>
-                <td class="border border-gray-300 px-4 py-2">
-                  <input type="number" v-model.number="item.beginBalance" class="w-full px-2 py-1 border rounded"
-                    step="0.01" />
-                </td>
-              </tr>
-              <!-- 非流动资产合计 -->
-              <tr class="bg-yellow-50 font-bold">
-                <td class="border border-gray-300 px-4 py-2">非流动资产合计</td>
-                <td class="border border-gray-300 px-4 py-2">
-                  <input type="number" v-model.number="data.assets.nonCurrentTotal.endBalance"
-                    class="w-full px-2 py-1 border rounded bg-yellow-50 font-bold" step="0.01" />
-                </td>
-                <td class="border border-gray-300 px-4 py-2">
-                  <input type="number" v-model.number="data.assets.nonCurrentTotal.beginBalance"
-                    class="w-full px-2 py-1 border rounded bg-yellow-50 font-bold" step="0.01" />
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <!-- 右侧：负债和所有者权益部分 -->
-        <div class="overflow-y-auto">
-          <table class="w-full border-collapse border border-gray-300">
-            <thead class="sticky top-0 bg-white">
-              <tr class="bg-gray-50">
-                <th class="border border-gray-300 px-4 py-2">
-                  负债和所有者权益
-                </th>
-                <th class="border border-gray-300 px-4 py-2 w-40">期末余额</th>
-                <th class="border border-gray-300 px-4 py-2 w-40">期初余额</th>
-              </tr>
-            </thead>
-            <tbody>
-              <!-- 流动负债部分 -->
-              <tr>
-                <td class="border border-gray-300 px-4 py-2 font-bold">
-                  流动负债：
-                </td>
-                <td class="border border-gray-300 px-4 py-2"></td>
-                <td class="border border-gray-300 px-4 py-2"></td>
-              </tr>
-              <tr v-for="(item, index) in data.liabilities.current" :key="`current-liability-${index}`">
-                <td class="border border-gray-300 px-4 py-2" :class="[
-                  item.indent ? 'pl-8' : '',
-                  item.highlight ? 'bg-gray-100' : '',
-                ]">
-                  {{ item.name }}
-                </td>
-                <td class="border border-gray-300 px-4 py-2">
-                  <input type="number" v-model.number="item.endBalance" class="w-full px-2 py-1 border rounded"
-                    step="0.01" />
-                </td>
-                <td class="border border-gray-300 px-4 py-2">
-                  <input type="number" v-model.number="item.beginBalance" class="w-full px-2 py-1 border rounded"
-                    step="0.01" />
-                </td>
-              </tr>
-              <!-- 流动负债合计 -->
-              <tr class="bg-yellow-50 font-bold">
-                <td class="border border-gray-300 px-4 py-2">流动负债合计</td>
-                <td class="border border-gray-300 px-4 py-2">
-                  <input type="number" v-model.number="data.liabilities.currentTotal.endBalance"
-                    class="w-full px-2 py-1 border rounded bg-yellow-50 font-bold" step="0.01" />
-                </td>
-                <td class="border border-gray-300 px-4 py-2">
-                  <input type="number" v-model.number="data.liabilities.currentTotal.beginBalance"
-                    class="w-full px-2 py-1 border rounded bg-yellow-50 font-bold" step="0.01" />
-                </td>
-              </tr>
-              <!-- 非流动负债部分 -->
-              <tr>
-                <td class="border border-gray-300 px-4 py-2 font-bold">
-                  非流动负债：
-                </td>
-                <td class="border border-gray-300 px-4 py-2"></td>
-                <td class="border border-gray-300 px-4 py-2"></td>
-              </tr>
-              <tr v-for="(item, index) in data.liabilities.nonCurrent" :key="`noncurrent-liability-${index}`">
-                <td class="border border-gray-300 px-4 py-2" :class="[
-                  item.indent ? 'pl-8' : '',
-                  item.highlight ? 'bg-gray-100' : '',
-                ]">
-                  {{ item.name }}
-                </td>
-                <td class="border border-gray-300 px-4 py-2">
-                  <input type="number" v-model.number="item.endBalance" class="w-full px-2 py-1 border rounded"
-                    step="0.01" />
-                </td>
-                <td class="border border-gray-300 px-4 py-2">
-                  <input type="number" v-model.number="item.beginBalance" class="w-full px-2 py-1 border rounded"
-                    step="0.01" />
-                </td>
-              </tr>
-              <!-- 非流动负债合计 -->
-              <tr class="bg-yellow-50 font-bold">
-                <td class="border border-gray-300 px-4 py-2">非流动负债合计</td>
-                <td class="border border-gray-300 px-4 py-2">
-                  <input type="number" v-model.number="data.liabilities.nonCurrentTotal.endBalance"
-                    class="w-full px-2 py-1 border rounded bg-yellow-50 font-bold" step="0.01" />
-                </td>
-                <td class="border border-gray-300 px-4 py-2">
-                  <input type="number" v-model.number="data.liabilities.nonCurrentTotal.beginBalance"
-                    class="w-full px-2 py-1 border rounded bg-yellow-50 font-bold" step="0.01" />
-                </td>
-              </tr>
-              <!-- 所有者权益部分 -->
-              <tr>
-                <td class="border border-gray-300 px-4 py-2 font-bold">
-                  所有者权益（或股东权益）：
-                </td>
-                <td class="border border-gray-300 px-4 py-2"></td>
-                <td class="border border-gray-300 px-4 py-2"></td>
-              </tr>
-              <tr v-for="(item, index) in data.equity" :key="`equity-${index}`">
-                <td class="border border-gray-300 px-4 py-2" :class="[
-                  item.indent ? 'pl-8' : '',
-                  item.highlight ? 'bg-gray-100' : '',
-                ]">
-                  {{ item.name }}
-                </td>
-                <td class="border border-gray-300 px-4 py-2">
-                  <input type="number" v-model.number="item.endBalance" class="w-full px-2 py-1 border rounded"
-                    step="0.01" :class="item.total ? 'bg-yellow-50 font-bold' : ''" />
-                </td>
-                <td class="border border-gray-300 px-4 py-2">
-                  <input type="number" v-model.number="item.beginBalance" class="w-full px-2 py-1 border rounded"
-                    step="0.01" :class="item.total ? 'bg-yellow-50 font-bold' : ''" />
-                </td>
-              </tr>
-              <!-- 所有者权益合计 -->
-              <tr class="bg-yellow-50 font-bold">
-                <td class="border border-gray-300 px-4 py-2">所有者权益合计</td>
-                <td class="border border-gray-300 px-4 py-2">
-                  <input type="number" v-model.number="data.equityTotal.endBalance"
-                    class="w-full px-2 py-1 border rounded bg-yellow-50 font-bold" step="0.01" />
-                </td>
-                <td class="border border-gray-300 px-4 py-2">
-                  <input type="number" v-model.number="data.equityTotal.beginBalance"
-                    class="w-full px-2 py-1 border rounded bg-yellow-50 font-bold" step="0.01" />
-                </td>
-              </tr>
-              <!-- 负债和所有者权益总计 -->
-              <tr class="bg-yellow-50 font-bold">
-                <td class="border border-gray-300 px-4 py-2">
-                  负债和所有者权益总计
-                </td>
-                <td class="border border-gray-300 px-4 py-2">
-                  <input type="number" v-model.number="data.total.endBalance"
-                    class="w-full px-2 py-1 border rounded bg-yellow-50 font-bold" step="0.01" />
-                </td>
-                <td class="border border-gray-300 px-4 py-2">
-                  <input type="number" v-model.number="data.total.beginBalance"
-                    class="w-full px-2 py-1 border rounded bg-yellow-50 font-bold" step="0.01" />
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+          <label class="block text-gray-700">期间：</label>
+          <input type="month" v-model="period" class="w-full px-2 py-1 border rounded" />
       </div>
 
-      <div class="mt-4 flex justify-end space-x-4">
-        <button class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600" @click="save">
-          保存
-        </button>
-        <button class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600" @click="reset">
-          重置
-        </button>
+      <div class="overflow-x-auto">
+          <table class="w-full border-collapse border border-black text-sm">
+              <thead>
+                  <tr>
+                      <th class="border border-black px-2 py-1 text-center w-48">资产</th>
+                      <th class="border border-black px-2 py-1 text-center w-32">当期</th>
+                      <th class="border border-black px-2 py-1 text-center w-32">累计</th>
+                      <th class="border border-black px-2 py-1 text-center w-48">负债及所有者权益</th>
+                      <th class="border border-black px-2 py-1 text-center w-32">当期</th>
+                      <th class="border border-black px-2 py-1 text-center w-32">累计</th>
+                  </tr>
+              </thead>
+              <tbody>
+                  <!-- 流动资产 -->
+                  <tr>
+                      <td class="border border-black px-2 py-1 font-bold">流动资产</td>
+                      <td class="border border-black px-2 py-1"></td>
+                      <td class="border border-black px-2 py-1"></td>
+                      <td class="border border-black px-2 py-1 font-bold">流动负债：</td>
+                      <td class="border border-black px-2 py-1"></td>
+                      <td class="border border-black px-2 py-1"></td>
+                  </tr>
+                  
+                  <tr>
+                      <td class="border border-black px-2 py-1 pl-4">货币资金</td>
+                      <td class="border border-black px-2 py-1 text-right">
+                          <input v-model="balanceSheetData.monetary_funds_beginning" type="number" class="w-full text-right border-0 p-0" step="0.01" />
+                      </td>
+                      <td class="border border-black px-2 py-1 text-right bg-gray-50">
+                          {{ getCumulativeValue('monetary_funds_ending').toLocaleString() }}
+                      </td>
+                      <td class="border border-black px-2 py-1 pl-4">短期借款</td>
+                      <td class="border border-black px-2 py-1 text-right">
+                          <input v-model="balanceSheetData.short_term_loans_beginning" type="number" class="w-full text-right border-0 p-0" step="0.01" />
+                      </td>
+                      <td class="border border-black px-2 py-1 text-right bg-gray-50">
+                          {{ getCumulativeValue('short_term_loans_ending').toLocaleString() }}
+                      </td>
+                  </tr>
+                  
+                  <tr>
+                      <td class="border border-black px-2 py-1 pl-4">短期投资</td>
+                      <td class="border border-black px-2 py-1 text-right">
+                          <input v-model="balanceSheetData.short_term_investments_beginning" type="number" class="w-full text-right border-0 p-0" step="0.01" />
+                      </td>
+                      <td class="border border-black px-2 py-1 text-right bg-gray-50">
+                          {{ getCumulativeValue('short_term_investments_ending').toLocaleString() }}
+                      </td>
+                      <td class="border border-black px-2 py-1 pl-4">应付票据</td>
+                      <td class="border border-black px-2 py-1 text-right">
+                          <input v-model="balanceSheetData.notes_payable_beginning" type="number" class="w-full text-right border-0 p-0" step="0.01" />
+                      </td>
+                      <td class="border border-black px-2 py-1 text-right bg-gray-50">
+                          {{ getCumulativeValue('notes_payable_ending').toLocaleString() }}
+                      </td>
+                  </tr>
+                  
+                  <tr>
+                      <td class="border border-black px-2 py-1 pl-4">应收票据</td>
+                      <td class="border border-black px-2 py-1 text-right">
+                          <input v-model="balanceSheetData.notes_receivable_beginning" type="number" class="w-full text-right border-0 p-0" step="0.01" />
+                      </td>
+                      <td class="border border-black px-2 py-1 text-right bg-gray-50">
+                          {{ getCumulativeValue('notes_receivable_ending').toLocaleString() }}
+                      </td>
+                      <td class="border border-black px-2 py-1 pl-4">应付账款</td>
+                      <td class="border border-black px-2 py-1 text-right">
+                          <input v-model="balanceSheetData.accounts_payable_beginning" type="number" class="w-full text-right border-0 p-0" step="0.01" />
+                      </td>
+                      <td class="border border-black px-2 py-1 text-right bg-gray-50">
+                          {{ getCumulativeValue('accounts_payable_ending').toLocaleString() }}
+                      </td>
+                  </tr>
+                  
+                  <tr>
+                      <td class="border border-black px-2 py-1 pl-4">应收账款</td>
+                      <td class="border border-black px-2 py-1 text-right">
+                          <input v-model="balanceSheetData.accounts_receivable_beginning" type="number" class="w-full text-right border-0 p-0" step="0.01" />
+                      </td>
+                      <td class="border border-black px-2 py-1 text-right bg-gray-50">
+                          {{ getCumulativeValue('accounts_receivable_ending').toLocaleString() }}
+                      </td>
+                      <td class="border border-black px-2 py-1 pl-4">预收账款</td>
+                      <td class="border border-black px-2 py-1 text-right">
+                          <input v-model="balanceSheetData.advance_receipts_beginning" type="number" class="w-full text-right border-0 p-0" step="0.01" />
+                      </td>
+                      <td class="border border-black px-2 py-1 text-right bg-gray-50">
+                          {{ getCumulativeValue('advance_receipts_ending').toLocaleString() }}
+                      </td>
+                  </tr>
+                  
+                  <tr>
+                      <td class="border border-black px-2 py-1 pl-4">减：坏账准备</td>
+                      <td class="border border-black px-2 py-1 text-right">
+                          <input v-model="balanceSheetData.bad_debt_provision_beginning" type="number" class="w-full text-right border-0 p-0" step="0.01" />
+                      </td>
+                      <td class="border border-black px-2 py-1 text-right bg-gray-50">
+                          {{ getCumulativeValue('bad_debt_provision_ending').toLocaleString() }}
+                      </td>
+                      <td class="border border-black px-2 py-1 pl-4">其他应付款</td>
+                      <td class="border border-black px-2 py-1 text-right">
+                          <input v-model="balanceSheetData.other_payables_beginning" type="number" class="w-full text-right border-0 p-0" step="0.01" />
+                      </td>
+                      <td class="border border-black px-2 py-1 text-right bg-gray-50">
+                          {{ getCumulativeValue('other_payables_ending').toLocaleString() }}
+                      </td>
+                  </tr>
+                  
+                  <tr>
+                      <td class="border border-black px-2 py-1 pl-4">应收账款净额</td>
+                      <td class="border border-black px-2 py-1 text-right">
+                          <input v-model="balanceSheetData.accounts_receivable_net_beginning" type="number" class="w-full text-right border-0 p-0" step="0.01" />
+                      </td>
+                      <td class="border border-black px-2 py-1 text-right">
+                          <input v-model="balanceSheetData.accounts_receivable_net_ending" type="number" class="w-full text-right border-0 p-0" step="0.01" />
+                      </td>
+                      <td class="border border-black px-2 py-1 pl-4">应付工资</td>
+                      <td class="border border-black px-2 py-1 text-right">
+                          <input v-model="balanceSheetData.payroll_payable_beginning" type="number" class="w-full text-right border-0 p-0" step="0.01" />
+                      </td>
+                      <td class="border border-black px-2 py-1 text-right bg-gray-50">
+                          {{ getCumulativeValue('payroll_payable_ending').toLocaleString() }}
+                      </td>
+                  </tr>
+                  
+                  <tr>
+                      <td class="border border-black px-2 py-1 pl-4">预付账款</td>
+                      <td class="border border-black px-2 py-1 text-right">
+                          <input v-model="balanceSheetData.prepaid_accounts_beginning" type="number" class="w-full text-right border-0 p-0" step="0.01" />
+                      </td>
+                      <td class="border border-black px-2 py-1 text-right bg-gray-50">
+                          {{ getCumulativeValue('prepaid_accounts_ending').toLocaleString() }}
+                      </td>
+                      <td class="border border-black px-2 py-1 pl-4">应付福利费</td>
+                      <td class="border border-black px-2 py-1 text-right">
+                          <input v-model="balanceSheetData.welfare_payable_beginning" type="number" class="w-full text-right border-0 p-0" step="0.01" />
+                      </td>
+                      <td class="border border-black px-2 py-1 text-right bg-gray-50">
+                          {{ getCumulativeValue('welfare_payable_ending').toLocaleString() }}
+                      </td>
+                  </tr>
+                  
+                  <tr>
+                      <td class="border border-black px-2 py-1 pl-4">应收补贴款</td>
+                      <td class="border border-black px-2 py-1 text-right">
+                          <input v-model="balanceSheetData.subsidy_receivable_beginning" type="number" class="w-full text-right border-0 p-0" step="0.01" />
+                      </td>
+                      <td class="border border-black px-2 py-1 text-right bg-gray-50">
+                          {{ getCumulativeValue('subsidy_receivable_ending').toLocaleString() }}
+                      </td>
+                      <td class="border border-black px-2 py-1 pl-4">未交税金</td>
+                      <td class="border border-black px-2 py-1 text-right">
+                          <input v-model="balanceSheetData.taxes_payable_beginning" type="number" class="w-full text-right border-0 p-0" step="0.01" />
+                      </td>
+                      <td class="border border-black px-2 py-1 text-right bg-gray-50">
+                          {{ getCumulativeValue('taxes_payable_ending').toLocaleString() }}
+                      </td>
+                  </tr>
+                  
+                  <tr>
+                      <td class="border border-black px-2 py-1 pl-4">其他应收款</td>
+                      <td class="border border-black px-2 py-1 text-right">
+                          <input v-model="balanceSheetData.other_receivables_beginning" type="number" class="w-full text-right border-0 p-0" step="0.01" />
+                      </td>
+                      <td class="border border-black px-2 py-1 text-right bg-gray-50">
+                          {{ getCumulativeValue('other_receivables_ending').toLocaleString() }}
+                      </td>
+                      <td class="border border-black px-2 py-1 pl-4">未付利润</td>
+                      <td class="border border-black px-2 py-1"></td>
+                      <td class="border border-black px-2 py-1"></td>
+                  </tr>
+                  
+                  <tr>
+                      <td class="border border-black px-2 py-1 pl-4">存货</td>
+                      <td class="border border-black px-2 py-1 text-right">
+                          <input v-model="balanceSheetData.inventory_beginning" type="number" class="w-full text-right border-0 p-0" step="0.01" />
+                      </td>
+                      <td class="border border-black px-2 py-1 text-right bg-gray-50">
+                          {{ getCumulativeValue('inventory_ending').toLocaleString() }}
+                      </td>
+                      <td class="border border-black px-2 py-1 pl-4">其他未交款</td>
+                      <td class="border border-black px-2 py-1"></td>
+                      <td class="border border-black px-2 py-1"></td>
+                  </tr>
+                  
+                  <tr>
+                      <td class="border border-black px-2 py-1 pl-6">其中：原材料</td>
+                      <td class="border border-black px-2 py-1 text-right">
+                          <input v-model="balanceSheetData.raw_materials_beginning" type="number" class="w-full text-right border-0 p-0" step="0.01" />
+                      </td>
+                      <td class="border border-black px-2 py-1 text-right bg-gray-50">
+                          {{ getCumulativeValue('raw_materials_ending').toLocaleString() }}
+                      </td>
+                      <td class="border border-black px-2 py-1"></td>
+                      <td class="border border-black px-2 py-1"></td>
+                      <td class="border border-black px-2 py-1"></td>
+                  </tr>
+                  
+                  <tr>
+                      <td class="border border-black px-2 py-1 pl-6">库存商品</td>
+                      <td class="border border-black px-2 py-1 text-right">
+                          <input v-model="balanceSheetData.finished_goods_beginning" type="number" class="w-full text-right border-0 p-0" step="0.01" />
+                      </td>
+                      <td class="border border-black px-2 py-1 text-right bg-gray-50">
+                          {{ getCumulativeValue('finished_goods_ending').toLocaleString() }}
+                      </td>
+                      <td class="border border-black px-2 py-1"></td>
+                      <td class="border border-black px-2 py-1"></td>
+                      <td class="border border-black px-2 py-1"></td>
+                  </tr>
+                  
+                  <tr>
+                      <td class="border border-black px-2 py-1 pl-6">在产品</td>
+                      <td class="border border-black px-2 py-1 text-right">
+                          <input v-model="balanceSheetData.work_in_process_beginning" type="number" class="w-full text-right border-0 p-0" step="0.01" />
+                      </td>
+                      <td class="border border-black px-2 py-1 text-right bg-gray-50">
+                          {{ getCumulativeValue('work_in_process_ending').toLocaleString() }}
+                      </td>
+                      <td class="border border-black px-2 py-1"></td>
+                      <td class="border border-black px-2 py-1"></td>
+                      <td class="border border-black px-2 py-1"></td>
+                  </tr>
+                  
+                  <tr>
+                      <td class="border border-black px-2 py-1 pl-4">待摊费用</td>
+                      <td class="border border-black px-2 py-1"></td>
+                      <td class="border border-black px-2 py-1"></td>
+                      <td class="border border-black px-2 py-1 pl-4">预提费用</td>
+                      <td class="border border-black px-2 py-1 text-center">-</td>
+                      <td class="border border-black px-2 py-1"></td>
+                  </tr>
+                  
+                  <tr>
+                      <td class="border border-black px-2 py-1 pl-4">待处理流动资产净损失</td>
+                      <td class="border border-black px-2 py-1"></td>
+                      <td class="border border-black px-2 py-1"></td>
+                      <td class="border border-black px-2 py-1 pl-4">一年内到期的长期负债</td>
+                      <td class="border border-black px-2 py-1"></td>
+                      <td class="border border-black px-2 py-1"></td>
+                  </tr>
+                  
+                  <tr>
+                      <td class="border border-black px-2 py-1 pl-4">一年内到期的长期债券投资</td>
+                      <td class="border border-black px-2 py-1"></td>
+                      <td class="border border-black px-2 py-1"></td>
+                      <td class="border border-black px-2 py-1 pl-4">其他流动负债</td>
+                      <td class="border border-black px-2 py-1"></td>
+                      <td class="border border-black px-2 py-1"></td>
+                  </tr>
+                  
+                  <tr>
+                      <td class="border border-black px-2 py-1 pl-4">其他流动资产</td>
+                      <td class="border border-black px-2 py-1"></td>
+                      <td class="border border-black px-2 py-1"></td>
+                      <td class="border border-black px-2 py-1 font-bold">流动负债合计</td>
+                      <td class="border border-black px-2 py-1 text-right font-bold">
+                          <input v-model="balanceSheetData.current_liabilities_total_beginning" type="number" class="w-full text-right border-0 p-0 font-bold" step="0.01" />
+                      </td>
+                      <td class="border border-black px-2 py-1 text-right font-bold bg-gray-50">
+                          {{ getCumulativeValue('current_liabilities_total_ending').toLocaleString() }}
+                      </td>
+                  </tr>
+                  
+                  <tr>
+                      <td class="border border-black px-2 py-1 font-bold">流动资产合计</td>
+                      <td class="border border-black px-2 py-1 text-right font-bold">
+                          <input v-model="balanceSheetData.current_assets_total_beginning" type="number" class="w-full text-right border-0 p-0 font-bold" step="0.01" />
+                      </td>
+                      <td class="border border-black px-2 py-1 text-right font-bold bg-gray-50">
+                          {{ getCumulativeValue('current_assets_total_ending').toLocaleString() }}
+                      </td>
+                      <td class="border border-black px-2 py-1 font-bold">长期负债：</td>
+                      <td class="border border-black px-2 py-1"></td>
+                      <td class="border border-black px-2 py-1"></td>
+                  </tr>
+                  
+                  <tr>
+                      <td class="border border-black px-2 py-1 pl-4">长期投资</td>
+                      <td class="border border-black px-2 py-1 text-right">
+                          <input v-model="balanceSheetData.long_term_investments_beginning" type="number" class="w-full text-right border-0 p-0" step="0.01" />
+                      </td>
+                      <td class="border border-black px-2 py-1 text-right bg-gray-50">
+                          {{ getCumulativeValue('long_term_investments_ending').toLocaleString() }}
+                      </td>
+                      <td class="border border-black px-2 py-1 pl-4">长期借款</td>
+                      <td class="border border-black px-2 py-1 text-right">
+                          <input v-model="balanceSheetData.long_term_loans_beginning" type="number" class="w-full text-right border-0 p-0" step="0.01" />
+                      </td>
+                      <td class="border border-black px-2 py-1 text-right bg-gray-50">
+                          {{ getCumulativeValue('long_term_loans_ending').toLocaleString() }}
+                      </td>
+                  </tr>
+                  
+                  <tr>
+                      <td class="border border-black px-2 py-1 font-bold">固定资产：</td>
+                      <td class="border border-black px-2 py-1"></td>
+                      <td class="border border-black px-2 py-1"></td>
+                      <td class="border border-black px-2 py-1 pl-4">长期应付款</td>
+                      <td class="border border-black px-2 py-1 text-right">
+                          <input v-model="balanceSheetData.long_term_payables_beginning" type="number" class="w-full text-right border-0 p-0" step="0.01" />
+                      </td>
+                      <td class="border border-black px-2 py-1 text-right bg-gray-50">
+                          {{ getCumulativeValue('long_term_payables_ending').toLocaleString() }}
+                      </td>
+                  </tr>
+                  
+                  <tr>
+                      <td class="border border-black px-2 py-1 pl-4">固定资产原价</td>
+                      <td class="border border-black px-2 py-1 text-right">
+                          <input v-model="balanceSheetData.fixed_assets_original_cost_beginning" type="number" class="w-full text-right border-0 p-0" step="0.01" />
+                      </td>
+                      <td class="border border-black px-2 py-1 text-right bg-gray-50">
+                          {{ getCumulativeValue('fixed_assets_original_cost_ending').toLocaleString() }}
+                      </td>
+                      <td class="border border-black px-2 py-1 pl-4">其他长期负债</td>
+                      <td class="border border-black px-2 py-1"></td>
+                      <td class="border border-black px-2 py-1"></td>
+                  </tr>
+                  
+                  <tr>
+                      <td class="border border-black px-2 py-1 pl-4">减：累计折旧</td>
+                      <td class="border border-black px-2 py-1 text-right">
+                          <input v-model="balanceSheetData.accumulated_depreciation_beginning" type="number" class="w-full text-right border-0 p-0" step="0.01" />
+                      </td>
+                      <td class="border border-black px-2 py-1 text-right bg-gray-50">
+                          {{ getCumulativeValue('accumulated_depreciation_ending').toLocaleString() }}
+                      </td>
+                      <td class="border border-black px-2 py-1 pl-6">其中：住房周转金</td>
+                      <td class="border border-black px-2 py-1"></td>
+                      <td class="border border-black px-2 py-1"></td>
+                  </tr>
+                  
+                  <tr>
+                      <td class="border border-black px-2 py-1 pl-4">固定资产净值</td>
+                      <td class="border border-black px-2 py-1 text-right">
+                          <input v-model="balanceSheetData.fixed_assets_net_beginning" type="number" class="w-full text-right border-0 p-0" step="0.01" />
+                      </td>
+                      <td class="border border-black px-2 py-1 text-right bg-gray-50">
+                          {{ getCumulativeValue('fixed_assets_net_ending').toLocaleString() }}
+                      </td>
+                      <td class="border border-black px-2 py-1"></td>
+                      <td class="border border-black px-2 py-1"></td>
+                      <td class="border border-black px-2 py-1"></td>
+                  </tr>
+                  
+                  <tr>
+                      <td class="border border-black px-2 py-1 pl-4">固定资产清理</td>
+                      <td class="border border-black px-2 py-1"></td>
+                      <td class="border border-black px-2 py-1"></td>
+                      <td class="border border-black px-2 py-1 font-bold">长期负债合计</td>
+                      <td class="border border-black px-2 py-1 text-right font-bold">
+                          <input v-model="balanceSheetData.long_term_liabilities_total_beginning" type="number" class="w-full text-right border-0 p-0 font-bold" step="0.01" />
+                      </td>
+                      <td class="border border-black px-2 py-1 text-right font-bold bg-gray-50">
+                          {{ getCumulativeValue('long_term_liabilities_total_ending').toLocaleString() }}
+                      </td>
+                  </tr>
+                  
+                  <tr>
+                      <td class="border border-black px-2 py-1 pl-4">在建工程</td>
+                      <td class="border border-black px-2 py-1 text-right">
+                          <input v-model="balanceSheetData.construction_in_progress_beginning" type="number" class="w-full text-right border-0 p-0" step="0.01" />
+                      </td>
+                      <td class="border border-black px-2 py-1 text-right bg-gray-50">
+                          {{ getCumulativeValue('construction_in_progress_ending').toLocaleString() }}
+                      </td>
+                      <td class="border border-black px-2 py-1 pl-4">递延税项：</td>
+                      <td class="border border-black px-2 py-1"></td>
+                      <td class="border border-black px-2 py-1"></td>
+                  </tr>
+                  
+                  <tr>
+                      <td class="border border-black px-2 py-1 pl-4">待处理固定资产净损失</td>
+                      <td class="border border-black px-2 py-1 text-right">
+                          <input v-model="balanceSheetData.pending_fixed_asset_losses_beginning" type="number" class="w-full text-right border-0 p-0" step="0.01" />
+                      </td>
+                      <td class="border border-black px-2 py-1 text-right bg-gray-50">
+                          {{ getCumulativeValue('pending_fixed_asset_losses_ending').toLocaleString() }}
+                      </td>
+                      <td class="border border-black px-2 py-1 pl-4">递延税款贷项</td>
+                      <td class="border border-black px-2 py-1"></td>
+                      <td class="border border-black px-2 py-1"></td>
+                  </tr>
+                  
+                  <tr>
+                      <td class="border border-black px-2 py-1 font-bold">固定资产合计</td>
+                      <td class="border border-black px-2 py-1 text-right font-bold">
+                          <input v-model="balanceSheetData.fixed_assets_total_beginning" type="number" class="w-full text-right border-0 p-0 font-bold" step="0.01" />
+                      </td>
+                      <td class="border border-black px-2 py-1 text-right font-bold bg-gray-50">
+                          {{ getCumulativeValue('fixed_assets_total_ending').toLocaleString() }}
+                      </td>
+                      <td class="border border-black px-2 py-1"></td>
+                      <td class="border border-black px-2 py-1"></td>
+                      <td class="border border-black px-2 py-1"></td>
+                  </tr>
+                  
+                  <tr>
+                      <td class="border border-black px-2 py-1 font-bold">无形资产及递延资产：</td>
+                      <td class="border border-black px-2 py-1"></td>
+                      <td class="border border-black px-2 py-1"></td>
+                      <td class="border border-black px-2 py-1 font-bold">负债合计</td>
+                      <td class="border border-black px-2 py-1 text-right font-bold">
+                          <input v-model="balanceSheetData.liabilities_total_beginning" type="number" class="w-full text-right border-0 p-0 font-bold" step="0.01" />
+                      </td>
+                      <td class="border border-black px-2 py-1 text-right font-bold bg-gray-50">
+                          {{ getCumulativeValue('liabilities_total_ending').toLocaleString() }}
+                      </td>
+                  </tr>
+                  
+                  <tr>
+                      <td class="border border-black px-2 py-1 pl-4">无形资产</td>
+                      <td class="border border-black px-2 py-1 text-right">
+                          <input v-model="balanceSheetData.intangible_assets_beginning" type="number" class="w-full text-right border-0 p-0" step="0.01" />
+                      </td>
+                      <td class="border border-black px-2 py-1 text-right bg-gray-50">
+                          {{ getCumulativeValue('intangible_assets_ending').toLocaleString() }}
+                      </td>
+                      <td class="border border-black px-2 py-1 font-bold">所有者权益</td>
+                      <td class="border border-black px-2 py-1"></td>
+                      <td class="border border-black px-2 py-1"></td>
+                  </tr>
+                  
+                  <tr>
+                      <td class="border border-black px-2 py-1 pl-4">递延资产</td>
+                      <td class="border border-black px-2 py-1 text-right">
+                          <input v-model="balanceSheetData.deferred_assets_beginning" type="number" class="w-full text-right border-0 p-0" step="0.01" />
+                      </td>
+                      <td class="border border-black px-2 py-1 text-right bg-gray-50">
+                          {{ getCumulativeValue('deferred_assets_ending').toLocaleString() }}
+                      </td>
+                      <td class="border border-black px-2 py-1 pl-4">实收资本</td>
+                      <td class="border border-black px-2 py-1 text-right">
+                          <input v-model="balanceSheetData.paid_in_capital_beginning" type="number" class="w-full text-right border-0 p-0" step="0.01" />
+                      </td>
+                      <td class="border border-black px-2 py-1 text-right bg-gray-50">
+                          {{ getCumulativeValue('paid_in_capital_ending').toLocaleString() }}
+                      </td>
+                  </tr>
+                  
+                  <tr>
+                      <td class="border border-black px-2 py-1"></td>
+                      <td class="border border-black px-2 py-1"></td>
+                      <td class="border border-black px-2 py-1"></td>
+                      <td class="border border-black px-2 py-1 pl-4">资本公积</td>
+                      <td class="border border-black px-2 py-1 text-right">
+                          <input v-model="balanceSheetData.capital_reserve_beginning" type="number" class="w-full text-right border-0 p-0" step="0.01" />
+                      </td>
+                      <td class="border border-black px-2 py-1 text-right bg-gray-50">
+                          {{ getCumulativeValue('capital_reserve_ending').toLocaleString() }}
+                      </td>
+                  </tr>
+                  
+                  <tr>
+                      <td class="border border-black px-2 py-1 font-bold">无形及递延资产合计</td>
+                      <td class="border border-black px-2 py-1 text-right font-bold">
+                          <input v-model="balanceSheetData.intangible_deferred_total_beginning" type="number" class="w-full text-right border-0 p-0 font-bold" step="0.01" />
+                      </td>
+                      <td class="border border-black px-2 py-1 text-right font-bold bg-gray-50">
+                          {{ getCumulativeValue('intangible_deferred_total_ending').toLocaleString() }}
+                      </td>
+                      <td class="border border-black px-2 py-1 pl-4">盈余公积</td>
+                      <td class="border border-black px-2 py-1 text-right">
+                          <input v-model="balanceSheetData.surplus_reserve_beginning" type="number" class="w-full text-right border-0 p-0" step="0.01" />
+                      </td>
+                      <td class="border border-black px-2 py-1 text-right bg-gray-50">
+                          {{ getCumulativeValue('surplus_reserve_ending').toLocaleString() }}
+                      </td>
+                  </tr>
+                  
+                  <tr>
+                      <td class="border border-black px-2 py-1 pl-4">其他长期资产</td>
+                      <td class="border border-black px-2 py-1"></td>
+                      <td class="border border-black px-2 py-1"></td>
+                      <td class="border border-black px-2 py-1 pl-6">其中：公益金</td>
+                      <td class="border border-black px-2 py-1 text-right">
+                          <input v-model="balanceSheetData.public_welfare_fund_beginning" type="number" class="w-full text-right border-0 p-0" step="0.01" />
+                      </td>
+                      <td class="border border-black px-2 py-1 text-right bg-gray-50">
+                          {{ getCumulativeValue('public_welfare_fund_ending').toLocaleString() }}
+                      </td>
+                  </tr>
+                  
+                  <tr>
+                      <td class="border border-black px-2 py-1 pl-4">递延税项：</td>
+                      <td class="border border-black px-2 py-1"></td>
+                      <td class="border border-black px-2 py-1"></td>
+                      <td class="border border-black px-2 py-1 pl-4">未分配利润</td>
+                      <td class="border border-black px-2 py-1 text-right">
+                          <input v-model="balanceSheetData.retained_earnings_beginning" type="number" class="w-full text-right border-0 p-0" step="0.01" />
+                      </td>
+                      <td class="border border-black px-2 py-1 text-right bg-gray-50">
+                          {{ getCumulativeValue('retained_earnings_ending').toLocaleString() }}
+                      </td>
+                  </tr>
+                  
+                  <tr>
+                      <td class="border border-black px-2 py-1 pl-4">递延税项借项</td>
+                      <td class="border border-black px-2 py-1"></td>
+                      <td class="border border-black px-2 py-1"></td>
+                      <td class="border border-black px-2 py-1 font-bold">所有者权益合计</td>
+                      <td class="border border-black px-2 py-1 text-right font-bold">
+                          <input v-model="balanceSheetData.owners_equity_total_beginning" type="number" class="w-full text-right border-0 p-0 font-bold" step="0.01" />
+                      </td>
+                      <td class="border border-black px-2 py-1 text-right font-bold bg-gray-50">
+                          {{ getCumulativeValue('owners_equity_total_ending').toLocaleString() }}
+                      </td>
+                  </tr>
+                  
+
+                  
+                  <tr>
+                      <td class="border border-black px-2 py-1 font-bold">资产总计</td>
+                      <td class="border border-black px-2 py-1 text-right font-bold">
+                          <input v-model="balanceSheetData.assets_total_beginning" type="number" class="w-full text-right border-0 p-0 font-bold" step="0.01" />
+                      </td>
+                      <td class="border border-black px-2 py-1 text-right font-bold bg-gray-50">
+                          {{ getCumulativeValue('assets_total_ending').toLocaleString() }}
+                      </td>
+                      <td class="border border-black px-2 py-1 font-bold">负债和所有者权益合计</td>
+                      <td class="border border-black px-2 py-1 text-right font-bold">
+                          <input v-model="balanceSheetData.liabilities_and_equity_total_beginning" type="number" class="w-full text-right border-0 p-0 font-bold" step="0.01" />
+                      </td>
+                      <td class="border border-black px-2 py-1 text-right font-bold bg-gray-50">
+                          {{ getCumulativeValue('liabilities_and_equity_total_ending').toLocaleString() }}
+                      </td>
+                  </tr>
+                  
+                  <tr>
+                      <td class="border border-black px-2 py-1 pl-4">商品进销差价余额</td>
+                      <td class="border border-black px-2 py-1"></td>
+                      <td class="border border-black px-2 py-1"></td>
+                      <td class="border border-black px-2 py-1 pl-4">长期投资减值准备余额</td>
+                      <td class="border border-black px-2 py-1"></td>
+                      <td class="border border-black px-2 py-1"></td>
+                  </tr>
+                  
+                  <tr>
+                      <td class="border border-black px-2 py-1 pl-4">坏账准备余额</td>
+                      <td class="border border-black px-2 py-1"></td>
+                      <td class="border border-black px-2 py-1"></td>
+                      <td class="border border-black px-2 py-1 pl-4">固定资产减值准备余额</td>
+                      <td class="border border-black px-2 py-1"></td>
+                      <td class="border border-black px-2 py-1"></td>
+                  </tr>
+                  
+                  <tr>
+                      <td class="border border-black px-2 py-1 pl-4">存货跌价准备余额</td>
+                      <td class="border border-black px-2 py-1"></td>
+                      <td class="border border-black px-2 py-1"></td>
+                      <td class="border border-black px-2 py-1 pl-4">无形资产减值准备余额</td>
+                      <td class="border border-black px-2 py-1"></td>
+                      <td class="border border-black px-2 py-1"></td>
+                  </tr>
+                  
+                  <tr>
+                      <td class="border border-black px-2 py-1 pl-4">短期投资减值准备余额</td>
+                      <td class="border border-black px-2 py-1"></td>
+                      <td class="border border-black px-2 py-1"></td>
+                      <td class="border border-black px-2 py-1 pl-4">在建工程减值准备余额</td>
+                      <td class="border border-black px-2 py-1"></td>
+                      <td class="border border-black px-2 py-1"></td>
+                  </tr>
+              </tbody>
+          </table>
+      </div>
+
+      <div class="mt-6 flex justify-end space-x-4">
+          <button @click="handleSave" class="px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+              保存
+          </button>
+        
       </div>
 
       <!-- 附件和备注组件 -->
@@ -248,12 +601,11 @@
         v-model:remarks="remarks"
         v-model:suggestions="suggestions"
       />
-    </div>
   </div>
 </template>
 
-<script setup>
-import { ref, watch, onMounted } from 'vue'
+<script lang="ts" setup>
+import { ref, onMounted, reactive, computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import FormAttachmentAndRemarks from '@/components/FormAttachmentAndRemarks.vue'
 import { recordFormSubmission, loadRemarksAndSuggestions, MODULE_IDS } from '@/utils/formSubmissionHelper'
@@ -264,461 +616,380 @@ const moduleId = MODULE_IDS.TUOYUAN_BALANCE_SHEET
 const remarks = ref('')
 const suggestions = ref('')
 
-// 调试信息
-console.log('拓源资产负债表组件挂载，当前期间:', period.value)
-console.log('模块ID:', moduleId)
-console.log('MODULE_IDS.TUOYUAN_BALANCE_SHEET:', MODULE_IDS.TUOYUAN_BALANCE_SHEET)
+// 资产负债表数据 - 初始化为空值
+const balanceSheetData = reactive({
+// 流动资产
+monetary_funds_beginning: null,
+monetary_funds_ending: null,
+accounts_receivable_beginning: null,
+accounts_receivable_ending: null,
+accounts_receivable_net_beginning: null,
+accounts_receivable_net_ending: null,
+prepaid_accounts_beginning: null,
+prepaid_accounts_ending: null,
+other_receivables_beginning: null,
+other_receivables_ending: null,
+inventory_beginning: null,
+inventory_ending: null,
+raw_materials_beginning: null,
+raw_materials_ending: null,
+finished_goods_beginning: null,
+finished_goods_ending: null,
+current_assets_total_beginning: null,
+current_assets_total_ending: null,
 
-const data = ref({
-        assets: {
-          current: [
-            { name: '货币资金', endBalance: 0, beginBalance: 0 },
-            { name: '交易性金融资产', endBalance: 0, beginBalance: 0 },
-            { name: '衍生金融资产', endBalance: 0, beginBalance: 0 },
-            { name: '应收票据', endBalance: 0, beginBalance: 0 },
-            { name: '应收账款', endBalance: 0, beginBalance: 0 },
-            { name: '应收款项融资', endBalance: 0, beginBalance: 0 },
-            { name: '预付款项', endBalance: 0, beginBalance: 0 },
-            { name: '其他应收款', endBalance: 0, beginBalance: 0 },
-            {
-              name: '其中：应收股利',
-              endBalance: 0,
-              beginBalance: 0,
-              indent: true,
-            },
-            {
-              name: '应收利息',
-              endBalance: 0,
-              beginBalance: 0,
-              indent: true,
-            },
-            { name: '存货', endBalance: 0, beginBalance: 0 },
-            {
-              name: '其中：原材料',
-              endBalance: 0,
-              beginBalance: 0,
-              indent: true,
-            },
-            {
-              name: '库存商品(产成品)',
-              endBalance: 0,
-              beginBalance: 0,
-              indent: true,
-            },
-            { name: '合同资产', endBalance: 0, beginBalance: 0 },
-            { name: '持有待售资产', endBalance: 0, beginBalance: 0 },
-            { name: '一年内到期的非流动资产', endBalance: 0, beginBalance: 0 },
-            { name: '其他流动资产', endBalance: 0, beginBalance: 0 },
-          ],
-          currentTotal: {
-            endBalance: 0,
-            beginBalance: 0,
-          },
-          nonCurrent: [
-            {
-              name: '△发放贷款和垫款',
-              endBalance: 0,
-              beginBalance: 0,
-              highlight: true,
-            },
-            { name: '债权投资', endBalance: 0, beginBalance: 0 },
-            {
-              name: '☆可供出售金融资产',
-              endBalance: 0,
-              beginBalance: 0,
-              highlight: true,
-            },
-            { name: '其他债权投资', endBalance: 0, beginBalance: 0 },
-            { name: '长期应收款', endBalance: 0, beginBalance: 0 },
-            { name: '长期股权投资', endBalance: 0, beginBalance: 0 },
-            { name: '其他权益工具投资', endBalance: 0, beginBalance: 0 },
-            { name: '其他非流动金融资产', endBalance: 0, beginBalance: 0 },
-            { name: '投资性房地产', endBalance: 0, beginBalance: 0 },
-            { name: '固定资产', endBalance: 0, beginBalance: 0 },
-            {
-              name: '其中：固定资产原价',
-              endBalance: 0,
-              beginBalance: 0,
-              indent: true,
-            },
-            {
-              name: '累计折旧',
-              endBalance: 0,
-              beginBalance: 0,
-              indent: true,
-            },
-            {
-              name: '固定资产减值准备',
-              endBalance: 0,
-              beginBalance: 0,
-              indent: true,
-            },
-            { name: '在建工程', endBalance: 0, beginBalance: 0 },
-            {
-              name: '生性生物资产',
-              endBalance: 0,
-              beginBalance: 0,
-              highlight: true,
-            },
-            {
-              name: '油气资产',
-              endBalance: 0,
-              beginBalance: 0,
-              highlight: true,
-            },
-            { name: '使用权资产', endBalance: 0, beginBalance: 0 },
-            { name: '无形资产', endBalance: 0, beginBalance: 0 },
-            { name: '开发支出', endBalance: 0, beginBalance: 0 },
-            { name: '商誉', endBalance: 0, beginBalance: 0 },
-            { name: '长期待摊费用', endBalance: 0, beginBalance: 0 },
-            { name: '递延所得税资产', endBalance: 0, beginBalance: 0 },
-            { name: '其他非流动资产', endBalance: 0, beginBalance: 0 },
-            {
-              name: '其中：特准储备物资',
-              endBalance: 0,
-              beginBalance: 0,
-              indent: true,
-            },
-          ],
-          nonCurrentTotal: {
-            endBalance: 0,
-            beginBalance: 0,
-          },
-        },
-        liabilities: {
-          current: [
-            { name: '短期借款', endBalance: 0, beginBalance: 0 },
-            { name: '交易性金融负债', endBalance: 0, beginBalance: 0 },
-            { name: '衍生金融负债', endBalance: 0, beginBalance: 0 },
-            { name: '应付票据', endBalance: 0, beginBalance: 0 },
-            { name: '应付账款', endBalance: 0, beginBalance: 0 },
-            { name: '预收款项', endBalance: 0, beginBalance: 0 },
-            { name: '合同负债', endBalance: 0, beginBalance: 0 },
-            { name: '应付职工薪酬', endBalance: 0, beginBalance: 0 },
-            {
-              name: '其中：应付工资',
-              endBalance: 0,
-              beginBalance: 0,
-              indent: true,
-            },
-            {
-              name: '应付福利费',
-              endBalance: 0,
-              beginBalance: 0,
-              indent: true,
-            },
-            {
-              name: '#其中：职工奖励及福利基金',
-              endBalance: 0,
-              beginBalance: 0,
-              indent: true,
-              highlight: true,
-            },
-            { name: '应交税费', endBalance: 0, beginBalance: 0 },
-            {
-              name: '其中：应交税金',
-              endBalance: 0,
-              beginBalance: 0,
-              indent: true,
-            },
-            { name: '其他应付款', endBalance: 0, beginBalance: 0 },
-            {
-              name: '其中：应付股利',
-              endBalance: 0,
-              beginBalance: 0,
-              indent: true,
-            },
-            {
-              name: '应付利息',
-              endBalance: 0,
-              beginBalance: 0,
-              indent: true,
-            },
-            {
-              name: '△应付分保账款',
-              endBalance: 0,
-              beginBalance: 0,
-              indent: true,
-            },
-            { name: '持有待售负债', endBalance: 0, beginBalance: 0 },
-            { name: '一年内到期的非流动负债', endBalance: 0, beginBalance: 0 },
-            { name: '其他流动负债', endBalance: 0, beginBalance: 0 },
-          ],
-          currentTotal: {
-            endBalance: 0,
-            beginBalance: 0,
-          },
-          nonCurrent: [
-            {
-              name: '△保险合同准备金',
-              endBalance: 0,
-              beginBalance: 0,
-              highlight: true,
-            },
-            { name: '长期借款', endBalance: 0, beginBalance: 0 },
-            { name: '应付债券', endBalance: 0, beginBalance: 0 },
-            {
-              name: '其中：优先股',
-              endBalance: 0,
-              beginBalance: 0,
-              indent: true,
-            },
-            {
-              name: '永续债',
-              endBalance: 0,
-              beginBalance: 0,
-              indent: true,
-            },
-            { name: '租赁负债', endBalance: 0, beginBalance: 0 },
-            { name: '长期应付款', endBalance: 0, beginBalance: 0 },
-            { name: '长期应付职工薪酬', endBalance: 0, beginBalance: 0 },
-            { name: '预计负债', endBalance: 0, beginBalance: 0 },
-            { name: '递延收益', endBalance: 0, beginBalance: 0 },
-            { name: '递延所得税负债', endBalance: 0, beginBalance: 0 },
-            { name: '其他非流动负债', endBalance: 0, beginBalance: 0 },
-            {
-              name: '其中：特准储备基金',
-              endBalance: 0,
-              beginBalance: 0,
-              indent: true,
-            },
-          ],
-          nonCurrentTotal: {
-            endBalance: 0,
-            beginBalance: 0,
-          },
-        },
-        equity: [
-          { name: '实收资本（或股本）', endBalance: 0, beginBalance: 0 },
-          { name: '国家资本', endBalance: 0, beginBalance: 0 },
-          { name: '国有法人资本', endBalance: 0, beginBalance: 0 },
-          { name: '集体资本', endBalance: 0, beginBalance: 0 },
-          { name: '民营资本', endBalance: 0, beginBalance: 0 },
-          { name: '外商资本', endBalance: 0, beginBalance: 0 },
-          {
-            name: '#减：已归还投资',
-            endBalance: 0,
-            beginBalance: 0,
-            highlight: true,
-          },
-          { name: '实收资本（或股本）净额', endBalance: 0, beginBalance: 0 },
-          { name: '其他权益工具', endBalance: 0, beginBalance: 0 },
-          {
-            name: '其中：优先股',
-            endBalance: 0,
-            beginBalance: 0,
-            indent: true,
-          },
-          {
-            name: '永续债',
-            endBalance: 0,
-            beginBalance: 0,
-            indent: true,
-          },
-          { name: '资本公积', endBalance: 0, beginBalance: 0 },
-          { name: '减：库存股', endBalance: 0, beginBalance: 0 },
-          { name: '其他综合收益', endBalance: 0, beginBalance: 0 },
-          {
-            name: '其中：外币报表折算差额',
-            endBalance: 0,
-            beginBalance: 0,
-            indent: true,
-          },
-          { name: '专项储备', endBalance: 0, beginBalance: 0 },
-          { name: '盈余公积', endBalance: 0, beginBalance: 0 },
-          {
-            name: '其中：法定公积金',
-            endBalance: 0,
-            beginBalance: 0,
-            indent: true,
-          },
-          {
-            name: '任意公积金',
-            endBalance: 0,
-            beginBalance: 0,
-            indent: true,
-          },
-          {
-            name: '#储备基金',
-            endBalance: 0,
-            beginBalance: 0,
-            highlight: true,
-          },
-          {
-            name: '#企业发展基金',
-            endBalance: 0,
-            beginBalance: 0,
-            highlight: true,
-          },
-          {
-            name: '#利润归还投资',
-            endBalance: 0,
-            beginBalance: 0,
-            highlight: true,
-          },
-          {
-            name: '△一般风险准备',
-            endBalance: 0,
-            beginBalance: 0,
-            highlight: true,
-          },
-          { name: '未分配利润', endBalance: 0, beginBalance: 0 },
-          {
-            name: '其中：本年利润',
-            endBalance: 0,
-            beginBalance: 0,
-            indent: true,
-          },
-          {
-            name: '归属于母公司所有者权益（或股东权益）合计',
-            endBalance: 0,
-            beginBalance: 0,
-            total: true,
-          },
-          {
-            name: '*少数股东权益',
-            endBalance: 0,
-            beginBalance: 0,
-            special: true,
-          },
-        ],
-        equityTotal: {
-          endBalance: 0,
-          beginBalance: 0,
-        },
-        total: {
-          endBalance: 0,
-          beginBalance: 0,
-        },
-    })
+// 其他流动资产项目
+short_term_investments_beginning: null,
+short_term_investments_ending: null,
+notes_receivable_beginning: null,
+notes_receivable_ending: null,
+bad_debt_provision_beginning: null,
+bad_debt_provision_ending: null,
+subsidy_receivable_beginning: null,
+subsidy_receivable_ending: null,
+work_in_process_beginning: null,
+work_in_process_ending: null,
+prepaid_expenses_beginning: null,
+prepaid_expenses_ending: null,
+pending_current_asset_losses_beginning: null,
+pending_current_asset_losses_ending: null,
+long_term_bond_investments_due_within_year_beginning: null,
+long_term_bond_investments_due_within_year_ending: null,
+other_current_assets_beginning: null,
+other_current_assets_ending: null,
 
-// 定义函数（需要在watch之前定义）
-const loadData = async () => {
-  try {
-    console.log(`正在加载资产负债表数据，期间: ${period.value.slice(0, 7)}`)
-    
-    const response = await fetch(
-      `http://127.0.0.1:3000/financial-reports/tuoyuan/balance-sheet/${period.value.slice(0, 7)}`
-    )
-    if (!response.ok) {
-      if (response.status === 404) {
-        console.log('该期间暂无数据，使用初始模板')
-        return
-      }
-      throw new Error('加载数据失败')
-    }
-    
-    const result = await response.json()
-    console.log('API返回数据:', result)
+// 资产总计
+assets_total_beginning: null,
+assets_total_ending: null,
 
-    if (result.success && result.data && Object.keys(result.data).length > 0) {
-      console.log('成功获取数据，开始加载...')
-      // 解析JSON字符串并直接赋值
-      const parsedData = typeof result.data === 'string' ? JSON.parse(result.data) : result.data
-      // 直接替换整个 data 对象
-      data.value = parsedData
-      console.log('数据加载完成')
-    } else {
-      console.log('该期间暂无数据，使用初始模板')
-    }
-  } catch (error) {
-    console.error('加载数据失败:', error)
+// 流动负债
+short_term_loans_beginning: null,
+short_term_loans_ending: null,
+notes_payable_beginning: null,
+notes_payable_ending: null,
+accounts_payable_beginning: null,
+accounts_payable_ending: null,
+advance_receipts_beginning: null,
+advance_receipts_ending: null,
+other_payables_beginning: null,
+other_payables_ending: null,
+payroll_payable_beginning: null,
+payroll_payable_ending: null,
+welfare_payable_beginning: null,
+welfare_payable_ending: null,
+taxes_payable_beginning: null,
+taxes_payable_ending: null,
+unpaid_profits_beginning: null,
+unpaid_profits_ending: null,
+other_unpaid_amounts_beginning: null,
+other_unpaid_amounts_ending: null,
+accrued_expenses_beginning: null,
+accrued_expenses_ending: null,
+long_term_liabilities_due_within_year_beginning: null,
+long_term_liabilities_due_within_year_ending: null,
+other_current_liabilities_beginning: null,
+other_current_liabilities_ending: null,
+current_liabilities_total_beginning: null,
+current_liabilities_total_ending: null,
+
+// 负债合计
+liabilities_total_beginning: null,
+liabilities_total_ending: null,
+
+// 所有者权益
+paid_in_capital_beginning: null,
+paid_in_capital_ending: null,
+capital_reserve_beginning: null,
+capital_reserve_ending: null,
+surplus_reserve_beginning: null,
+surplus_reserve_ending: null,
+public_welfare_fund_beginning: null,
+public_welfare_fund_ending: null,
+retained_earnings_beginning: null,
+retained_earnings_ending: null,
+owners_equity_total_beginning: null,
+owners_equity_total_ending: null,
+
+// 负债和所有者权益合计
+liabilities_and_equity_total_beginning: null,
+liabilities_and_equity_total_ending: null,
+
+// 长期投资
+long_term_investments_beginning: null,
+long_term_investments_ending: null,
+
+// 固定资产
+fixed_assets_original_cost_beginning: null,
+fixed_assets_original_cost_ending: null,
+accumulated_depreciation_beginning: null,
+accumulated_depreciation_ending: null,
+fixed_assets_net_beginning: null,
+fixed_assets_net_ending: null,
+fixed_assets_total_beginning: null,
+fixed_assets_total_ending: null,
+
+// 无形资产及递延资产
+intangible_assets_beginning: null,
+intangible_assets_ending: null,
+deferred_assets_beginning: null,
+deferred_assets_ending: null,
+intangible_deferred_total_beginning: null,
+intangible_deferred_total_ending: null,
+
+// 长期负债
+long_term_loans_beginning: null,
+long_term_loans_ending: null,
+long_term_payables_beginning: null,
+long_term_payables_ending: null,
+other_long_term_liabilities_beginning: null,
+other_long_term_liabilities_ending: null,
+housing_revolving_fund_beginning: null,
+housing_revolving_fund_ending: null,
+long_term_liabilities_total_beginning: null,
+long_term_liabilities_total_ending: null,
+
+// 递延税项
+deferred_tax_liabilities_beginning: null,
+deferred_tax_liabilities_ending: null,
+deferred_tax_assets_beginning: null,
+deferred_tax_assets_ending: null,
+
+// 其他长期资产
+other_long_term_assets_beginning: null,
+other_long_term_assets_ending: null,
+construction_in_progress_beginning: null,
+construction_in_progress_ending: null,
+pending_fixed_asset_losses_beginning: null,
+pending_fixed_asset_losses_ending: null,
+fixed_asset_disposal_beginning: null,
+fixed_asset_disposal_ending: null,
+
+// 减值准备系列
+inventory_impairment_provision_beginning: null,
+inventory_impairment_provision_ending: null,
+short_term_investment_impairment_provision_beginning: null,
+short_term_investment_impairment_provision_ending: null,
+bad_debt_provision_series_beginning: null,
+bad_debt_provision_series_ending: null,
+commodity_price_difference_series_beginning: null,
+commodity_price_difference_series_ending: null,
+long_term_investment_impairment_provision_beginning: null,
+long_term_investment_impairment_provision_ending: null,
+fixed_asset_impairment_provision_beginning: null,
+fixed_asset_impairment_provision_ending: null,
+intangible_asset_impairment_provision_beginning: null,
+intangible_asset_impairment_provision_ending: null,
+construction_impairment_provision_beginning: null,
+construction_impairment_provision_ending: null,
+})
+
+// 历史期间数据存储 - 用于累计计算
+const historicalData = ref<{[period: string]: {[field: string]: number}}>({})
+
+// 从后端加载历史期间数据
+const loadHistoricalData = async () => {
+try {
+  // 获取当前年份的所有期间数据
+  const currentYear = new Date().getFullYear()
+  const periods = []
+  for (let month = 1; month <= 12; month++) {
+    periods.push(`${currentYear}-${month.toString().padStart(2, '0')}`)
   }
+  
+  for (const periodStr of periods) {
+    // 只加载当前期间之前的数据用于累计计算
+    if (periodStr < period.value) {
+      try {
+        const response = await fetch(`http://127.0.0.1:3000/forms/submission/${moduleId}/${periodStr}`)
+        if (response.ok) {
+          const result = await response.json()
+          if (result.success && result.data && result.data.submission_data) {
+            const savedData = typeof result.data.submission_data === 'string' 
+              ? JSON.parse(result.data.submission_data) 
+              : result.data.submission_data
+            
+            if (savedData.data && typeof savedData.data === 'string') {
+              historicalData.value[periodStr] = JSON.parse(savedData.data)
+            } else if (savedData.data && typeof savedData.data === 'object') {
+              historicalData.value[periodStr] = savedData.data
+            }
+          }
+        }
+      } catch (error) {
+        console.log(`加载期间 ${periodStr} 数据失败:`, error)
+      }
+    }
+  }
+} catch (error) {
+  console.error('加载历史数据失败:', error)
+}
+}
+
+// 计算累计值的函数（从年初到当前期间的所有当期数据之和）
+const getCumulativeValue = (fieldName: string): number => {
+const beginningField = fieldName.replace('_ending', '_beginning')
+let cumulative = 0
+
+// 累加历史期间的数据（包括当前期间之前的所有数据）
+Object.keys(historicalData.value).forEach(periodKey => {
+  if (periodKey < period.value) { // 只统计当前期间之前的历史数据
+    const periodData = historicalData.value[periodKey]
+    if (periodData && periodData[beginningField]) {
+      cumulative += Number(periodData[beginningField])
+    }
+  }
+})
+
+// 加上当前期间的数据（如果有的话）
+const currentValue = (balanceSheetData as any)[beginningField]
+if (currentValue !== null && currentValue !== undefined && currentValue !== '') {
+  cumulative += Number(currentValue)
+}
+
+return cumulative
+}
+
+// 保存功能
+const handleSave = async () => {
+try {
+  const dataToSave = {
+    period: period.value,
+    company: 'changzhou_tuoyuan',
+    data: JSON.stringify(balanceSheetData)
+  }
+
+  // 这里可以调用API保存数据
+  console.log('保存数据:', dataToSave)
+  
+  // 记录表单提交
+  await recordFormSubmission(moduleId, period.value, dataToSave, remarks.value, suggestions.value)
+  
+  alert('保存成功')
+} catch (error) {
+  console.error('保存失败:', error)
+  alert('保存失败')
+}
+}
+
+// 重置功能
+const handleReset = () => {
+Object.keys(balanceSheetData).forEach(key => {
+  (balanceSheetData as any)[key] = null
+})
+}
+
+// 导出功能
+const handleExport = () => {
+// 可以实现导出到Excel的功能
+console.log('导出数据')
+}
+
+// 清空当期数据（保持累计计算不受影响）
+const clearCurrentData = () => {
+Object.keys(balanceSheetData).forEach(key => {
+  if (key.includes('_beginning')) {
+    (balanceSheetData as any)[key] = null
+  }
+})
+}
+
+// 加载保存的数据
+const loadSavedData = async () => {
+// 首先清空当期数据
+clearCurrentData()
+
+try {
+  const response = await fetch(`http://127.0.0.1:3000/forms/submission/${moduleId}/${period.value}`)
+  if (response.ok) {
+    const result = await response.json()
+    if (result.success && result.data && result.data.submission_data) {
+      // 解析保存的数据
+      const savedData = typeof result.data.submission_data === 'string' 
+        ? JSON.parse(result.data.submission_data) 
+        : result.data.submission_data
+      
+      // 将保存的数据赋值给表单
+      if (savedData.data && typeof savedData.data === 'string') {
+        const formData = JSON.parse(savedData.data)
+        Object.keys(formData).forEach(key => {
+          if (key in balanceSheetData) {
+            (balanceSheetData as any)[key] = formData[key]
+          }
+        })
+      } else if (savedData.data && typeof savedData.data === 'object') {
+        Object.keys(savedData.data).forEach(key => {
+          if (key in balanceSheetData) {
+            (balanceSheetData as any)[key] = savedData.data[key]
+          }
+        })
+      }
+      
+      console.log('数据加载成功:', savedData)
+    } else {
+      console.log('当前期间没有保存的数据，显示空值')
+    }
+  } else {
+    console.log('请求失败，显示空值')
+  }
+} catch (error) {
+  console.log('没有找到保存的数据或加载失败，显示空值:', error)
+}
 }
 
 // 加载备注和建议
 const loadRemarksData = async () => {
-  const { remarks: loadedRemarks, suggestions: loadedSuggestions } = await loadRemarksAndSuggestions(moduleId, period.value)
-  remarks.value = loadedRemarks
-  suggestions.value = loadedSuggestions
+const { remarks: loadedRemarks, suggestions: loadedSuggestions } = await loadRemarksAndSuggestions(moduleId, period.value)
+remarks.value = loadedRemarks
+suggestions.value = loadedSuggestions
 }
 
 // 监听路由参数变化
-watch(() => route.query.period, (newPeriod) => {
-  if (newPeriod) {
-    period.value = newPeriod.toString()
-    loadData()
-    loadRemarksData()
-  }
+watch(() => route.query.period, async (newPeriod) => {
+if (newPeriod) {
+  period.value = newPeriod.toString()
+  await loadSavedData()
+  await loadRemarksData()
+}
 }, { immediate: true })
 
 // 监听期间变化
-watch(period, (newPeriod) => {
-  if (newPeriod) {
-    loadData()
-    loadRemarksData()
-  }
+watch(period, async () => {
+console.log('期间变化为:', period.value)
+await loadHistoricalData() // 重新加载历史数据
+await loadSavedData()
+await loadRemarksData()
 })
 
-const save = async () => {
-  try {
-    console.log('保存资产负债表数据:', { period: period.value.slice(0, 7), data: data.value })
-    
-    const response = await fetch('http://127.0.0.1:3000/financial-reports/tuoyuan/balance-sheet', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        period: period.value.slice(0, 7),
-        data: data.value,
-      }),
-    })
-    
-    if (!response.ok) {
-      const result = await response.json()
-      throw new Error(result.error || '保存失败')
-    }
-    
-    // 记录表单提交
-    await recordFormSubmission(moduleId, period.value, data.value, remarks.value, suggestions.value)
-    alert('数据保存成功')
-  } catch (error) {
-    console.error('保存失败:', error)
-    alert('保存失败: ' + (error instanceof Error ? error.message : '网络错误'))
-  }
-}
-
-const reset = () => {
-  // 重置所有数据
-  const resetItems = (items) => {
-    items.forEach((item) => {
-      item.endBalance = 0
-      item.beginBalance = 0
-    })
-  }
-  resetItems(data.value.assets.current)
-  resetItems(data.value.assets.nonCurrent)
-  resetItems(data.value.liabilities.current)
-  resetItems(data.value.liabilities.nonCurrent)
-  resetItems(data.value.equity)
-  data.value.assets.currentTotal.endBalance = 0
-  data.value.assets.currentTotal.beginBalance = 0
-  data.value.assets.nonCurrentTotal.endBalance = 0
-  data.value.assets.nonCurrentTotal.beginBalance = 0
-  data.value.liabilities.currentTotal.endBalance = 0
-  data.value.liabilities.currentTotal.beginBalance = 0
-  data.value.liabilities.nonCurrentTotal.endBalance = 0
-  data.value.liabilities.nonCurrentTotal.beginBalance = 0
-  data.value.equityTotal.endBalance = 0
-  data.value.equityTotal.beginBalance = 0
-  data.value.total.endBalance = 0
-  data.value.total.beginBalance = 0
-  remarks.value = ''
-  suggestions.value = ''
-  console.log('已重置为初始数据')
-}
-
-onMounted(() => {
-  console.log('资产负债表组件挂载，当前期间:', period.value)
-  // 组件挂载时，加载数据
-  if (route.query.period) {
-    loadData()
-  } else if (period.value) {
-    loadData()
-  }
-  loadRemarksData()
+onMounted(async () => {
+console.log('常州拓源资产负债表组件挂载，当前期间:', period.value)
+await loadHistoricalData() // 加载历史数据用于累计计算
+await loadSavedData()  // 先加载保存的数据
+await loadRemarksData() // 再加载备注和建议
 })
 </script>
 
 <style scoped>
-/* 根据需要添加样式 */
-</style>
+input[type="number"] {
+-webkit-appearance: none;
+-moz-appearance: textfield;
+}
+
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+-webkit-appearance: none;
+margin: 0;
+}
+
+table {
+font-size: 12px;
+}
+
+td input {
+font-size: 12px;
+background: transparent;
+}
+
+.font-bold input {
+font-weight: bold;
+}
+</style> 
