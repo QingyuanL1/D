@@ -19,8 +19,8 @@
             <thead class="sticky top-0 bg-white">
               <tr class="bg-gray-50">
                 <th class="border border-gray-300 px-4 py-2">资产</th>
-                <th class="border border-gray-300 px-4 py-2 w-40">当期</th>
-                <th class="border border-gray-300 px-4 py-2 w-40">累计</th>
+                <th class="border border-gray-300 px-4 py-2 w-40">期末余额</th>
+                <th class="border border-gray-300 px-4 py-2 w-40">期初余额</th>
               </tr>
             </thead>
             <tbody>
@@ -34,10 +34,13 @@
               <tr v-for="(item, index) in data.assets.current" :key="`current-asset-${index}`">
                 <td class="border border-gray-300 px-4 py-2 pl-8">{{ item.name }}</td>
                 <td class="border border-gray-300 px-4 py-2">
-                  <input type="number" v-model.number="item.yearInitial" class="w-full px-2 py-1 border rounded" step="0.01" />
+                  <input type="number" v-model.number="item.endBalance" 
+                    class="w-full px-2 py-1 border rounded" step="0.01" />
                 </td>
-                <td class="border border-gray-300 px-4 py-2 bg-gray-50">
-                  {{ getCumulative(item.name, item.yearInitial).toLocaleString() }}
+                <td class="border border-gray-300 px-4 py-2">
+                  <input v-if="period.endsWith('-01')" type="number" v-model.number="item.beginBalance" 
+                    class="w-full px-2 py-1 border rounded" step="0.01" />
+                  <span v-else class="block w-full px-2 py-1 text-gray-700">{{ item.beginBalance || 0 }}</span>
                 </td>
               </tr>
 
@@ -45,21 +48,23 @@
               <tr v-for="(item, index) in data.assets.nonCurrentLongTerm" :key="`noncurrent-longterm-${index}`">
                 <td class="border border-gray-300 px-4 py-2 pl-8">{{ item.name }}</td>
                 <td class="border border-gray-300 px-4 py-2">
-                  <input type="number" v-model.number="item.yearInitial" class="w-full px-2 py-1 border rounded" step="0.01" />
+                  <input type="number" v-model.number="item.endBalance" class="w-full px-2 py-1 border rounded" step="0.01" />
                 </td>
                 <td class="border border-gray-300 px-4 py-2">
-                  <input type="number" v-model.number="item.periodEnd" class="w-full px-2 py-1 border rounded" step="0.01" />
+                  <input v-if="period.endsWith('-01')" type="number" v-model.number="item.beginBalance" 
+                    class="w-full px-2 py-1 border rounded" step="0.01" />
+                  <span v-else class="block w-full px-2 py-1 text-gray-700">{{ item.beginBalance || 0 }}</span>
                 </td>
               </tr>
 
               <!-- 流动资产合计 -->
               <tr class="bg-yellow-50 font-bold">
-                <td class="border border-gray-300 px-4 py-2">{{ data.assets.currentTotal.name }}</td>
+                <td class="border border-gray-300 px-4 py-2">{{ data.assets.currentTotal.name }} <span class="text-blue-600 text-xs">[自动计算]</span></td>
                 <td class="border border-gray-300 px-4 py-2">
-                  <input type="number" v-model.number="data.assets.currentTotal.yearInitial" class="w-full px-2 py-1 border rounded bg-yellow-50 font-bold" step="0.01" />
+                  <span class="block w-full px-2 py-1 bg-yellow-50 font-bold text-blue-700">{{ data.assets.currentTotal.endBalance || 0 }}</span>
                 </td>
                 <td class="border border-gray-300 px-4 py-2">
-                  <input type="number" v-model.number="data.assets.currentTotal.periodEnd" class="w-full px-2 py-1 border rounded bg-yellow-50 font-bold" step="0.01" />
+                  <span class="block w-full px-2 py-1 bg-yellow-50 font-bold text-blue-700">{{ data.assets.currentTotal.beginBalance || 0 }}</span>
                 </td>
               </tr>
 
@@ -73,10 +78,12 @@
               <tr v-for="(item, index) in data.assets.longTermInvestment" :key="`longterm-investment-${index}`">
                 <td class="border border-gray-300 px-4 py-2 pl-8">{{ item.name }}</td>
                 <td class="border border-gray-300 px-4 py-2">
-                  <input type="number" v-model.number="item.yearInitial" class="w-full px-2 py-1 border rounded" step="0.01" />
+                  <input type="number" v-model.number="item.endBalance" class="w-full px-2 py-1 border rounded" step="0.01" />
                 </td>
                 <td class="border border-gray-300 px-4 py-2">
-                  <input type="number" v-model.number="item.periodEnd" class="w-full px-2 py-1 border rounded" step="0.01" />
+                  <input v-if="period.endsWith('-01')" type="number" v-model.number="item.beginBalance" 
+                    class="w-full px-2 py-1 border rounded" step="0.01" />
+                  <span v-else class="block w-full px-2 py-1 text-gray-700">{{ item.beginBalance || 0 }}</span>
                 </td>
               </tr>
 
@@ -90,29 +97,23 @@
               <tr v-for="(item, index) in data.assets.fixedAssets" :key="`fixed-assets-${index}`">
                 <td class="border border-gray-300 px-4 py-2 pl-8">{{ item.name }}</td>
                 <td class="border border-gray-300 px-4 py-2">
-
-                  <input type="number" v-model.number="item.yearInitial" class="w-full px-2 py-1 border rounded" step="0.01" />
-
+                  <input type="number" v-model.number="item.endBalance" class="w-full px-2 py-1 border rounded" step="0.01" />
                 </td>
                 <td class="border border-gray-300 px-4 py-2">
-
-                  <input type="number" v-model.number="item.periodEnd" class="w-full px-2 py-1 border rounded" step="0.01" />
-
+                  <input v-if="period.endsWith('-01')" type="number" v-model.number="item.beginBalance" 
+                    class="w-full px-2 py-1 border rounded" step="0.01" />
+                  <span v-else class="block w-full px-2 py-1 text-gray-700">{{ item.beginBalance || 0 }}</span>
                 </td>
               </tr>
 
               <!-- 固定资产合计 -->
               <tr class="bg-yellow-50 font-bold">
-                <td class="border border-gray-300 px-4 py-2">{{ data.assets.fixedAssetsTotal.name }}</td>
+                <td class="border border-gray-300 px-4 py-2">{{ data.assets.fixedAssetsTotal.name }} <span class="text-blue-600 text-xs">[自动计算]</span></td>
                 <td class="border border-gray-300 px-4 py-2">
-
-                  <input type="number" v-model.number="data.assets.fixedAssetsTotal.yearInitial" class="w-full px-2 py-1 border rounded" step="0.01" />
-
+                  <span class="block w-full px-2 py-1 bg-yellow-50 font-bold text-blue-700">{{ data.assets.fixedAssetsTotal.endBalance || 0 }}</span>
                 </td>
                 <td class="border border-gray-300 px-4 py-2">
-
-                  <input type="number" v-model.number="data.assets.fixedAssetsTotal.periodEnd" class="w-full px-2 py-1 border rounded" step="0.01" />
-
+                  <span class="block w-full px-2 py-1 bg-yellow-50 font-bold text-blue-700">{{ data.assets.fixedAssetsTotal.beginBalance || 0 }}</span>
                 </td>
               </tr>
 
@@ -127,12 +128,12 @@
                 <td class="border border-gray-300 px-4 py-2 pl-8">{{ item.name }}</td>
                 <td class="border border-gray-300 px-4 py-2">
 
-                  <input type="number" v-model.number="item.yearInitial" class="w-full px-2 py-1 border rounded" step="0.01" />
+                  <input type="number" v-model.number="item.beginBalance" class="w-full px-2 py-1 border rounded" step="0.01" />
 
                 </td>
                 <td class="border border-gray-300 px-4 py-2">
 
-                  <input type="number" v-model.number="item.periodEnd" class="w-full px-2 py-1 border rounded" step="0.01" />
+                  <input type="number" v-model.number="item.endBalance" class="w-full px-2 py-1 border rounded" step="0.01" />
 
                 </td>
               </tr>
@@ -142,12 +143,12 @@
                 <td class="border border-gray-300 px-4 py-2">{{ data.assets.intangibleAssetsTotal.name }}</td>
                 <td class="border border-gray-300 px-4 py-2">
 
-                  <input type="number" v-model.number="data.assets.intangibleAssetsTotal.yearInitial" class="w-full px-2 py-1 border rounded" step="0.01" />
+                  <input type="number" v-model.number="data.assets.intangibleAssetsTotal.beginBalance" class="w-full px-2 py-1 border rounded" step="0.01" />
 
                 </td>
                 <td class="border border-gray-300 px-4 py-2">
 
-                  <input type="number" v-model.number="data.assets.intangibleAssetsTotal.periodEnd" class="w-full px-2 py-1 border rounded" step="0.01" />
+                  <input type="number" v-model.number="data.assets.intangibleAssetsTotal.endBalance" class="w-full px-2 py-1 border rounded" step="0.01" />
 
                 </td>
               </tr>
@@ -157,12 +158,12 @@
                 <td class="border border-gray-300 px-4 py-2">{{ item.name }}</td>
                 <td class="border border-gray-300 px-4 py-2">
 
-                  <input type="number" v-model.number="item.yearInitial" class="w-full px-2 py-1 border rounded" step="0.01" />
+                  <input type="number" v-model.number="item.beginBalance" class="w-full px-2 py-1 border rounded" step="0.01" />
 
                 </td>
                 <td class="border border-gray-300 px-4 py-2">
 
-                  <input type="number" v-model.number="item.periodEnd" class="w-full px-2 py-1 border rounded" step="0.01" />
+                  <input type="number" v-model.number="item.endBalance" class="w-full px-2 py-1 border rounded" step="0.01" />
 
                 </td>
               </tr>
@@ -172,12 +173,12 @@
                 <td class="border border-gray-300 px-4 py-2">{{ data.assets.assetsTotal.name }}</td>
                 <td class="border border-gray-300 px-4 py-2">
 
-                  <input type="number" v-model.number="data.assets.assetsTotal.yearInitial" class="w-full px-2 py-1 border rounded" step="0.01" />
+                  <input type="number" v-model.number="data.assets.assetsTotal.beginBalance" class="w-full px-2 py-1 border rounded" step="0.01" />
 
                 </td>
                 <td class="border border-gray-300 px-4 py-2">
 
-                  <input type="number" v-model.number="data.assets.assetsTotal.periodEnd" class="w-full px-2 py-1 border rounded" step="0.01" />
+                  <input type="number" v-model.number="data.assets.assetsTotal.endBalance" class="w-full px-2 py-1 border rounded" step="0.01" />
 
                 </td>
               </tr>
@@ -191,8 +192,8 @@
             <thead class="sticky top-0 bg-white">
               <tr class="bg-gray-50">
                 <th class="border border-gray-300 px-4 py-2">负债和所有者权益</th>
-                <th class="border border-gray-300 px-4 py-2 w-40">当期</th>
-                <th class="border border-gray-300 px-4 py-2 w-40">累计</th>
+                <th class="border border-gray-300 px-4 py-2 w-40">期末余额</th>
+                <th class="border border-gray-300 px-4 py-2 w-40">期初余额</th>
               </tr>
             </thead>
             <tbody>
@@ -206,10 +207,10 @@
               <tr v-for="(item, index) in data.liabilities.current" :key="`current-liability-${index}`">
                 <td class="border border-gray-300 px-4 py-2 pl-8">{{ item.name }}</td>
                 <td class="border border-gray-300 px-4 py-2">
-                  <input type="number" v-model.number="item.yearInitial" class="w-full px-2 py-1 border rounded" step="0.01" />
+                  <input type="number" v-model.number="item.beginBalance" class="w-full px-2 py-1 border rounded" step="0.01" />
                 </td>
                 <td class="border border-gray-300 px-4 py-2">
-                  <input type="number" v-model.number="item.periodEnd" class="w-full px-2 py-1 border rounded" step="0.01" />
+                  <input type="number" v-model.number="item.endBalance" class="w-full px-2 py-1 border rounded" step="0.01" />
                 </td>
               </tr>
 
@@ -217,10 +218,10 @@
               <tr class="bg-yellow-50 font-bold">
                 <td class="border border-gray-300 px-4 py-2">{{ data.liabilities.currentLiabilitiesTotal.name }}</td>
                 <td class="border border-gray-300 px-4 py-2">
-                  <input type="number" v-model.number="data.liabilities.currentLiabilitiesTotal.yearInitial" class="w-full px-2 py-1 border rounded" step="0.01" />
+                  <input type="number" v-model.number="data.liabilities.currentLiabilitiesTotal.beginBalance" class="w-full px-2 py-1 border rounded" step="0.01" />
                 </td>
                 <td class="border border-gray-300 px-4 py-2">
-                  <input type="number" v-model.number="data.liabilities.currentLiabilitiesTotal.periodEnd" class="w-full px-2 py-1 border rounded" step="0.01" />
+                  <input type="number" v-model.number="data.liabilities.currentLiabilitiesTotal.endBalance" class="w-full px-2 py-1 border rounded" step="0.01" />
                 </td>
               </tr>
 
@@ -234,10 +235,10 @@
               <tr v-for="(item, index) in data.liabilities.longTermLiabilities" :key="`longterm-liability-${index}`">
                 <td class="border border-gray-300 px-4 py-2 pl-8">{{ item.name }}</td>
                 <td class="border border-gray-300 px-4 py-2">
-                  <input type="number" v-model.number="item.yearInitial" class="w-full px-2 py-1 border rounded" step="0.01" />
+                  <input type="number" v-model.number="item.beginBalance" class="w-full px-2 py-1 border rounded" step="0.01" />
                 </td>
                 <td class="border border-gray-300 px-4 py-2">
-                  <input type="number" v-model.number="item.periodEnd" class="w-full px-2 py-1 border rounded" step="0.01" />
+                  <input type="number" v-model.number="item.endBalance" class="w-full px-2 py-1 border rounded" step="0.01" />
                 </td>
               </tr>
 
@@ -245,10 +246,10 @@
               <tr class="bg-yellow-50 font-bold">
                 <td class="border border-gray-300 px-4 py-2">{{ data.liabilities.longTermLiabilitiesTotal.name }}</td>
                 <td class="border border-gray-300 px-4 py-2">
-                  <input type="number" v-model.number="data.liabilities.longTermLiabilitiesTotal.yearInitial" class="w-full px-2 py-1 border rounded" step="0.01" />
+                  <input type="number" v-model.number="data.liabilities.longTermLiabilitiesTotal.beginBalance" class="w-full px-2 py-1 border rounded" step="0.01" />
                 </td>
                 <td class="border border-gray-300 px-4 py-2">
-                  <input type="number" v-model.number="data.liabilities.longTermLiabilitiesTotal.periodEnd" class="w-full px-2 py-1 border rounded" step="0.01" />
+                  <input type="number" v-model.number="data.liabilities.longTermLiabilitiesTotal.endBalance" class="w-full px-2 py-1 border rounded" step="0.01" />
                 </td>
               </tr>
 
@@ -256,10 +257,10 @@
               <tr v-for="(item, index) in data.liabilities.deferredTaxLiabilities" :key="`deferred-tax-${index}`">
                 <td class="border border-gray-300 px-4 py-2">{{ item.name }}</td>
                 <td class="border border-gray-300 px-4 py-2">
-                  <input type="number" v-model.number="item.yearInitial" class="w-full px-2 py-1 border rounded" step="0.01" />
+                  <input type="number" v-model.number="item.beginBalance" class="w-full px-2 py-1 border rounded" step="0.01" />
                 </td>
                 <td class="border border-gray-300 px-4 py-2">
-                  <input type="number" v-model.number="item.periodEnd" class="w-full px-2 py-1 border rounded" step="0.01" />
+                  <input type="number" v-model.number="item.endBalance" class="w-full px-2 py-1 border rounded" step="0.01" />
                 </td>
               </tr>
 
@@ -267,10 +268,10 @@
               <tr class="bg-yellow-50 font-bold">
                 <td class="border border-gray-300 px-4 py-2">{{ data.liabilities.liabilitiesTotal.name }}</td>
                 <td class="border border-gray-300 px-4 py-2">
-                  <input type="number" v-model.number="data.liabilities.liabilitiesTotal.yearInitial" class="w-full px-2 py-1 border rounded" step="0.01" />
+                  <input type="number" v-model.number="data.liabilities.liabilitiesTotal.beginBalance" class="w-full px-2 py-1 border rounded" step="0.01" />
                 </td>
                 <td class="border border-gray-300 px-4 py-2">
-                  <input type="number" v-model.number="data.liabilities.liabilitiesTotal.periodEnd" class="w-full px-2 py-1 border rounded" step="0.01" />
+                  <input type="number" v-model.number="data.liabilities.liabilitiesTotal.endBalance" class="w-full px-2 py-1 border rounded" step="0.01" />
                 </td>
               </tr>
 
@@ -284,10 +285,10 @@
               <tr v-for="(item, index) in data.equity.items" :key="`equity-${index}`">
                 <td class="border border-gray-300 px-4 py-2 pl-8">{{ item.name }}</td>
                 <td class="border border-gray-300 px-4 py-2">
-                  <input type="number" v-model.number="item.yearInitial" class="w-full px-2 py-1 border rounded" step="0.01" />
+                  <input type="number" v-model.number="item.beginBalance" class="w-full px-2 py-1 border rounded" step="0.01" />
                 </td>
                 <td class="border border-gray-300 px-4 py-2">
-                  <input type="number" v-model.number="item.periodEnd" class="w-full px-2 py-1 border rounded" step="0.01" />
+                  <input type="number" v-model.number="item.endBalance" class="w-full px-2 py-1 border rounded" step="0.01" />
                 </td>
               </tr>
 
@@ -295,10 +296,10 @@
               <tr class="bg-yellow-50 font-bold">
                 <td class="border border-gray-300 px-4 py-2">{{ data.equity.equityTotal.name }}</td>
                 <td class="border border-gray-300 px-4 py-2">
-                  <input type="number" v-model.number="data.equity.equityTotal.yearInitial" class="w-full px-2 py-1 border rounded" step="0.01" />
+                  <input type="number" v-model.number="data.equity.equityTotal.beginBalance" class="w-full px-2 py-1 border rounded" step="0.01" />
                 </td>
                 <td class="border border-gray-300 px-4 py-2">
-                  <input type="number" v-model.number="data.equity.equityTotal.periodEnd" class="w-full px-2 py-1 border rounded" step="0.01" />
+                  <input type="number" v-model.number="data.equity.equityTotal.endBalance" class="w-full px-2 py-1 border rounded" step="0.01" />
                 </td>
               </tr>
 
@@ -306,10 +307,10 @@
               <tr class="bg-blue-50 font-bold text-lg">
                 <td class="border border-gray-300 px-4 py-2">{{ data.equity.liabilitiesAndEquityTotal.name }}</td>
                 <td class="border border-gray-300 px-4 py-2">
-                  <input type="number" v-model.number="data.equity.liabilitiesAndEquityTotal.yearInitial" class="w-full px-2 py-1 border rounded" step="0.01" />
+                  <input type="number" v-model.number="data.equity.liabilitiesAndEquityTotal.beginBalance" class="w-full px-2 py-1 border rounded" step="0.01" />
                 </td>
                 <td class="border border-gray-300 px-4 py-2">
-                  <input type="number" v-model.number="data.equity.liabilitiesAndEquityTotal.periodEnd" class="w-full px-2 py-1 border rounded" step="0.01" />
+                  <input type="number" v-model.number="data.equity.liabilitiesAndEquityTotal.endBalance" class="w-full px-2 py-1 border rounded" step="0.01" />
                 </td>
               </tr>
             </tbody>
@@ -341,7 +342,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted, computed } from 'vue'
+import { ref, watch, onMounted, computed, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
 import FormAttachmentAndRemarks from '@/components/FormAttachmentAndRemarks.vue'
 import { recordFormSubmission, loadRemarksAndSuggestions, MODULE_IDS } from '@/utils/formSubmissionHelper'
@@ -395,80 +396,185 @@ const loadHistoricalPeriodData = async () => {
   }
 }
 
-// 计算累计值（从年初到当前期间的所有当期数据之和）
-const getCumulative = (itemName: string, currentValue: number | null): number => {
-  let cumulative = 0
-  
-  // 累加历史期间的数据（只统计当前期间之前的数据）
-  Object.keys(historicalPeriodData.value)
-    .filter(periodKey => periodKey < period.value) // 只统计之前的期间
-    .forEach(periodKey => {
-      const periodData = historicalPeriodData.value[periodKey]
-      if (periodData) {
-        // 查找对应项目的数据
-        const findItemValue = (data: any, name: string): number => {
-          if (!data) return 0
-          
-          // 递归搜索所有级别的数据
-          const searchInObject = (obj: any): number => {
-            if (Array.isArray(obj)) {
-              for (const item of obj) {
-                if (item.name === name && item.yearInitial !== null && item.yearInitial !== undefined) {
-                  return Number(item.yearInitial)
-                }
-                const found = searchInObject(item)
-                if (found) return found
-              }
-            } else if (typeof obj === 'object') {
-              for (const key in obj) {
-                const found = searchInObject(obj[key])
-                if (found) return found
+// 自动从上月期末余额设置期初余额（非1月份）
+const autoSetBeginBalanceFromPreviousMonth = async (currentPeriod: string) => {
+  // 如果是1月份，不需要自动设置期初余额
+  if (currentPeriod.endsWith('-01')) {
+    console.log('1月份数据，期初余额需要手动输入')
+    return
+  }
+
+  try {
+    // 计算前一个月
+    const [year, month] = currentPeriod.split('-').map(Number)
+    let prevYear = year
+    let prevMonth = month - 1
+
+    if (prevMonth === 0) {
+      prevYear = year - 1
+      prevMonth = 12
+    }
+
+    const prevPeriod = `${prevYear}-${prevMonth.toString().padStart(2, '0')}`
+    
+    const response = await fetch(`http://127.0.0.1:3000/forms/submission/${moduleId}/${prevPeriod}`)
+    
+    if (!response.ok) {
+      console.log(`前一个月(${prevPeriod})暂无数据，期初余额保持为0`)
+      return
+    }
+
+    const result = await response.json()
+    if (result.success && result.data && result.data.submission_data) {
+      const previousData = typeof result.data.submission_data === 'string' 
+        ? JSON.parse(result.data.submission_data) 
+        : result.data.submission_data
+      
+      console.log(`自动获取到前一个月(${prevPeriod})数据，设置期初余额`)
+
+      // 递归设置期初余额
+      const setBeginBalance = (current: any, previous: any) => {
+        if (Array.isArray(current) && Array.isArray(previous)) {
+          current.forEach((item, index) => {
+            if (previous[index] && item.name === previous[index].name) {
+              item.beginBalance = previous[index].endBalance || 0
+            }
+          })
+        } else if (current && previous && typeof current === 'object' && typeof previous === 'object') {
+          Object.keys(current).forEach(key => {
+            if (previous[key]) {
+              if (key.includes('Total') && current[key].endBalance !== undefined) {
+                current[key].beginBalance = previous[key].endBalance || 0
+              } else {
+                setBeginBalance(current[key], previous[key])
               }
             }
-            return 0
-          }
-          
-          return searchInObject(data)
+          })
         }
-        
-        cumulative += findItemValue(periodData, itemName)
       }
-    })
-  
-  // 加上当前期间的数据（如果有的话）
-  if (currentValue !== null && currentValue !== undefined) {
-    cumulative += Number(currentValue)
+
+      setBeginBalance(data.value, previousData)
+    }
+  } catch (error) {
+    console.error('自动设置期初余额失败:', error)
   }
-  
-  return cumulative
 }
 
-// 清空当期数据（保持累计计算不受影响）
+// 清空所有数据
 const clearCurrentData = () => {
-  // 递归清空所有yearInitial字段
-  const clearYearInitial = (obj: any) => {
+  // 递归清空所有beginBalance和endBalance字段
+  const clearAllBalances = (obj: any) => {
     if (Array.isArray(obj)) {
       obj.forEach(item => {
         if (item && typeof item === 'object') {
-          if ('yearInitial' in item) {
-            item.yearInitial = null
+          if ('beginBalance' in item) {
+            item.beginBalance = 0
           }
-          clearYearInitial(item)
+          if ('endBalance' in item) {
+            item.endBalance = 0
+          }
+          clearAllBalances(item)
         }
       })
     } else if (obj && typeof obj === 'object') {
       for (const key in obj) {
-        if (key === 'yearInitial') {
-          obj[key] = null
+        if (key === 'beginBalance' || key === 'endBalance') {
+          obj[key] = 0
         } else {
-          clearYearInitial(obj[key])
+          clearAllBalances(obj[key])
         }
       }
     }
   }
   
-  clearYearInitial(data.value)
+  clearAllBalances(data.value)
 }
+
+// 自动计算函数
+const calculateTotals = () => {
+  // 计算流动资产合计
+  const currentAssetsEndBalance = data.value.assets.current.reduce((sum, item) => sum + (item.endBalance || 0), 0) +
+    data.value.assets.nonCurrentLongTerm.reduce((sum, item) => sum + (item.endBalance || 0), 0)
+  const currentAssetsBeginBalance = data.value.assets.current.reduce((sum, item) => sum + (item.beginBalance || 0), 0) +
+    data.value.assets.nonCurrentLongTerm.reduce((sum, item) => sum + (item.beginBalance || 0), 0)
+    
+  data.value.assets.currentTotal.endBalance = currentAssetsEndBalance
+  data.value.assets.currentTotal.beginBalance = currentAssetsBeginBalance
+
+  // 计算固定资产合计
+  const fixedAssetsEndBalance = data.value.assets.fixedAssets.reduce((sum, item) => sum + (item.endBalance || 0), 0)
+  const fixedAssetsBeginBalance = data.value.assets.fixedAssets.reduce((sum, item) => sum + (item.beginBalance || 0), 0)
+  
+  data.value.assets.fixedAssetsTotal.endBalance = fixedAssetsEndBalance
+  data.value.assets.fixedAssetsTotal.beginBalance = fixedAssetsBeginBalance
+
+  // 计算无形资产及其他资产合计
+  const intangibleAssetsEndBalance = data.value.assets.intangibleAssets.reduce((sum, item) => sum + (item.endBalance || 0), 0)
+  const intangibleAssetsBeginBalance = data.value.assets.intangibleAssets.reduce((sum, item) => sum + (item.beginBalance || 0), 0)
+  
+  data.value.assets.intangibleAssetsTotal.endBalance = intangibleAssetsEndBalance
+  data.value.assets.intangibleAssetsTotal.beginBalance = intangibleAssetsBeginBalance
+
+  // 计算资产总计
+  const assetsEndBalance = currentAssetsEndBalance + fixedAssetsEndBalance + intangibleAssetsEndBalance +
+    data.value.assets.longTermInvestment.reduce((sum, item) => sum + (item.endBalance || 0), 0) +
+    data.value.assets.deferredTaxAssets.reduce((sum, item) => sum + (item.endBalance || 0), 0)
+  const assetsBeginBalance = currentAssetsBeginBalance + fixedAssetsBeginBalance + intangibleAssetsBeginBalance +
+    data.value.assets.longTermInvestment.reduce((sum, item) => sum + (item.beginBalance || 0), 0) +
+    data.value.assets.deferredTaxAssets.reduce((sum, item) => sum + (item.beginBalance || 0), 0)
+    
+  data.value.assets.assetsTotal.endBalance = assetsEndBalance
+  data.value.assets.assetsTotal.beginBalance = assetsBeginBalance
+
+  // 计算流动负债合计
+  const currentLiabilitiesEndBalance = data.value.liabilities.current.reduce((sum, item) => sum + (item.endBalance || 0), 0)
+  const currentLiabilitiesBeginBalance = data.value.liabilities.current.reduce((sum, item) => sum + (item.beginBalance || 0), 0)
+  
+  data.value.liabilities.currentLiabilitiesTotal.endBalance = currentLiabilitiesEndBalance
+  data.value.liabilities.currentLiabilitiesTotal.beginBalance = currentLiabilitiesBeginBalance
+
+  // 计算长期负债合计
+  const longTermLiabilitiesEndBalance = data.value.liabilities.longTermLiabilities.reduce((sum, item) => sum + (item.endBalance || 0), 0)
+  const longTermLiabilitiesBeginBalance = data.value.liabilities.longTermLiabilities.reduce((sum, item) => sum + (item.beginBalance || 0), 0)
+  
+  data.value.liabilities.longTermLiabilitiesTotal.endBalance = longTermLiabilitiesEndBalance
+  data.value.liabilities.longTermLiabilitiesTotal.beginBalance = longTermLiabilitiesBeginBalance
+
+  // 计算负债合计
+  const liabilitiesEndBalance = currentLiabilitiesEndBalance + longTermLiabilitiesEndBalance +
+    data.value.liabilities.deferredTaxLiabilities.reduce((sum, item) => sum + (item.endBalance || 0), 0)
+  const liabilitiesBeginBalance = currentLiabilitiesBeginBalance + longTermLiabilitiesBeginBalance +
+    data.value.liabilities.deferredTaxLiabilities.reduce((sum, item) => sum + (item.beginBalance || 0), 0)
+    
+  data.value.liabilities.liabilitiesTotal.endBalance = liabilitiesEndBalance
+  data.value.liabilities.liabilitiesTotal.beginBalance = liabilitiesBeginBalance
+
+  // 计算所有者权益合计
+  const equityEndBalance = data.value.equity.items.reduce((sum, item) => sum + (item.endBalance || 0), 0)
+  const equityBeginBalance = data.value.equity.items.reduce((sum, item) => sum + (item.beginBalance || 0), 0)
+  
+  data.value.equity.equityTotal.endBalance = equityEndBalance
+  data.value.equity.equityTotal.beginBalance = equityBeginBalance
+
+  // 计算负债和所有者权益总计
+  data.value.equity.liabilitiesAndEquityTotal.endBalance = liabilitiesEndBalance + equityEndBalance
+  data.value.equity.liabilitiesAndEquityTotal.beginBalance = liabilitiesBeginBalance + equityBeginBalance
+}
+
+// 使用标志位防止无限循环
+let isCalculating = false
+
+// 深度监听data变化，自动重新计算
+watch(data, () => {
+  if (!isCalculating) {
+    isCalculating = true
+    calculateTotals()
+    // 使用nextTick确保DOM更新完成后再重置标志位
+    nextTick(() => {
+      isCalculating = false
+    })
+  }
+}, { deep: true })
 
 // 加载保存的数据
 const loadSavedData = async () => {
@@ -503,13 +609,16 @@ const loadSavedData = async () => {
         
         console.log('数据加载成功:', savedData)
       } else {
-        console.log('当前期间没有保存的数据，显示空值')
+        console.log('当前期间没有保存的数据，自动设置期初余额')
+        await autoSetBeginBalanceFromPreviousMonth(period.value)
       }
     } else {
-      console.log('请求失败，显示空值')
+      console.log('请求失败，自动设置期初余额')
+      await autoSetBeginBalanceFromPreviousMonth(period.value)
     }
   } catch (error) {
-    console.log('没有找到保存的数据或加载失败，显示空值:', error)
+    console.log('没有找到保存的数据或加载失败，自动设置期初余额:', error)
+    await autoSetBeginBalanceFromPreviousMonth(period.value)
   }
 }
 

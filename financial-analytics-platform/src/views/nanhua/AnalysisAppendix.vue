@@ -18,7 +18,7 @@
                         <th class="border border-gray-300 px-4 py-2">累计新增开票</th>
                         <th class="border border-gray-300 px-4 py-2">当期收款</th>
                         <th class="border border-gray-300 px-4 py-2">累计收款</th>
-                        <th class="border border-gray-300 px-4 py-2">当期应收余额</th>
+                        <th class="border border-gray-300 px-4 py-2">当期应收余额 <span class="text-xs text-gray-500">已减去坏账准备</span></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -198,6 +198,9 @@ const projectData = ref<AccountsReceivableItem[]>(getInitialProjectData())
 // 存储所有历史月份数据，用于计算累计收款
 const allMonthsData = ref<Array<{ period: string; data: any[] }>>([])
 
+// 坏账准备数据
+const badDebtProvisionData = ref<any>(null)
+
 // 备注和建议
 const remarks = ref('')
 const suggestions = ref('')
@@ -205,6 +208,48 @@ const suggestions = ref('')
 // 格式化数字为千分位格式
 const formatNumber = (value: number): string => {
     return value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+}
+
+// 加载坏账准备数据
+const loadBadDebtProvisionData = async (targetPeriod: string) => {
+    try {
+        const response = await fetch(`http://127.0.0.1:3000/nanhua-bad-debt-provision/${targetPeriod}`)
+        if (response.ok) {
+            const result = await response.json()
+            if (result.success && result.data) {
+                badDebtProvisionData.value = result.data
+                console.log('加载的坏账准备数据:', result.data)
+            }
+        } else {
+            console.warn('无法加载坏账准备数据')
+            badDebtProvisionData.value = null
+        }
+    } catch (error) {
+        console.error('加载坏账准备数据失败:', error)
+        badDebtProvisionData.value = null
+    }
+}
+
+// 获取坏账准备余额
+const getBadDebtProvision = (customerType: string): number => {
+    if (!badDebtProvisionData.value) return 0
+    
+    // 在工程项目中查找对应的客户类型
+    const badDebtItem = badDebtProvisionData.value.items?.find((item: any) => 
+        item.customerAttribute === customerType
+    )
+    
+    if (badDebtItem) {
+        // 计算坏账准备余额 = 年初余额 + 本年新增 - 累计已收款
+        const yearBeginningBalance = parseFloat(badDebtItem.yearBeginningBalance) || 0
+        const yearNewAddition = parseFloat(badDebtItem.yearNewAddition) || 0
+        const cumulativeCollection = parseFloat(badDebtItem.currentPeriodAccumulatedCollection) || 0
+        
+        const provisionBalance = yearBeginningBalance + yearNewAddition - cumulativeCollection
+        return provisionBalance
+    }
+    
+    return 0
 }
 
 // 计算当期应收余额、累计收款和累计新增开票
@@ -222,8 +267,11 @@ const calculateCurrentBalance = (item: AccountsReceivableItem) => {
     const totalNewInvoice = calculateTotalNewInvoice(item.customerType, getSegmentFromItem(item))
     item.totalNewInvoice = totalNewInvoice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
     
-    // 计算当期应收余额 = 年初应收余额 + 累计新增开票 - 累计收款
-    const currentBalance = initialBalance + totalNewInvoice - totalReceipt
+    // 获取坏账准备余额
+    const badDebtProvision = getBadDebtProvision(item.customerType)
+    
+    // 计算当期应收余额 = 年初应收余额 + 累计新增开票 - 累计收款 - 坏账准备余额
+    const currentBalance = initialBalance + totalNewInvoice - totalReceipt - badDebtProvision
     
     // 格式化为带千分位的数字
     item.currentBalance = currentBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
@@ -490,8 +538,14 @@ const loadData = async (targetPeriod: string) => {
         
         // 加载所有月份数据并计算累计收款和累计新增开票
         await loadAllMonthsData(targetPeriod)
+        // 加载坏账准备数据
+        await loadBadDebtProvisionData(targetPeriod)
         updateAccumulatedReceipts()
         updateAccumulatedInvoices()
+        
+        // 重新计算所有项目的当期应收余额（包含坏账准备扣减）
+        const allItems = [...equipmentData.value, ...componentData.value, ...projectData.value]
+        allItems.forEach(item => calculateCurrentBalance(item))
         
     } catch (error) {
         console.error('加载数据失败:', error)
@@ -503,8 +557,13 @@ const loadData = async (targetPeriod: string) => {
         // 即使出错也要尝试加载历史数据
         try {
             await loadAllMonthsData(targetPeriod)
+            await loadBadDebtProvisionData(targetPeriod)
             updateAccumulatedReceipts()
             updateAccumulatedInvoices()
+            
+            // 重新计算所有项目的当期应收余额（包含坏账准备扣减）
+            const allItems = [...equipmentData.value, ...componentData.value, ...projectData.value]
+            allItems.forEach(item => calculateCurrentBalance(item))
         } catch (historyError) {
             console.error('加载历史数据失败:', historyError)
         }

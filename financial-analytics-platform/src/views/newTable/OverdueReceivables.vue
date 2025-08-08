@@ -24,7 +24,8 @@
                     <!-- 设备板块 -->
                     <template v-for="(item, index) in equipmentData" :key="`equipment-${index}`">
                         <tr>
-                            <td v-if="index === 0" class="border border-gray-300 px-4 py-2 text-center" :rowspan="equipmentData.length">
+                            <td v-if="index === 0" class="border border-gray-300 px-4 py-2 text-center"
+                                :rowspan="equipmentData.length">
                                 设备
                             </td>
                             <td class="border border-gray-300 px-4 py-2">{{ item.customerType }}</td>
@@ -32,10 +33,12 @@
                                 {{ formatNumber(item.yearlyPlan || 0) }}
                             </td>
                             <td class="border border-gray-300 px-4 py-2">
-                                <input v-model="item.newAddition" type="text" class="w-full px-2 py-1 border rounded" @input="calculateProgress(item)" />
+                                <input v-model="item.newAddition" type="text" class="w-full px-2 py-1 border rounded"
+                                    @input="calculateProgress(item)" />
                             </td>
                             <td class="border border-gray-300 px-4 py-2">
-                                <input v-model="item.monthlyReceipt" type="text" class="w-full px-2 py-1 border rounded" @input="calculateProgress(item)" />
+                                <input v-model="item.monthlyReceipt" type="text" class="w-full px-2 py-1 border rounded"
+                                    @input="calculateProgress(item)" />
                             </td>
                             <td class="border border-gray-300 px-4 py-2">
                                 {{ formatNumber(item.totalReceipt) }}
@@ -49,7 +52,8 @@
                     <!-- 元件板块 -->
                     <template v-for="(item, index) in componentData" :key="`component-${index}`">
                         <tr>
-                            <td v-if="index === 0" class="border border-gray-300 px-4 py-2 text-center" :rowspan="componentData.length">
+                            <td v-if="index === 0" class="border border-gray-300 px-4 py-2 text-center"
+                                :rowspan="componentData.length">
                                 元件
                             </td>
                             <td class="border border-gray-300 px-4 py-2">{{ item.customerType }}</td>
@@ -57,10 +61,12 @@
                                 {{ formatNumber(item.yearlyPlan || 0) }}
                             </td>
                             <td class="border border-gray-300 px-4 py-2">
-                                <input v-model="item.newAddition" type="text" class="w-full px-2 py-1 border rounded" @input="calculateProgress(item)" />
+                                <input v-model="item.newAddition" type="text" class="w-full px-2 py-1 border rounded"
+                                    @input="calculateProgress(item)" />
                             </td>
                             <td class="border border-gray-300 px-4 py-2">
-                                <input v-model="item.monthlyReceipt" type="text" class="w-full px-2 py-1 border rounded" @input="calculateProgress(item)" />
+                                <input v-model="item.monthlyReceipt" type="text" class="w-full px-2 py-1 border rounded"
+                                    @input="calculateProgress(item)" />
                             </td>
                             <td class="border border-gray-300 px-4 py-2">
                                 {{ formatNumber(item.totalReceipt) }}
@@ -74,7 +80,8 @@
                     <!-- 工程板块 -->
                     <template v-for="(item, index) in projectData" :key="`project-${index}`">
                         <tr>
-                            <td v-if="index === 0" class="border border-gray-300 px-4 py-2 text-center" :rowspan="projectData.length">
+                            <td v-if="index === 0" class="border border-gray-300 px-4 py-2 text-center"
+                                :rowspan="projectData.length">
                                 工程
                             </td>
                             <td class="border border-gray-300 px-4 py-2">{{ item.customerType }}</td>
@@ -82,10 +89,12 @@
                                 {{ formatNumber(item.yearlyPlan || 0) }}
                             </td>
                             <td class="border border-gray-300 px-4 py-2">
-                                <input v-model="item.newAddition" type="text" class="w-full px-2 py-1 border rounded" @input="calculateProgress(item)" />
+                                <input v-model="item.newAddition" type="text" class="w-full px-2 py-1 border rounded"
+                                    @input="calculateProgress(item)" />
                             </td>
                             <td class="border border-gray-300 px-4 py-2">
-                                <input v-model="item.monthlyReceipt" type="text" class="w-full px-2 py-1 border rounded" @input="calculateProgress(item)" />
+                                <input v-model="item.monthlyReceipt" type="text" class="w-full px-2 py-1 border rounded"
+                                    @input="calculateProgress(item)" />
                             </td>
                             <td class="border border-gray-300 px-4 py-2">
                                 {{ formatNumber(item.totalReceipt) }}
@@ -127,14 +136,10 @@
                 重置
             </button>
         </div>
-        
+
         <!-- 文件上传和备注组件 -->
-        <FormAttachmentAndRemarks 
-            :module-id="MODULE_IDS.OVERDUE_RECEIVABLES"
-            :period="period"
-            v-model:remarks="remarks"
-            v-model:suggestions="suggestions"
-        />
+        <FormAttachmentAndRemarks :module-id="MODULE_IDS.OVERDUE_RECEIVABLES" :period="period" v-model:remarks="remarks"
+            v-model:suggestions="suggestions" />
     </div>
 </template>
 
@@ -190,16 +195,16 @@ const projectData = ref<OverdueReceivableItem[]>(getInitialProjectData())
 
 // 定义历史数据类型结构
 interface HistoricalDataMap {
-  设备: Record<string, number>;
-  元件: Record<string, number>;
-  工程: Record<string, number>;
-  [key: string]: Record<string, number>;
+    设备: Record<string, number>;
+    元件: Record<string, number>;
+    工程: Record<string, number>;
+    [key: string]: Record<string, number>;
 }
 
 const historicalData = ref<HistoricalDataMap>({
-  '设备': {},
-  '元件': {},
-  '工程': {}
+    '设备': {},
+    '元件': {},
+    '工程': {}
 })
 
 // 格式化数字为千分位格式
@@ -217,12 +222,12 @@ const parsePeriod = (periodStr: string): { year: number, month: number } => {
 const getPreviousPeriods = (currentPeriod: string): string[] => {
     const { year, month } = parsePeriod(currentPeriod)
     const periods: string[] = []
-    
+
     // 当年的月份
     for (let m = 1; m < month; m++) {
         periods.push(`${year}-${m.toString().padStart(2, '0')}`)
     }
-    
+
     return periods
 }
 
@@ -232,15 +237,15 @@ const calculateProgress = (item: OverdueReceivableItem) => {
     const initialBalance = parseFloat(item.initialBalance.replace(/,/g, '')) || 0
     const newAddition = parseFloat(item.newAddition.replace(/,/g, '')) || 0
     const monthlyReceipt = parseFloat(item.monthlyReceipt.replace(/,/g, '')) || 0
-    
+
     // 计算历史收款总额（当前月不包括在内）
     const historicalReceipts = item.historicalReceipts || 0
-    
+
     // 计算累计收款金额
     item.totalReceipt = historicalReceipts + monthlyReceipt
-    
+
     const total = initialBalance + newAddition
-    
+
     if (total > 0) {
         const progress = (item.totalReceipt / total * 100).toFixed(2)
         item.progress = `${progress}%`
@@ -255,7 +260,7 @@ const totalData = computed(() => {
     let newAdditionTotal = 0
     let monthlyReceiptTotal = 0
     let totalReceiptTotal = 0
-    
+
     // 汇总设备板块数据
     equipmentData.value.forEach(item => {
         initialBalanceTotal += item.yearlyPlan || 0
@@ -263,7 +268,7 @@ const totalData = computed(() => {
         monthlyReceiptTotal += parseFloat(item.monthlyReceipt.replace(/,/g, '')) || 0
         totalReceiptTotal += item.totalReceipt || 0
     })
-    
+
     // 汇总元件板块数据
     componentData.value.forEach(item => {
         initialBalanceTotal += item.yearlyPlan || 0
@@ -271,7 +276,7 @@ const totalData = computed(() => {
         monthlyReceiptTotal += parseFloat(item.monthlyReceipt.replace(/,/g, '')) || 0
         totalReceiptTotal += item.totalReceipt || 0
     })
-    
+
     // 汇总工程板块数据
     projectData.value.forEach(item => {
         initialBalanceTotal += item.yearlyPlan || 0
@@ -279,14 +284,14 @@ const totalData = computed(() => {
         monthlyReceiptTotal += parseFloat(item.monthlyReceipt.replace(/,/g, '')) || 0
         totalReceiptTotal += item.totalReceipt || 0
     })
-    
+
     // 计算总收款进度
     let progress = '0.00%'
     const total = initialBalanceTotal + newAdditionTotal
     if (total > 0) {
         progress = `${(totalReceiptTotal / total * 100).toFixed(2)}%`
     }
-    
+
     return {
         initialBalance: initialBalanceTotal,
         newAddition: newAdditionTotal,
@@ -298,9 +303,9 @@ const totalData = computed(() => {
 
 // 预算数据映射（来自BudgetPlanning.vue）
 interface BudgetDataMap {
-  '设备': Record<string, number>;
-  '元件': Record<string, number>;
-  '工程': Record<string, number>;
+    '设备': Record<string, number>;
+    '元件': Record<string, number>;
+    '工程': Record<string, number>;
 }
 
 const budgetDataMap: BudgetDataMap = {
@@ -334,38 +339,38 @@ const loadHistoricalData = async (currentPeriod: string) => {
             console.log('没有历史期间数据需要加载')
             return
         }
-        
+
         console.log('正在加载历史数据，期间:', previousPeriods)
-        
+
         // 初始化历史数据存储
         historicalData.value = {
             '设备': {},
             '元件': {},
             '工程': {}
         }
-        
+
         for (const period of previousPeriods) {
             try {
                 const response = await fetch(`http://127.0.0.1:3000/overdue-receivables/${period}`)
-                
+
                 if (response.ok) {
                     const result = await response.json()
-                    
+
                     if (result.success && result.data && Array.isArray(result.data)) {
                         // 处理每个历史记录
                         result.data.forEach((record: any) => {
                             const segment = record.segment as keyof HistoricalDataMap
                             const customerType = record.customerType
                             const monthlyReceipt = parseFloat(record.monthlyReceipt || '0')
-                            
+
                             if (!historicalData.value[segment]) {
                                 historicalData.value[segment] = {}
                             }
-                            
+
                             if (!historicalData.value[segment][customerType]) {
                                 historicalData.value[segment][customerType] = 0
                             }
-                            
+
                             // 累加历史月收款
                             historicalData.value[segment][customerType] += monthlyReceipt
                         })
@@ -375,9 +380,9 @@ const loadHistoricalData = async (currentPeriod: string) => {
                 console.error(`加载期间 ${period} 的数据失败:`, e)
             }
         }
-        
+
         console.log('历史数据加载完成:', historicalData.value)
-        
+
     } catch (error) {
         console.error('加载历史数据失败:', error)
     }
@@ -390,13 +395,13 @@ const mergeData = (templateData: OverdueReceivableItem[], loadedData: any[], seg
         const segmentKey = segment as keyof BudgetDataMap
         const budgetValue = budgetDataMap[segmentKey]?.[templateItem.customerType] || 0
         const historicalReceiptValue = historicalData.value[segment]?.[templateItem.customerType] || 0
-        
+
         if (loadedItem) {
             // 当月数据
             const monthlyReceipt = loadedItem.monthlyReceipt || '0'
             // 总收款 = 历史收款 + 当月收款
             const totalReceipt = historicalReceiptValue + (parseFloat(monthlyReceipt.replace(/,/g, '')) || 0)
-            
+
             return {
                 customerType: templateItem.customerType,
                 initialBalance: budgetValue.toString(),
@@ -431,17 +436,17 @@ const mergeData = (templateData: OverdueReceivableItem[], loadedData: any[], seg
 const loadData = async (targetPeriod: string) => {
     try {
         console.log(`正在加载逾期应收款数据，期间: ${targetPeriod}`)
-        
+
         // 首先加载历史数据
         await loadHistoricalData(targetPeriod)
-        
+
         const response = await fetch(`http://127.0.0.1:3000/overdue-receivables/${targetPeriod}`)
         let loadedData: any[] = []
-        
+
         if (response.ok) {
             const result = await response.json()
             console.log('API返回数据:', result)
-            
+
             if (result.success && result.data && Array.isArray(result.data)) {
                 loadedData = result.data
                 console.log('成功获取数据，开始合并...')
@@ -451,13 +456,13 @@ const loadData = async (targetPeriod: string) => {
         } else {
             console.log('加载数据失败，使用预算数据填充')
         }
-        
+
         // 无论是否有数据，都进行合并（确保预算数据始终显示）
         equipmentData.value = mergeData(getInitialEquipmentData(), loadedData, '设备')
         componentData.value = mergeData(getInitialComponentData(), loadedData, '元件')
         projectData.value = mergeData(getInitialProjectData(), loadedData, '工程')
         console.log('合并后的数据:', { equipmentData: equipmentData.value, componentData: componentData.value, projectData: projectData.value })
-        
+
     } catch (error) {
         console.error('加载数据失败:', error)
         // 出错时也要确保预算数据显示
@@ -486,23 +491,23 @@ const handleSave = async () => {
     try {
         // 准备要保存的数据
         const allData = [
-            ...equipmentData.value.map(item => ({ 
+            ...equipmentData.value.map(item => ({
                 segment: '设备',
-                customerType: item.customerType, 
+                customerType: item.customerType,
                 newAddition: item.newAddition,
                 monthlyReceipt: item.monthlyReceipt,
                 // 不保存totalReceipt，因为它是计算的结果
                 // 不保存initialBalance，因为它是从预算中获取的
             })),
-            ...componentData.value.map(item => ({ 
+            ...componentData.value.map(item => ({
                 segment: '元件',
-                customerType: item.customerType, 
+                customerType: item.customerType,
                 newAddition: item.newAddition,
                 monthlyReceipt: item.monthlyReceipt,
             })),
-            ...projectData.value.map(item => ({ 
+            ...projectData.value.map(item => ({
                 segment: '工程',
-                customerType: item.customerType, 
+                customerType: item.customerType,
                 newAddition: item.newAddition,
                 monthlyReceipt: item.monthlyReceipt,
             }))
@@ -536,7 +541,7 @@ const handleSave = async () => {
             project: projectData.value
         }
         await recordFormSubmission(MODULE_IDS.OVERDUE_RECEIVABLES, period.value, formData, remarks.value, suggestions.value)
-        
+
         alert('保存成功')
     } catch (error) {
         console.error('保存失败:', error)
@@ -588,4 +593,4 @@ onMounted(() => {
 .overflow-x-auto::-webkit-scrollbar-thumb:hover {
     background: #94a3b8;
 }
-</style> 
+</style>

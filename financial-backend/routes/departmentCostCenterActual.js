@@ -18,9 +18,7 @@ router.get('/:period', async (req, res) => {
         { departmentName: '运检部', yearlyBudget: 569.90 },
         { departmentName: '营销部-销售', yearlyBudget: 125.13 },
         { departmentName: '营销部-商务', yearlyBudget: 53.37 },
-        { departmentName: '营销部-设备', yearlyBudget: 1048.86 },
-        { departmentName: '营销部-采购', yearlyBudget: 0.47 },
-        { departmentName: '营销部-后勤', yearlyBudget: 200.0 }
+        { departmentName: '营销部-设备', yearlyBudget: 1048.86 }
       ]
     };
     

@@ -37,8 +37,13 @@
                             <td class="border border-gray-300 px-4 py-2">
                                 <input v-model="item.currentPeriodNewAddition" type="number" class="w-full px-2 py-1 border rounded text-right" step="0.01" />
                             </td>
-                            <td class="border border-gray-300 px-4 py-2 text-right">
-                                {{ formatNumber(item.yearNewAddition) }}
+                            <td class="border border-gray-300 px-4 py-2">
+                                <input
+                                  v-model.number="item.yearNewAddition"
+                                  type="number"
+                                  class="w-full px-2 py-1 border rounded text-right"
+                                  step="0.01"
+                                />
                             </td>
                             <td class="border border-gray-300 px-4 py-2 text-right">
                                 <span class="text-sm font-medium">{{ formatNumber(item.endBalance) }}</span>
@@ -54,7 +59,14 @@
                         <td class="border border-gray-300 px-4 py-2">
                             <input v-model="selfBuiltProject.currentPeriodNewAddition" type="number" class="w-full px-2 py-1 border rounded text-right" step="0.01" />
                         </td>
-                        <td class="border border-gray-300 px-4 py-2 text-right">{{ formatNumber(selfBuiltProject.yearNewAddition) }}</td>
+                        <td class="border border-gray-300 px-4 py-2">
+                            <input
+                              v-model.number="selfBuiltProject.yearNewAddition"
+                              type="number"
+                              class="w-full px-2 py-1 border rounded text-right"
+                              step="0.01"
+                            />
+                        </td>
                         <td class="border border-gray-300 px-4 py-2 text-right">
                             <span class="text-sm font-medium">{{ formatNumber(selfBuiltProject.endBalance) }}</span>
                         </td>
@@ -78,6 +90,13 @@
                     </tr>
                 </tbody>
             </table>
+        </div>
+
+        <!-- 备注说明 -->
+        <div class="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded">
+            <p class="text-sm text-gray-700">
+                <strong>备注：</strong>坏账转回应说明去向
+            </p>
         </div>
 
         <!-- 文件上传和备注组件 -->

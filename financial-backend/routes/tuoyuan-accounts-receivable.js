@@ -29,31 +29,77 @@ router.get('/:period', async (req, res) => {
         
         const [results] = await pool.execute(query, [period]);
         
-        if (results.length === 0) {
-            return res.status(404).json({
-                success: false,
-                message: '未找到数据'
-            });
+        // 获取坏账准备数据
+        let badDebtProvisionData = [];
+        try {
+            const badDebtQuery = `
+                SELECT 
+                    segment_attribute,
+                    customer_attribute,
+                    year_new_increase,
+                    current_collected,
+                    provision_balance
+                FROM tuoyuan_bad_debt_provision 
+                WHERE period = ?
+                ORDER BY id ASC
+            `;
+            const [badDebtRows] = await pool.execute(badDebtQuery, [period]);
+            badDebtProvisionData = badDebtRows;
+        } catch (badDebtError) {
+            console.warn('获取拓源坏账准备数据失败，使用空数组:', badDebtError.message);
         }
-
-        const items = results.map(row => ({
-            id: row.id,
-            segmentAttribute: row.segment_attribute,
-            customerAttribute: row.customer_attribute,
-            yearBeginningBalance: parseFloat(row.year_beginning_balance || 0),
-            currentInvoicing: parseFloat(row.current_invoicing || 0),
-            cumulativeInvoicing: parseFloat(row.cumulative_invoicing || 0),
-            currentCollection: parseFloat(row.current_collection || 0),
-            cumulativeCollection: parseFloat(row.cumulative_collection || 0),
-            currentReceivableBalance: parseFloat(row.current_receivable_balance || 0)
-        }));
+        
+        let items = [];
+        let isCalculated = false;
+        
+        // 如果没有当月数据，计算累计值并生成数据
+        if (results.length === 0) {
+            console.log(`没有${period}的拓源应收账款数据，计算累计值...`);
+            
+            // 生成基础数据结构
+            const baseData = [
+                { segmentAttribute: '设备', customerAttribute: '申业项目' },
+                { segmentAttribute: '设备', customerAttribute: '用户项目' },
+                { segmentAttribute: '设备', customerAttribute: '贸易' },
+                { segmentAttribute: '设备', customerAttribute: '代理设备' },
+                { segmentAttribute: '其他', customerAttribute: '代理工程' },
+                { segmentAttribute: '其他', customerAttribute: '代理设计' }
+            ];
+            
+            // 计算累计值
+            items = await calculateTuoyuanCumulativeData(baseData, period);
+            isCalculated = true;
+        } else {
+            // 有数据的月份，也要重新计算累计值
+            console.log(`${period}有拓源应收账款数据，重新计算累计值...`);
+            
+            items = results.map(row => ({
+                id: row.id,
+                segmentAttribute: row.segment_attribute,
+                customerAttribute: row.customer_attribute,
+                yearBeginningBalance: parseFloat(row.year_beginning_balance || 0),
+                currentInvoicing: parseFloat(row.current_invoicing || 0),
+                cumulativeInvoicing: parseFloat(row.cumulative_invoicing || 0),
+                currentCollection: parseFloat(row.current_collection || 0),
+                cumulativeCollection: parseFloat(row.cumulative_collection || 0),
+                currentReceivableBalance: parseFloat(row.current_receivable_balance || 0)
+            }));
+            
+            // 重新计算累计值
+            items = await recalculateTuoyuanCumulativeData(items, period);
+        }
+        
+        // 应用坏账准备扣减
+        items = await applyBadDebtDeduction(items, badDebtProvisionData, period, pool);
 
         res.json({
             success: true,
             data: {
                 period: period,
                 items: items
-            }
+            },
+            isCalculated: isCalculated,
+            badDebtProvisionData: badDebtProvisionData
         });
 
     } catch (error) {
@@ -138,5 +184,153 @@ router.post('/', async (req, res) => {
         });
     }
 });
+
+// 计算拓源累计值的辅助函数
+async function calculateTuoyuanCumulativeData(baseData, targetPeriod) {
+    const [year, month] = targetPeriod.split('-');
+    const targetMonth = parseInt(month);
+    
+    const result = [];
+    
+    for (const baseItem of baseData) {
+        // 计算累计开票和累计收款
+        let totalInvoicing = 0;
+        let totalCollection = 0;
+        
+        // 查询从1月到目标月份的所有数据
+        for (let i = 1; i <= targetMonth; i++) {
+            const monthPeriod = `${year}-${i.toString().padStart(2, '0')}`;
+            
+            try {
+                const [monthRows] = await pool.execute(
+                    'SELECT * FROM tuoyuan_accounts_receivable WHERE period = ? AND segment_attribute = ? AND customer_attribute = ?',
+                    [monthPeriod, baseItem.segmentAttribute, baseItem.customerAttribute]
+                );
+                
+                if (monthRows.length > 0) {
+                    const monthItem = monthRows[0];
+                    const currentInvoicing = parseFloat(monthItem.current_invoicing) || 0;
+                    const currentCollection = parseFloat(monthItem.current_collection) || 0;
+                    
+                    totalInvoicing += currentInvoicing;
+                    totalCollection += currentCollection;
+                }
+            } catch (error) {
+                console.log(`跳过月份 ${monthPeriod}:`, error.message);
+            }
+        }
+        
+        // 年初余额（固定值）
+        const yearBeginningBalance = 0; // 拓源公司的年初余额
+        
+        // 计算当期应收余额
+        const currentReceivableBalance = yearBeginningBalance + totalInvoicing - totalCollection;
+        
+        result.push({
+            segmentAttribute: baseItem.segmentAttribute,
+            customerAttribute: baseItem.customerAttribute,
+            yearBeginningBalance: yearBeginningBalance,
+            currentInvoicing: 0, // 当月开票为0（因为没有当月数据）
+            cumulativeInvoicing: totalInvoicing,
+            currentCollection: 0, // 当月收款为0（因为没有当月数据）
+            cumulativeCollection: totalCollection,
+            currentReceivableBalance: currentReceivableBalance
+        });
+    }
+    
+    return result;
+}
+
+// 重新计算现有数据的累计值
+async function recalculateTuoyuanCumulativeData(items, targetPeriod) {
+    const [year, month] = targetPeriod.split('-');
+    const targetMonth = parseInt(month);
+    
+    for (let item of items) {
+        // 计算累计开票和累计收款
+        let totalInvoicing = 0;
+        let totalCollection = 0;
+        
+        // 查询从1月到目标月份的所有数据
+        for (let i = 1; i <= targetMonth; i++) {
+            const monthPeriod = `${year}-${i.toString().padStart(2, '0')}`;
+            
+            try {
+                const [monthRows] = await pool.execute(
+                    'SELECT * FROM tuoyuan_accounts_receivable WHERE period = ? AND segment_attribute = ? AND customer_attribute = ?',
+                    [monthPeriod, item.segmentAttribute, item.customerAttribute]
+                );
+                
+                if (monthRows.length > 0) {
+                    const monthItem = monthRows[0];
+                    const currentInvoicing = parseFloat(monthItem.current_invoicing) || 0;
+                    const currentCollection = parseFloat(monthItem.current_collection) || 0;
+                    
+                    totalInvoicing += currentInvoicing;
+                    totalCollection += currentCollection;
+                }
+            } catch (error) {
+                console.log(`跳过月份 ${monthPeriod}:`, error.message);
+            }
+        }
+        
+        // 更新累计值
+        item.cumulativeInvoicing = totalInvoicing;
+        item.cumulativeCollection = totalCollection;
+        
+        // 重新计算当期应收余额
+        item.currentReceivableBalance = item.yearBeginningBalance + totalInvoicing - totalCollection;
+    }
+    
+    return items;
+}
+
+// 应用坏账准备扣减的函数
+async function applyBadDebtDeduction(items, badDebtProvisionData, period, pool) {
+    const results = [];
+    
+    for (const item of items) {
+        // 查找对应的坏账准备数据
+        const badDebtItem = badDebtProvisionData.find(bd => 
+            bd.segment_attribute === item.segmentAttribute && 
+            bd.customer_attribute === item.customerAttribute
+        );
+        
+        // 计算坏账准备的影响
+        let badDebtAdjustment = 0;
+        let badDebtProvisionBalance = 0;
+        
+        if (badDebtItem) {
+            badDebtProvisionBalance = parseFloat(badDebtItem.provision_balance || 0);
+            
+            // 如果坏账准备余额是负数（如-293），那就是+293，要加上去
+            // 如果坏账准备余额是正数（如+149），那就是-149，要减去
+            if (badDebtProvisionBalance < 0) {
+                // 负数变正数，加上去：-30 + 293 = 263
+                badDebtAdjustment = Math.abs(badDebtProvisionBalance);
+            } else {
+                // 正数变负数，减去：-10 - 149 = -159
+                badDebtAdjustment = -badDebtProvisionBalance;
+            }
+        }
+        
+        // 保存原始当期应收余额
+        const originalCurrentBalance = item.currentReceivableBalance;
+        
+        // 重新计算当期应收余额
+        // 如果坏账准备余额是负数（-293），加上293
+        // 如果坏账准备余额是正数（+149），减去149
+        const adjustedCurrentBalance = originalCurrentBalance + badDebtAdjustment;
+        
+        results.push({
+            ...item,
+            currentReceivableBalance: adjustedCurrentBalance,
+            badDebtProvisionDeduction: badDebtAdjustment, // 显示坏账准备调整金额
+            originalCurrentBalance: originalCurrentBalance // 保留原始余额用于对比
+        });
+    }
+    
+    return results;
+}
 
 module.exports = router;

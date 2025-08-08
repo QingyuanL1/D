@@ -1,7 +1,7 @@
 <template>
     <div class="max-w-[1800px] mx-auto bg-white rounded-lg shadow-lg p-6">
         <div class="flex justify-between items-center mb-6">
-            <h1 class="text-2xl font-bold">应收账款情况</h1>
+            <h1 class="text-2xl font-bold">应收账款情况 <span class="text-sm text-gray-600">当期应收余额已减去坏账准备</span></h1>
             <div class="flex items-center space-x-4">
                 <span class="text-sm text-gray-600">（单位：万元）</span>
                 <span class="text-xs text-gray-500">累计=前面各月当期值之和</span>
@@ -20,7 +20,7 @@
                         <th class="border border-gray-300 px-4 py-2 w-24">累计开票</th>
                         <th class="border border-gray-300 px-4 py-2 w-24">当期收款</th>
                         <th class="border border-gray-300 px-4 py-2 w-24">累计收款</th>
-                        <th class="border border-gray-300 px-4 py-2 w-24">当期应收余额</th>
+                        <th class="border border-gray-300 px-4 py-2 w-24">当期应收余额 <span class="text-xs text-gray-500">已减去坏账准备</span></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -138,7 +138,7 @@ interface AccountsReceivableData {
 
 const fixedPlanData: AccountsReceivableData = {
     items: [
-        { segmentAttribute: '设备', customerAttribute: '电业项目', yearBeginningBalance: 0, currentInvoicing: 0, cumulativeInvoicing: 0, currentCollection: 0, cumulativeCollection: 0, currentReceivableBalance: 0 },
+        { segmentAttribute: '设备', customerAttribute: '申业项目', yearBeginningBalance: 0, currentInvoicing: 0, cumulativeInvoicing: 0, currentCollection: 0, cumulativeCollection: 0, currentReceivableBalance: 0 },
         { segmentAttribute: '设备', customerAttribute: '用户项目', yearBeginningBalance: 0, currentInvoicing: 0, cumulativeInvoicing: 0, currentCollection: 0, cumulativeCollection: 0, currentReceivableBalance: 0 },
         { segmentAttribute: '设备', customerAttribute: '贸易', yearBeginningBalance: 0, currentInvoicing: 0, cumulativeInvoicing: 0, currentCollection: 0, cumulativeCollection: 0, currentReceivableBalance: 0 },
         { segmentAttribute: '设备', customerAttribute: '代理设备', yearBeginningBalance: 0, currentInvoicing: 0, cumulativeInvoicing: 0, currentCollection: 0, cumulativeCollection: 0, currentReceivableBalance: 0 },
@@ -202,8 +202,7 @@ const calculateCumulativeValues = async (targetPeriod: string) => {
             item.cumulativeInvoicing = totalInvoicing
             item.cumulativeCollection = totalCollection
             
-            // 计算当期应收余额 = 年初应收余额 + 累计开票 - 累计收款
-            item.currentReceivableBalance = item.yearBeginningBalance + item.cumulativeInvoicing - item.cumulativeCollection
+            // 注意：不在此处计算currentReceivableBalance，因为后端已经包含了坏账准备的扣减
         }
         
     } catch (error) {
@@ -211,10 +210,7 @@ const calculateCumulativeValues = async (targetPeriod: string) => {
     }
 }
 
-// 监听数据变化，自动重新计算
-watch(() => accountsReceivableData.value.items, async (newItems) => {
-    await calculateCumulativeValues(period.value)
-}, { deep: true })
+// 注意：不再监听数据变化自动重新计算，因为后端已经处理了坏账准备扣减
 
 // 计算合计数据
 const totalData = computed(() => {
@@ -263,10 +259,8 @@ const loadData = async (targetPeriod: string) => {
                 cumulativeCollection: Number(item.cumulativeCollection) || 0,
                 currentReceivableBalance: Number(item.currentReceivableBalance) || 0
             }))
+            console.log('已加载后端数据，包含坏账准备扣减的当期应收余额')
         }
-        
-        // 重新计算累计值
-        await calculateCumulativeValues(targetPeriod)
     } catch (error) {
         console.error('加载数据失败:', error)
         resetToDefaultData()
@@ -298,7 +292,6 @@ watch(() => route.query.period, async (newPeriod) => {
         period.value = newPeriod.toString()
         resetToDefaultData()
         await loadData(newPeriod.toString())
-        await calculateCumulativeValues(newPeriod.toString())
         loadRemarksAndSuggestions(newPeriod.toString())
     }
 })
@@ -308,7 +301,6 @@ watch(period, async (newPeriod, oldPeriod) => {
         console.log(`期间发生变化: ${oldPeriod} -> ${newPeriod}`)
         resetToDefaultData()
         await loadData(newPeriod)
-        await calculateCumulativeValues(newPeriod)
         loadRemarksAndSuggestions(newPeriod)
     }
 })
@@ -350,7 +342,6 @@ onMounted(async () => {
     resetToDefaultData()
     const targetPeriod = route.query.period?.toString() || period.value
     await loadData(targetPeriod)
-    await calculateCumulativeValues(targetPeriod)
     loadRemarksAndSuggestions(targetPeriod)
 })
 </script>

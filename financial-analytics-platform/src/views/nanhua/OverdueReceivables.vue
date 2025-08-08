@@ -26,7 +26,8 @@
                     <!-- 工程板块项目（包含自建项目） -->
                     <template v-for="(item, index) in overdueData.items" :key="`item-${index}`">
                         <tr>
-                            <td v-if="index === 0" :rowspan="overdueData.items.length" class="border border-gray-300 px-4 py-2 font-medium text-center">
+                            <td v-if="index === 0" :rowspan="overdueData.items.length"
+                                class="border border-gray-300 px-4 py-2 font-medium text-center">
                                 工程
                             </td>
                             <td class="border border-gray-300 px-4 py-2">
@@ -45,13 +46,16 @@
                                 {{ formatNumber(item.yearNewAddition) }}
                             </td>
                             <td class="border border-gray-300 px-4 py-2">
-                                <input v-model="item.currentPeriodAccumulatedCollection" type="number" class="w-full px-2 py-1 border rounded text-right" step="0.01" />
+                                <input v-model="item.currentPeriodAccumulatedCollection" type="number"
+                                    class="w-full px-2 py-1 border rounded text-right" step="0.01" />
                             </td>
                             <td class="border border-gray-300 px-4 py-2">
-                                <input v-model="item.cumulativeNewOverdue" type="number" class="w-full px-2 py-1 border rounded text-right" step="0.01" />
+                                <input v-model="item.cumulativeNewOverdue" type="number"
+                                    class="w-full px-2 py-1 border rounded text-right" step="0.01" />
                             </td>
                             <td class="border border-gray-300 px-4 py-2 text-right">
-                                <span class="text-sm font-medium">{{ formatPercentage(item.collectionProgress) }}%</span>
+                                <span class="text-sm font-medium">{{ formatPercentage(item.collectionProgress)
+                                    }}%</span>
                             </td>
                         </tr>
                     </template>
@@ -80,12 +84,8 @@
         </div>
 
         <!-- 文件上传和备注组件 -->
-        <FormAttachmentAndRemarks 
-            :module-id="MODULE_IDS.NANHUA_OVERDUE_RECEIVABLES"
-            :period="period"
-            v-model:remarks="remarks"
-            v-model:suggestions="suggestions"
-        />
+        <FormAttachmentAndRemarks :module-id="MODULE_IDS.NANHUA_OVERDUE_RECEIVABLES" :period="period"
+            v-model:remarks="remarks" v-model:suggestions="suggestions" />
 
         <div class="mt-4 flex justify-end space-x-4">
             <button @click="handleSave" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
@@ -154,11 +154,11 @@ const calculateYearNewAddition = async (targetPeriod: string) => {
     try {
         const [year] = targetPeriod.split('-')
         const currentMonth = parseInt(targetPeriod.split('-')[1])
-        
+
         // 为每个客户计算本年新增
         for (let customer of overdueData.value.items) {
             let yearNewAddition = 0
-            
+
             // 从1月累计到当前月份的"当期累计已收款"
             for (let m = 1; m <= currentMonth; m++) {
                 const monthPeriod = `${year}-${m.toString().padStart(2, '0')}`
@@ -175,13 +175,13 @@ const calculateYearNewAddition = async (targetPeriod: string) => {
                     console.warn(`无法加载${monthPeriod}的数据:`, error)
                 }
             }
-            
+
             customer.yearNewAddition = yearNewAddition
             // 计算收款进度
             const totalAmount = customer.yearBeginningBalance + customer.yearNewAddition
             customer.collectionProgress = totalAmount > 0 ? (customer.currentPeriodAccumulatedCollection / totalAmount) * 100 : 0
         }
-        
+
     } catch (error) {
         console.error('计算本年新增失败:', error)
     }
@@ -204,18 +204,18 @@ const totalData = computed(() => {
         cumulativeNewOverdue: 0,
         collectionProgress: 0
     }
-    
+
     overdueData.value.items.forEach(item => {
         total.yearBeginningBalance += item.yearBeginningBalance || 0
         total.yearNewAddition += item.yearNewAddition || 0
         total.currentPeriodAccumulatedCollection += item.currentPeriodAccumulatedCollection || 0
         total.cumulativeNewOverdue += item.cumulativeNewOverdue || 0
     })
-    
+
     // 计算总收款进度
     const totalAmount = total.yearBeginningBalance + total.yearNewAddition
     total.collectionProgress = totalAmount > 0 ? (total.currentPeriodAccumulatedCollection / totalAmount) * 100 : 0
-    
+
     return total
 })
 
@@ -243,7 +243,7 @@ const loadData = async (targetPeriod: string) => {
                 cumulativeNewOverdue: Number(item.cumulativeNewOverdue) || 0
             }))
         }
-        
+
         // 加载完数据后重新计算本年新增
         await calculateYearNewAddition(targetPeriod)
     } catch (error) {

@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../config/database');
+const { pool } = require('../config/database');
 const { createBudgetMiddleware } = require('../middleware/budgetMiddleware');
 
 // 获取南华部门成本中心实际发生情况数据
@@ -14,7 +14,7 @@ router.get('/:period', createBudgetMiddleware('部门成本中心'), async (req,
             WHERE period = ?
         `;
         
-        const [rows] = await db.execute(query, [period]);
+        const [rows] = await pool.execute(query, [period]);
         
         if (rows.length === 0) {
             // 如果没有数据，返回固定结构
@@ -28,9 +28,7 @@ router.get('/:period', createBudgetMiddleware('部门成本中心'), async (req,
                     { departmentName: '运检部', yearlyBudget: 569.90, currentAmount: 0, accumulatedAmount: 0, executionProgress: 0, actualRatio: 0 },
                     { departmentName: '营销部-销售', yearlyBudget: 125.13, currentAmount: 0, accumulatedAmount: 0, executionProgress: 0, actualRatio: 0 },
                     { departmentName: '营销部-商务', yearlyBudget: 53.37, currentAmount: 0, accumulatedAmount: 0, executionProgress: 0, actualRatio: 0 },
-                    { departmentName: '营销部-设备', yearlyBudget: 1048.86, currentAmount: 0, accumulatedAmount: 0, executionProgress: 0, actualRatio: 0 },
-                    { departmentName: '营销部-采购', yearlyBudget: 0.47, currentAmount: 0, accumulatedAmount: 0, executionProgress: 0, actualRatio: 0 },
-                    { departmentName: '营销部-后勤', yearlyBudget: 200.0, currentAmount: 0, accumulatedAmount: 0, executionProgress: 0, actualRatio: 0 }
+                    { departmentName: '营销部-设备', yearlyBudget: 1048.86, currentAmount: 0, accumulatedAmount: 0, executionProgress: 0, actualRatio: 0 }
                 ],
                 selfBuiltData: {
                     departmentName: '自建项目',
@@ -117,11 +115,12 @@ router.post('/', async (req, res) => {
         }
         
         // 开始事务
-        await db.execute('START TRANSACTION');
+        const connection = await pool.getConnection();
+        await connection.beginTransaction();
         
         try {
             // 删除该期间的旧数据
-            await db.execute('DELETE FROM nanhua_department_cost_center_actual WHERE period = ?', [period]);
+            await connection.execute('DELETE FROM nanhua_department_cost_center_actual WHERE period = ?', [period]);
             
             // 准备插入数据
             const insertQuery = `
@@ -133,7 +132,7 @@ router.post('/', async (req, res) => {
             // 插入部门数据
             if (data.departments && Array.isArray(data.departments)) {
                 for (const department of data.departments) {
-                    await db.execute(insertQuery, [
+                    await connection.execute(insertQuery, [
                         period,
                         department.departmentName,
                         department.yearlyBudget || 0,
@@ -147,7 +146,7 @@ router.post('/', async (req, res) => {
             
             // 插入自建项目数据
             if (data.selfBuiltData) {
-                await db.execute(insertQuery, [
+                await connection.execute(insertQuery, [
                     period,
                     data.selfBuiltData.departmentName,
                     data.selfBuiltData.yearlyBudget || 0,
@@ -159,7 +158,8 @@ router.post('/', async (req, res) => {
             }
             
             // 提交事务
-            await db.execute('COMMIT');
+            await connection.commit();
+            connection.release();
             
             res.json({
                 success: true,
@@ -168,7 +168,8 @@ router.post('/', async (req, res) => {
             
         } catch (error) {
             // 回滚事务
-            await db.execute('ROLLBACK');
+            await connection.rollback();
+            connection.release();
             throw error;
         }
         

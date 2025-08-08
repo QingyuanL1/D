@@ -73,6 +73,7 @@ const authRoutes = require('./routes/auth');
 
 // 表单提交路由
 const formSubmissionsRoutes = require('./routes/formSubmissions');
+const nanhuaBalanceSheetRoutes = require('./routes/nanhuaBalanceSheet');
 
 // 文件上传路由
 const fileUploadRoutes = require('./routes/fileUpload');
@@ -229,6 +230,7 @@ app.use('/auth', authRoutes);
 
 // 表单提交路由
 app.use('/forms', formSubmissionsRoutes);
+app.use('/nanhua-balance-sheet', nanhuaBalanceSheetRoutes);
 
 // 文件上传路由
 app.use('/files', fileUploadRoutes);

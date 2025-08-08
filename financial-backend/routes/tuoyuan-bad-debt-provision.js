@@ -11,7 +11,7 @@ router.get('/:period', async (req, res) => {
         // 定义默认数据结构
         const defaultData = {
             items: [
-                { segmentAttribute: '设备', customerAttribute: '电业项目', yearBeginningBalance: 0, yearNewIncrease: 0, currentCollected: 0, cumulativeCollected: 0, provisionBalance: 0 },
+                { segmentAttribute: '设备', customerAttribute: '申业项目', yearBeginningBalance: 0, yearNewIncrease: 0, currentCollected: 0, cumulativeCollected: 0, provisionBalance: 0 },
                 { segmentAttribute: '设备', customerAttribute: '用户项目', yearBeginningBalance: 0, yearNewIncrease: 0, currentCollected: 0, cumulativeCollected: 0, provisionBalance: 0 },
                 { segmentAttribute: '设备', customerAttribute: '贸易', yearBeginningBalance: 0, yearNewIncrease: 0, currentCollected: 0, cumulativeCollected: 0, provisionBalance: 0 },
                 { segmentAttribute: '设备', customerAttribute: '代理设备', yearBeginningBalance: 0, yearNewIncrease: 0, currentCollected: 0, cumulativeCollected: 0, provisionBalance: 0 },
@@ -40,15 +40,21 @@ router.get('/:period', async (req, res) => {
         
         const [results] = await pool.execute(query, [period]);
         
-        // 如果没有数据，返回默认数据
+        let items = [];
+        let isCalculated = false;
+        
+        // 如果没有当月数据，计算累计值并生成数据
         if (results.length === 0) {
-            return res.json({
-                success: true,
-                data: defaultData
-            });
-        }
-
-        const items = results.map(row => ({
+            console.log(`没有${period}的拓源坏账准备数据，计算累计值...`);
+            
+            // 计算累计值
+            items = await calculateTuoyuanBadDebtCumulativeData(defaultData.items, period);
+            isCalculated = true;
+        } else {
+            // 有数据的月份，也要重新计算累计值
+            console.log(`${period}有拓源坏账准备数据，重新计算累计值...`);
+            
+            items = results.map(row => ({
             id: row.id,
             segmentAttribute: row.segment_attribute,
             customerAttribute: row.customer_attribute,
@@ -58,10 +64,15 @@ router.get('/:period', async (req, res) => {
             cumulativeCollected: parseFloat(row.cumulative_collected || 0),
             provisionBalance: parseFloat(row.provision_balance || 0)
         }));
+            
+            // 重新计算累计值
+            items = await recalculateTuoyuanBadDebtCumulativeData(items, period);
+        }
 
         res.json({
             success: true,
-            data: { items }
+            data: { items },
+            isCalculated: isCalculated
         });
 
     } catch (error) {
@@ -74,8 +85,100 @@ router.get('/:period', async (req, res) => {
     }
 });
 
-// 简化版：本年新增现在直接从数据库读取，不需要复杂计算
-// 如果需要自动计算，可以根据业务需求从其他相关表获取
+// 计算拓源坏账准备累计值的辅助函数
+async function calculateTuoyuanBadDebtCumulativeData(baseData, targetPeriod) {
+    const [year, month] = targetPeriod.split('-');
+    const targetMonth = parseInt(month);
+    
+    const result = [];
+    
+    for (const baseItem of baseData) {
+        // 计算累计已收款
+        let totalCollected = 0;
+        
+        // 查询从1月到目标月份的所有数据
+        for (let i = 1; i <= targetMonth; i++) {
+            const monthPeriod = `${year}-${i.toString().padStart(2, '0')}`;
+            
+            try {
+                const [monthRows] = await pool.execute(
+                    'SELECT * FROM tuoyuan_bad_debt_provision WHERE period = ? AND segment_attribute = ? AND customer_attribute = ?',
+                    [monthPeriod, baseItem.segmentAttribute, baseItem.customerAttribute]
+                );
+                
+                if (monthRows.length > 0) {
+                    const monthItem = monthRows[0];
+                    const currentCollected = parseFloat(monthItem.current_collected) || 0;
+                    
+                    totalCollected += currentCollected;
+                }
+            } catch (error) {
+                console.log(`跳过月份 ${monthPeriod}:`, error.message);
+            }
+        }
+        
+        // 年初余额（固定值）
+        const yearBeginningBalance = baseItem.yearBeginningBalance || 0;
+        const yearNewIncrease = baseItem.yearNewIncrease || 0;
+        
+        // 计算坏账准备余额 = 年初余额 + 本年新增 - 累计已收款
+        const provisionBalance = yearBeginningBalance + yearNewIncrease - totalCollected;
+        
+        result.push({
+            segmentAttribute: baseItem.segmentAttribute,
+            customerAttribute: baseItem.customerAttribute,
+            yearBeginningBalance: yearBeginningBalance,
+            yearNewIncrease: yearNewIncrease,
+            currentCollected: 0, // 当月已收款为0（因为没有当月数据）
+            cumulativeCollected: totalCollected,
+            provisionBalance: provisionBalance
+        });
+    }
+    
+    return result;
+}
+
+// 重新计算现有数据的累计值
+async function recalculateTuoyuanBadDebtCumulativeData(items, targetPeriod) {
+    const [year, month] = targetPeriod.split('-');
+    const targetMonth = parseInt(month);
+    
+    for (let item of items) {
+        // 计算累计已收款
+        let totalCollected = 0;
+        
+        // 查询从1月到目标月份的所有数据
+        for (let i = 1; i <= targetMonth; i++) {
+            const monthPeriod = `${year}-${i.toString().padStart(2, '0')}`;
+            
+            try {
+                const [monthRows] = await pool.execute(
+                    'SELECT * FROM tuoyuan_bad_debt_provision WHERE period = ? AND segment_attribute = ? AND customer_attribute = ?',
+                    [monthPeriod, item.segmentAttribute, item.customerAttribute]
+                );
+                
+                if (monthRows.length > 0) {
+                    const monthItem = monthRows[0];
+                    const currentCollected = parseFloat(monthItem.current_collected) || 0;
+                    
+                    totalCollected += currentCollected;
+                }
+            } catch (error) {
+                console.log(`跳过月份 ${monthPeriod}:`, error.message);
+            }
+        }
+        
+        // 更新累计值
+        item.cumulativeCollected = totalCollected;
+        
+        // 重新计算坏账准备余额 = 年初余额 + 本年新增 - 累计已收款
+        item.provisionBalance = item.yearBeginningBalance + item.yearNewIncrease - totalCollected;
+    }
+    
+    return items;
+}
+
+// 本年新增现在作为输入值，由用户手动填写
 
 // 保存数据
 router.post('/', async (req, res) => {

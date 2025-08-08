@@ -1,63 +1,67 @@
+// 资产负债表数据模板
+// 注意：实际的数据结构在 Vue 组件中定义，这里仅作为参考
 export default {
-  currentAssets: {
-    endBalance: 0,
-    startBalance: 0,
-    cash: {
+  assets: {
+    current: [
+      { name: '货币资金', endBalance: 0, beginBalance: 0 },
+      { name: '交易性金融资产', endBalance: 0, beginBalance: 0 },
+      { name: '衍生金融资产', endBalance: 0, beginBalance: 0 },
+      { name: '应收票据', endBalance: 0, beginBalance: 0 },
+      { name: '应收账款', endBalance: 0, beginBalance: 0 },
+      // ... 其他流动资产项
+    ],
+    currentTotal: {
       endBalance: 0,
-      startBalance: 0,
+      beginBalance: 0,
     },
-    tradingFinancialAssets: {
+    nonCurrent: [
+      { name: '债权投资', endBalance: 0, beginBalance: 0 },
+      { name: '长期应收款', endBalance: 0, beginBalance: 0 },
+      { name: '长期股权投资', endBalance: 0, beginBalance: 0 },
+      { name: '固定资产', endBalance: 0, beginBalance: 0 },
+      // ... 其他非流动资产项
+    ],
+    nonCurrentTotal: {
       endBalance: 0,
-      startBalance: 0,
-    },
-    // 继续添加其他流动资产项...
-    total: {
-      endBalance: 0,
-      startBalance: 0,
-    },
-  },
-  nonCurrentAssets: {
-    endBalance: 0,
-    startBalance: 0,
-    // 添加非流动资产项...
-    total: {
-      endBalance: 0,
-      startBalance: 0,
-    },
-  },
-  currentLiabilities: {
-    endBalance: 0,
-    startBalance: 0,
-    shortLoan: {
-      endBalance: 0,
-      startBalance: 0,
-    },
-    // 继续添加其他流动负债项...
-    total: {
-      endBalance: 0,
-      startBalance: 0,
+      beginBalance: 0,
     },
   },
-  nonCurrentLiabilities: {
-    endBalance: 0,
-    startBalance: 0,
-    // 添加非流动负债项...
-    total: {
+  liabilities: {
+    current: [
+      { name: '短期借款', endBalance: 0, beginBalance: 0 },
+      { name: '交易性金融负债', endBalance: 0, beginBalance: 0 },
+      { name: '应付票据', endBalance: 0, beginBalance: 0 },
+      { name: '应付账款', endBalance: 0, beginBalance: 0 },
+      // ... 其他流动负债项
+    ],
+    currentTotal: {
       endBalance: 0,
-      startBalance: 0,
+      beginBalance: 0,
+    },
+    nonCurrent: [
+      { name: '长期借款', endBalance: 0, beginBalance: 0 },
+      { name: '应付债券', endBalance: 0, beginBalance: 0 },
+      { name: '租赁负债', endBalance: 0, beginBalance: 0 },
+      // ... 其他非流动负债项
+    ],
+    nonCurrentTotal: {
+      endBalance: 0,
+      beginBalance: 0,
     },
   },
-  equity: {
+  equity: [
+    { name: '实收资本（或股本）', endBalance: 0, beginBalance: 0 },
+    { name: '资本公积', endBalance: 0, beginBalance: 0 },
+    { name: '盈余公积', endBalance: 0, beginBalance: 0 },
+    { name: '未分配利润', endBalance: 0, beginBalance: 0 },
+    // ... 其他所有者权益项
+  ],
+  equityTotal: {
     endBalance: 0,
-    startBalance: 0,
-    // 添加所有者权益项...
-    total: {
-      endBalance: 0,
-      startBalance: 0,
-    },
+    beginBalance: 0,
   },
   total: {
     endBalance: 0,
-    startBalance: 0,
+    beginBalance: 0,
   },
 };

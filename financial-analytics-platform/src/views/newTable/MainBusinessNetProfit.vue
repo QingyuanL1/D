@@ -16,7 +16,7 @@
                         <th class="border border-gray-300 px-4 py-2" rowspan="2">年度计划</th>
                         <th class="border border-gray-300 px-4 py-2" rowspan="2">当月值</th>
                         <th class="border border-gray-300 px-4 py-2" rowspan="2">累计值</th>
-                        <th class="border border-gray-300 px-4 py-2" rowspan="2">分类贡献占比</th>
+                        <th class="border border-gray-300 px-4 py-2" rowspan="2">执⾏进度</th>
                     </tr>
                 </thead>
                 <tbody>

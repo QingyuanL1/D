@@ -132,17 +132,17 @@ export const frameIn: Array<RouteRecordRaw> = [
       },
 
       {
-                path: 'changzhou-tuoyuan-balance-sheet-2025',
-                name: 'ChangzhouTuoyuanBalanceSheet2025',
-                component: () => import('@/views/example/ChangzhouTuoyuanBalanceSheet2025.vue'),
-                meta: {
-                  title: '常州拓源资产负债表2025',
-                },
-              },
-        {
-                  path: 'shanghai-nanhua-lanling-balance-sheet',
-                  name: 'ShanghaiNanhuaLanlingBalanceSheet',
-                  component: () => import('@/views/example/ShanghaiNanhuaLanlingBalanceSheet.vue'),
+        path: 'changzhou-tuoyuan-balance-sheet-2025',
+        name: 'ChangzhouTuoyuanBalanceSheet2025',
+        component: () => import('@/views/companies/financial-reports/ChangzhouTuoyuanBalanceSheet2025.vue'),
+        meta: {
+          title: '常州拓源资产负债表2025',
+        },
+      },
+      {
+        path: 'shanghai-nanhua-lanling-balance-sheet',
+        name: 'ShanghaiNanhuaLanlingBalanceSheet',
+        component: () => import('@/views/example/ShanghaiNanhuaLanlingBalanceSheet.vue'),
                   meta: {
                     title: '上海南华兰陵实业有限公司资产负债表',
                   },

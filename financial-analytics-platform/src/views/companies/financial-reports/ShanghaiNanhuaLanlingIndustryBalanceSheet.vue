@@ -5,7 +5,7 @@
       <div class="text-center mb-4">
         <p class="text-sm text-gray-600">金额单位：{{ data.companyInfo.unit }}</p>
       </div>
-      
+
       <!-- 添加期间输入 -->
       <div class="mb-4">
         <label class="block text-gray-700">期间：</label>
@@ -19,8 +19,8 @@
             <thead class="sticky top-0 bg-white">
               <tr class="bg-gray-50">
                 <th class="border border-gray-300 px-4 py-2">资产</th>
-                <th class="border border-gray-300 px-4 py-2 w-40">当期</th>
-                <th class="border border-gray-300 px-4 py-2 w-40">累计</th>
+                <th class="border border-gray-300 px-4 py-2 w-40">期末余额</th>
+                <th class="border border-gray-300 px-4 py-2 w-40">期初余额</th>
               </tr>
             </thead>
             <tbody>
@@ -30,14 +30,17 @@
                 <td class="border border-gray-300 px-4 py-2"></td>
                 <td class="border border-gray-300 px-4 py-2"></td>
               </tr>
-              
+
               <tr v-for="(item, index) in data.assets.current" :key="`current-asset-${index}`">
                 <td class="border border-gray-300 px-4 py-2 pl-8">{{ item.name }}</td>
                 <td class="border border-gray-300 px-4 py-2">
-                  <input type="number" v-model.number="item.yearInitial" class="w-full px-2 py-1 border rounded" step="0.01" />
+                  <input type="number" v-model.number="item.endBalance" class="w-full px-2 py-1 border rounded"
+                    step="0.01" />
                 </td>
-                <td class="border border-gray-300 px-4 py-2 bg-gray-50">
-                  {{ getCumulative(item.name, item.yearInitial).toLocaleString() }}
+                <td class="border border-gray-300 px-4 py-2">
+                  <input v-if="period.endsWith('-01')" type="number" v-model.number="item.beginBalance"
+                    class="w-full px-2 py-1 border rounded" step="0.01" />
+                  <span v-else class="block w-full px-2 py-1 text-gray-700">{{ item.beginBalance || 0 }}</span>
                 </td>
               </tr>
 
@@ -45,21 +48,25 @@
               <tr v-for="(item, index) in data.assets.nonCurrentLongTerm" :key="`noncurrent-longterm-${index}`">
                 <td class="border border-gray-300 px-4 py-2 pl-8">{{ item.name }}</td>
                 <td class="border border-gray-300 px-4 py-2">
-                  <input type="number" v-model.number="item.yearInitial" class="w-full px-2 py-1 border rounded" step="0.01" />
+                  <input type="number" v-model.number="item.endBalance" class="w-full px-2 py-1 border rounded"
+                    step="0.01" />
                 </td>
-                <td class="border border-gray-300 px-4 py-2">
-                  <input type="number" v-model.number="item.periodEnd" class="w-full px-2 py-1 border rounded" step="0.01" />
+                <td class="border border-gray-300 px-4 py-2 bg-gray-50">
+                  {{ item.beginBalance || 0 }}
                 </td>
               </tr>
 
               <!-- 流动资产合计 -->
               <tr class="bg-yellow-50 font-bold">
-                <td class="border border-gray-300 px-4 py-2">{{ data.assets.currentTotal.name }}</td>
+                <td class="border border-gray-300 px-4 py-2">{{ data.assets.currentTotal.name }} <span
+                    class="text-blue-600 text-xs">[自动计算]</span></td>
                 <td class="border border-gray-300 px-4 py-2">
-                  <input type="number" v-model.number="data.assets.currentTotal.yearInitial" class="w-full px-2 py-1 border rounded bg-yellow-50 font-bold" step="0.01" />
+                  <span class="block w-full px-2 py-1 bg-yellow-50 font-bold text-blue-700">{{
+                    getCurrentPeriodTotal('currentAssets').toLocaleString() }}</span>
                 </td>
                 <td class="border border-gray-300 px-4 py-2">
-                  <input type="number" v-model.number="data.assets.currentTotal.periodEnd" class="w-full px-2 py-1 border rounded bg-yellow-50 font-bold" step="0.01" />
+                  <span class="block w-full px-2 py-1 bg-yellow-50 font-bold text-blue-700">{{
+                    data.assets.currentTotal.beginBalance || 0 }}</span>
                 </td>
               </tr>
 
@@ -69,14 +76,15 @@
                 <td class="border border-gray-300 px-4 py-2"></td>
                 <td class="border border-gray-300 px-4 py-2"></td>
               </tr>
-              
+
               <tr v-for="(item, index) in data.assets.longTermInvestment" :key="`longterm-investment-${index}`">
                 <td class="border border-gray-300 px-4 py-2 pl-8">{{ item.name }}</td>
                 <td class="border border-gray-300 px-4 py-2">
-                  <input type="number" v-model.number="item.yearInitial" class="w-full px-2 py-1 border rounded" step="0.01" />
+                  <input type="number" v-model.number="item.endBalance" class="w-full px-2 py-1 border rounded"
+                    step="0.01" />
                 </td>
-                <td class="border border-gray-300 px-4 py-2">
-                  <input type="number" v-model.number="item.periodEnd" class="w-full px-2 py-1 border rounded" step="0.01" />
+                <td class="border border-gray-300 px-4 py-2 bg-gray-50">
+                  {{ item.beginBalance || 0 }}
                 </td>
               </tr>
 
@@ -86,33 +94,29 @@
                 <td class="border border-gray-300 px-4 py-2"></td>
                 <td class="border border-gray-300 px-4 py-2"></td>
               </tr>
-              
+
               <tr v-for="(item, index) in data.assets.fixedAssets" :key="`fixed-assets-${index}`">
                 <td class="border border-gray-300 px-4 py-2 pl-8">{{ item.name }}</td>
                 <td class="border border-gray-300 px-4 py-2">
-
-                  <input type="number" v-model.number="item.yearInitial" class="w-full px-2 py-1 border rounded" step="0.01" />
-
+                  <input type="number" v-model.number="item.endBalance" class="w-full px-2 py-1 border rounded"
+                    step="0.01" />
                 </td>
-                <td class="border border-gray-300 px-4 py-2">
-
-                  <input type="number" v-model.number="item.periodEnd" class="w-full px-2 py-1 border rounded" step="0.01" />
-
+                <td class="border border-gray-300 px-4 py-2 bg-gray-50">
+                  {{ item.beginBalance || 0 }}
                 </td>
               </tr>
 
               <!-- 固定资产合计 -->
               <tr class="bg-yellow-50 font-bold">
-                <td class="border border-gray-300 px-4 py-2">{{ data.assets.fixedAssetsTotal.name }}</td>
+                <td class="border border-gray-300 px-4 py-2">{{ data.assets.fixedAssetsTotal.name }} <span
+                    class="text-blue-600 text-xs">[自动计算]</span></td>
                 <td class="border border-gray-300 px-4 py-2">
-
-                  <input type="number" v-model.number="data.assets.fixedAssetsTotal.yearInitial" class="w-full px-2 py-1 border rounded" step="0.01" />
-
+                  <span class="block w-full px-2 py-1 bg-yellow-50 font-bold text-blue-700">{{
+                    getCurrentPeriodTotal('fixedAssets').toLocaleString() }}</span>
                 </td>
                 <td class="border border-gray-300 px-4 py-2">
-
-                  <input type="number" v-model.number="data.assets.fixedAssetsTotal.periodEnd" class="w-full px-2 py-1 border rounded" step="0.01" />
-
+                  <span class="block w-full px-2 py-1 bg-yellow-50 font-bold text-blue-700">{{
+                    data.assets.fixedAssetsTotal.beginBalance || 0 }}</span>
                 </td>
               </tr>
 
@@ -122,33 +126,29 @@
                 <td class="border border-gray-300 px-4 py-2"></td>
                 <td class="border border-gray-300 px-4 py-2"></td>
               </tr>
-              
+
               <tr v-for="(item, index) in data.assets.intangibleAssets" :key="`intangible-assets-${index}`">
                 <td class="border border-gray-300 px-4 py-2 pl-8">{{ item.name }}</td>
                 <td class="border border-gray-300 px-4 py-2">
-
-                  <input type="number" v-model.number="item.yearInitial" class="w-full px-2 py-1 border rounded" step="0.01" />
-
+                  <input type="number" v-model.number="item.endBalance" class="w-full px-2 py-1 border rounded"
+                    step="0.01" />
                 </td>
-                <td class="border border-gray-300 px-4 py-2">
-
-                  <input type="number" v-model.number="item.periodEnd" class="w-full px-2 py-1 border rounded" step="0.01" />
-
+                <td class="border border-gray-300 px-4 py-2 bg-gray-50">
+                  {{ item.beginBalance || 0 }}
                 </td>
               </tr>
 
               <!-- 无形资产及其他资产合计 -->
               <tr class="bg-yellow-50 font-bold">
-                <td class="border border-gray-300 px-4 py-2">{{ data.assets.intangibleAssetsTotal.name }}</td>
+                <td class="border border-gray-300 px-4 py-2">{{ data.assets.intangibleAssetsTotal.name }} <span
+                    class="text-blue-600 text-xs">[自动计算]</span></td>
                 <td class="border border-gray-300 px-4 py-2">
-
-                  <input type="number" v-model.number="data.assets.intangibleAssetsTotal.yearInitial" class="w-full px-2 py-1 border rounded" step="0.01" />
-
+                  <span class="block w-full px-2 py-1 bg-yellow-50 font-bold text-blue-700">{{
+                    getCurrentPeriodTotal('intangibleAssets').toLocaleString() }}</span>
                 </td>
                 <td class="border border-gray-300 px-4 py-2">
-
-                  <input type="number" v-model.number="data.assets.intangibleAssetsTotal.periodEnd" class="w-full px-2 py-1 border rounded" step="0.01" />
-
+                  <span class="block w-full px-2 py-1 bg-yellow-50 font-bold text-blue-700">{{
+                    data.assets.intangibleAssetsTotal.beginBalance || 0 }}</span>
                 </td>
               </tr>
 
@@ -156,29 +156,25 @@
               <tr v-for="(item, index) in data.assets.deferredTaxAssets" :key="`deferred-tax-assets-${index}`">
                 <td class="border border-gray-300 px-4 py-2">{{ item.name }}</td>
                 <td class="border border-gray-300 px-4 py-2">
-
-                  <input type="number" v-model.number="item.yearInitial" class="w-full px-2 py-1 border rounded" step="0.01" />
-
+                  <input type="number" v-model.number="item.endBalance" class="w-full px-2 py-1 border rounded"
+                    step="0.01" />
                 </td>
-                <td class="border border-gray-300 px-4 py-2">
-
-                  <input type="number" v-model.number="item.periodEnd" class="w-full px-2 py-1 border rounded" step="0.01" />
-
+                <td class="border border-gray-300 px-4 py-2 bg-gray-50">
+                  {{ item.beginBalance || 0 }}
                 </td>
               </tr>
 
               <!-- 资产总计 -->
               <tr class="bg-blue-50 font-bold text-lg">
-                <td class="border border-gray-300 px-4 py-2">{{ data.assets.assetsTotal.name }}</td>
+                <td class="border border-gray-300 px-4 py-2">{{ data.assets.assetsTotal.name }} <span
+                    class="text-blue-600 text-xs">[自动计算]</span></td>
                 <td class="border border-gray-300 px-4 py-2">
-
-                  <input type="number" v-model.number="data.assets.assetsTotal.yearInitial" class="w-full px-2 py-1 border rounded" step="0.01" />
-
+                  <span class="block w-full px-2 py-1 bg-blue-50 font-bold text-blue-700">{{
+                    getCurrentPeriodTotal('assetsTotal').toLocaleString() }}</span>
                 </td>
                 <td class="border border-gray-300 px-4 py-2">
-
-                  <input type="number" v-model.number="data.assets.assetsTotal.periodEnd" class="w-full px-2 py-1 border rounded" step="0.01" />
-
+                  <span class="block w-full px-2 py-1 bg-blue-50 font-bold text-blue-700">{{
+                    data.assets.assetsTotal.beginBalance || 0 }}</span>
                 </td>
               </tr>
             </tbody>
@@ -191,8 +187,8 @@
             <thead class="sticky top-0 bg-white">
               <tr class="bg-gray-50">
                 <th class="border border-gray-300 px-4 py-2">负债和所有者权益</th>
-                <th class="border border-gray-300 px-4 py-2 w-40">当期</th>
-                <th class="border border-gray-300 px-4 py-2 w-40">累计</th>
+                <th class="border border-gray-300 px-4 py-2 w-40">期末余额</th>
+                <th class="border border-gray-300 px-4 py-2 w-40">期初余额</th>
               </tr>
             </thead>
             <tbody>
@@ -202,25 +198,30 @@
                 <td class="border border-gray-300 px-4 py-2"></td>
                 <td class="border border-gray-300 px-4 py-2"></td>
               </tr>
-              
+
               <tr v-for="(item, index) in data.liabilities.current" :key="`current-liability-${index}`">
                 <td class="border border-gray-300 px-4 py-2 pl-8">{{ item.name }}</td>
                 <td class="border border-gray-300 px-4 py-2">
-                  <input type="number" v-model.number="item.yearInitial" class="w-full px-2 py-1 border rounded" step="0.01" />
+                  <input v-if="period.endsWith('-01')" type="number" v-model.number="item.endBalance"
+                    class="w-full px-2 py-1 border rounded" step="0.01" />
+                  <span v-else class="block w-full px-2 py-1 text-gray-700">{{ item.endBalance || 0 }}</span>
                 </td>
-                <td class="border border-gray-300 px-4 py-2">
-                  <input type="number" v-model.number="item.periodEnd" class="w-full px-2 py-1 border rounded" step="0.01" />
+                <td class="border border-gray-300 px-4 py-2 bg-gray-50">
+                  {{ item.beginBalance || 0 }}
                 </td>
               </tr>
 
               <!-- 流动负债合计 -->
               <tr class="bg-yellow-50 font-bold">
-                <td class="border border-gray-300 px-4 py-2">{{ data.liabilities.currentLiabilitiesTotal.name }}</td>
+                <td class="border border-gray-300 px-4 py-2">{{ data.liabilities.currentLiabilitiesTotal.name }} <span
+                    class="text-blue-600 text-xs">[自动计算]</span></td>
                 <td class="border border-gray-300 px-4 py-2">
-                  <input type="number" v-model.number="data.liabilities.currentLiabilitiesTotal.yearInitial" class="w-full px-2 py-1 border rounded" step="0.01" />
+                  <span class="block w-full px-2 py-1 bg-yellow-50 font-bold text-blue-700">{{
+                    getCurrentPeriodTotal('currentLiabilities').toLocaleString() }}</span>
                 </td>
                 <td class="border border-gray-300 px-4 py-2">
-                  <input type="number" v-model.number="data.liabilities.currentLiabilitiesTotal.periodEnd" class="w-full px-2 py-1 border rounded" step="0.01" />
+                  <span class="block w-full px-2 py-1 bg-yellow-50 font-bold text-blue-700">{{
+                    data.liabilities.currentLiabilitiesTotal.beginBalance || 0 }}</span>
                 </td>
               </tr>
 
@@ -230,25 +231,30 @@
                 <td class="border border-gray-300 px-4 py-2"></td>
                 <td class="border border-gray-300 px-4 py-2"></td>
               </tr>
-              
+
               <tr v-for="(item, index) in data.liabilities.longTermLiabilities" :key="`longterm-liability-${index}`">
                 <td class="border border-gray-300 px-4 py-2 pl-8">{{ item.name }}</td>
                 <td class="border border-gray-300 px-4 py-2">
-                  <input type="number" v-model.number="item.yearInitial" class="w-full px-2 py-1 border rounded" step="0.01" />
+                  <input v-if="period.endsWith('-01')" type="number" v-model.number="item.endBalance"
+                    class="w-full px-2 py-1 border rounded" step="0.01" />
+                  <span v-else class="block w-full px-2 py-1 text-gray-700">{{ item.endBalance || 0 }}</span>
                 </td>
-                <td class="border border-gray-300 px-4 py-2">
-                  <input type="number" v-model.number="item.periodEnd" class="w-full px-2 py-1 border rounded" step="0.01" />
+                <td class="border border-gray-300 px-4 py-2 bg-gray-50">
+                  {{ item.beginBalance || 0 }}
                 </td>
               </tr>
 
               <!-- 长期负债合计 -->
               <tr class="bg-yellow-50 font-bold">
-                <td class="border border-gray-300 px-4 py-2">{{ data.liabilities.longTermLiabilitiesTotal.name }}</td>
+                <td class="border border-gray-300 px-4 py-2">{{ data.liabilities.longTermLiabilitiesTotal.name }} <span
+                    class="text-blue-600 text-xs">[自动计算]</span></td>
                 <td class="border border-gray-300 px-4 py-2">
-                  <input type="number" v-model.number="data.liabilities.longTermLiabilitiesTotal.yearInitial" class="w-full px-2 py-1 border rounded" step="0.01" />
+                  <span class="block w-full px-2 py-1 bg-yellow-50 font-bold text-blue-700">{{
+                    getCurrentPeriodTotal('longTermLiabilities').toLocaleString() }}</span>
                 </td>
                 <td class="border border-gray-300 px-4 py-2">
-                  <input type="number" v-model.number="data.liabilities.longTermLiabilitiesTotal.periodEnd" class="w-full px-2 py-1 border rounded" step="0.01" />
+                  <span class="block w-full px-2 py-1 bg-yellow-50 font-bold text-blue-700">{{
+                    data.liabilities.longTermLiabilitiesTotal.beginBalance || 0 }}</span>
                 </td>
               </tr>
 
@@ -256,21 +262,27 @@
               <tr v-for="(item, index) in data.liabilities.deferredTaxLiabilities" :key="`deferred-tax-${index}`">
                 <td class="border border-gray-300 px-4 py-2">{{ item.name }}</td>
                 <td class="border border-gray-300 px-4 py-2">
-                  <input type="number" v-model.number="item.yearInitial" class="w-full px-2 py-1 border rounded" step="0.01" />
+                  <input v-if="period.endsWith('-01')" type="number" v-model.number="item.endBalance"
+                    class="w-full px-2 py-1 border rounded" step="0.01" />
+                  <span v-else class="block w-full px-2 py-1 text-gray-700">{{ item.endBalance || 0 }}</span>
                 </td>
-                <td class="border border-gray-300 px-4 py-2">
-                  <input type="number" v-model.number="item.periodEnd" class="w-full px-2 py-1 border rounded" step="0.01" />
+                <td class="border border-gray-300 px-4 py-2 bg-gray-50">
+                  {{ item.beginBalance || 0 }}
                 </td>
               </tr>
 
               <!-- 负债合计 -->
               <tr class="bg-yellow-50 font-bold">
-                <td class="border border-gray-300 px-4 py-2">{{ data.liabilities.liabilitiesTotal.name }}</td>
+                <td class="border border-gray-300 px-4 py-2">{{ data.liabilities.liabilitiesTotal.name }} <span
+                    class="text-blue-600 text-xs">[自动计算]</span></td>
                 <td class="border border-gray-300 px-4 py-2">
-                  <input type="number" v-model.number="data.liabilities.liabilitiesTotal.yearInitial" class="w-full px-2 py-1 border rounded" step="0.01" />
+                  <span class="block w-full px-2 py-1 bg-yellow-50 font-bold text-blue-700">{{
+                    getTotalLiabilities().toLocaleString() }}</span>
                 </td>
                 <td class="border border-gray-300 px-4 py-2">
-                  <input type="number" v-model.number="data.liabilities.liabilitiesTotal.periodEnd" class="w-full px-2 py-1 border rounded" step="0.01" />
+                  <span class="block w-full px-2 py-1 bg-yellow-50 font-bold text-blue-700">{{
+                    data.liabilities.liabilitiesTotal.beginBalance || 0
+                    }}</span>
                 </td>
               </tr>
 
@@ -280,36 +292,45 @@
                 <td class="border border-gray-300 px-4 py-2"></td>
                 <td class="border border-gray-300 px-4 py-2"></td>
               </tr>
-              
+
               <tr v-for="(item, index) in data.equity.items" :key="`equity-${index}`">
                 <td class="border border-gray-300 px-4 py-2 pl-8">{{ item.name }}</td>
                 <td class="border border-gray-300 px-4 py-2">
-                  <input type="number" v-model.number="item.yearInitial" class="w-full px-2 py-1 border rounded" step="0.01" />
+                  <input v-if="period.endsWith('-01')" type="number" v-model.number="item.endBalance"
+                    class="w-full px-2 py-1 border rounded" step="0.01" />
+                  <span v-else class="block w-full px-2 py-1 text-gray-700">{{ item.endBalance || 0 }}</span>
                 </td>
-                <td class="border border-gray-300 px-4 py-2">
-                  <input type="number" v-model.number="item.periodEnd" class="w-full px-2 py-1 border rounded" step="0.01" />
+                <td class="border border-gray-300 px-4 py-2 bg-gray-50">
+                  {{ item.beginBalance || 0 }}
                 </td>
               </tr>
 
               <!-- 所有者权益合计 -->
               <tr class="bg-yellow-50 font-bold">
-                <td class="border border-gray-300 px-4 py-2">{{ data.equity.equityTotal.name }}</td>
+                <td class="border border-gray-300 px-4 py-2">{{ data.equity.equityTotal.name }} <span
+                    class="text-blue-600 text-xs">[自动计算]</span></td>
                 <td class="border border-gray-300 px-4 py-2">
-                  <input type="number" v-model.number="data.equity.equityTotal.yearInitial" class="w-full px-2 py-1 border rounded" step="0.01" />
+                  <span class="block w-full px-2 py-1 bg-yellow-50 font-bold text-blue-700">{{
+                    getCurrentPeriodTotal('equity').toLocaleString() }}</span>
                 </td>
                 <td class="border border-gray-300 px-4 py-2">
-                  <input type="number" v-model.number="data.equity.equityTotal.periodEnd" class="w-full px-2 py-1 border rounded" step="0.01" />
+                  <span class="block w-full px-2 py-1 bg-yellow-50 font-bold text-blue-700">{{
+                    data.equity.equityTotal.beginBalance || 0 }}</span>
                 </td>
               </tr>
 
               <!-- 负债和所有者权益总计 -->
               <tr class="bg-blue-50 font-bold text-lg">
-                <td class="border border-gray-300 px-4 py-2">{{ data.equity.liabilitiesAndEquityTotal.name }}</td>
+                <td class="border border-gray-300 px-4 py-2">{{ data.equity.liabilitiesAndEquityTotal.name }} <span
+                    class="text-blue-600 text-xs">[自动计算]</span></td>
                 <td class="border border-gray-300 px-4 py-2">
-                  <input type="number" v-model.number="data.equity.liabilitiesAndEquityTotal.yearInitial" class="w-full px-2 py-1 border rounded" step="0.01" />
+                  <span class="block w-full px-2 py-1 bg-blue-50 font-bold text-blue-800">{{
+                    getGrandTotal().toLocaleString() }}</span>
                 </td>
                 <td class="border border-gray-300 px-4 py-2">
-                  <input type="number" v-model.number="data.equity.liabilitiesAndEquityTotal.periodEnd" class="w-full px-2 py-1 border rounded" step="0.01" />
+                  <span class="block w-full px-2 py-1 bg-blue-50 font-bold text-blue-800">{{
+                    data.equity.liabilitiesAndEquityTotal.beginBalance || 0
+                    }}</span>
                 </td>
               </tr>
             </tbody>
@@ -330,21 +351,17 @@
       </div>
 
       <!-- 附件和备注组件 -->
-      <FormAttachmentAndRemarks
-        :module-id="moduleId"
-        :period="period"
-        v-model:remarks="remarks"
-        v-model:suggestions="suggestions"
-      />
+      <FormAttachmentAndRemarks :module-id="moduleId" :period="period" v-model:remarks="remarks"
+        v-model:suggestions="suggestions" />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted, computed } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import FormAttachmentAndRemarks from '@/components/FormAttachmentAndRemarks.vue'
-import { recordFormSubmission, loadRemarksAndSuggestions, MODULE_IDS } from '@/utils/formSubmissionHelper'
+import { loadRemarksAndSuggestions, MODULE_IDS } from '@/utils/formSubmissionHelper'
 import balanceSheetData from './shanghaiNanhuaLanlingBalanceSheetData'
 
 const route = useRoute()
@@ -355,136 +372,153 @@ const suggestions = ref('')
 
 const data = ref(balanceSheetData)
 
-// 历史期间数据存储 - 用于累计计算
-const historicalPeriodData = ref<{[period: string]: any}>({})
 
-// 从后端加载历史期间数据
-const loadHistoricalPeriodData = async () => {
+
+
+
+// 计算当期合计值
+const getCurrentPeriodTotal = (category: string): number => {
+  switch (category) {
+    case 'currentAssets':
+      return (data.value.assets.current?.reduce((sum, item) => sum + (item.endBalance || 0), 0) || 0) +
+        (data.value.assets.nonCurrentLongTerm?.reduce((sum, item) => sum + (item.endBalance || 0), 0) || 0)
+    case 'longTermInvestment':
+      return data.value.assets.longTermInvestment?.reduce((sum, item) => sum + (item.endBalance || 0), 0) || 0
+    case 'fixedAssets':
+      return data.value.assets.fixedAssets?.reduce((sum, item) => sum + (item.endBalance || 0), 0) || 0
+    case 'intangibleAssets':
+      return data.value.assets.intangibleAssets?.reduce((sum, item) => sum + (item.endBalance || 0), 0) || 0
+    case 'assetsTotal':
+      return getCurrentPeriodTotal('currentAssets') + getCurrentPeriodTotal('longTermInvestment') +
+        getCurrentPeriodTotal('fixedAssets') + getCurrentPeriodTotal('intangibleAssets') +
+        (data.value.assets.deferredTaxAssets?.reduce((sum, item) => sum + (item.endBalance || 0), 0) || 0)
+    case 'currentLiabilities':
+      return data.value.liabilities.current?.reduce((sum, item) => sum + (item.endBalance || 0), 0) || 0
+    case 'longTermLiabilities':
+      return data.value.liabilities.longTermLiabilities?.reduce((sum, item) => sum + (item.endBalance || 0), 0) || 0
+    case 'liabilitiesTotal':
+      return getCurrentPeriodTotal('currentLiabilities') + getCurrentPeriodTotal('longTermLiabilities') +
+        (data.value.liabilities.deferredTaxLiabilities?.reduce((sum, item) => sum + (item.endBalance || 0), 0) || 0)
+    case 'equity':
+      return data.value.equity.items?.reduce((sum, item) => sum + (item.endBalance || 0), 0) || 0
+    case 'liabilitiesAndEquityTotal':
+      return getCurrentPeriodTotal('liabilitiesTotal') + getCurrentPeriodTotal('equity')
+    default:
+      return 0
+  }
+}
+
+// 自动从上个月设置期初余额
+const autoSetBeginBalanceFromPreviousMonth = async () => {
+  const currentPeriod = period.value.slice(0, 7)
+
+  // 如果是1月份，不自动设置期初余额
+  if (currentPeriod.endsWith('-01')) {
+    console.log('1月份不自动设置期初余额')
+    return
+  }
+
   try {
-    // 获取当前年份的所有期间数据
-    const currentYear = new Date().getFullYear()
-    const periods = []
-    for (let month = 1; month <= 12; month++) {
-      periods.push(`${currentYear}-${month.toString().padStart(2, '0')}`)
-    }
-    
-    historicalPeriodData.value = {}
-    
-    for (const periodStr of periods) {
-      // 只加载当前期间之前的数据用于累计计算
-      if (periodStr < period.value) {
-        try {
-          const response = await fetch(`http://127.0.0.1:3000/forms/submission/${moduleId}/${periodStr}`)
-          if (response.ok) {
-            const result = await response.json()
-            if (result.success && result.data && result.data.submission_data) {
-              const savedData = typeof result.data.submission_data === 'string' 
-                ? JSON.parse(result.data.submission_data) 
-                : result.data.submission_data
-              
-              historicalPeriodData.value[periodStr] = savedData
-            }
+    // 计算上个月的期间
+    const currentDate = new Date(currentPeriod + '-01')
+    currentDate.setMonth(currentDate.getMonth() - 1)
+    const previousPeriod = currentDate.toISOString().slice(0, 7)
+
+    console.log(`尝试从上个月 ${previousPeriod} 设置期初余额`)
+
+    // 获取上个月的数据
+    const response = await fetch(`http://127.0.0.1:3000/nanhua-balance-sheet/${previousPeriod}`)
+    if (response.ok) {
+      const result = await response.json()
+      if (result.success && result.data) {
+        const previousData = result.data
+        console.log('获取到上个月数据:', previousData)
+
+        // 设置期初余额为上个月的期末余额
+        const setBeginBalanceFromPrevious = (current: any[], previous: any[]) => {
+          if (current && previous) {
+            current.forEach((item, index) => {
+              if (previous[index] && previous[index].endBalance !== undefined) {
+                item.beginBalance = previous[index].endBalance || 0
+              }
+            })
           }
-        } catch (error) {
-          console.log(`加载期间 ${periodStr} 数据失败:`, error)
         }
+
+        // 设置各部分的期初余额
+        if (previousData.assets) {
+          setBeginBalanceFromPrevious(data.value.assets.current, previousData.assets.current)
+          setBeginBalanceFromPrevious(data.value.assets.nonCurrentLongTerm, previousData.assets.nonCurrentLongTerm)
+          setBeginBalanceFromPrevious(data.value.assets.longTermInvestment, previousData.assets.longTermInvestment)
+          setBeginBalanceFromPrevious(data.value.assets.fixedAssets, previousData.assets.fixedAssets)
+          setBeginBalanceFromPrevious(data.value.assets.intangibleAssets, previousData.assets.intangibleAssets)
+          setBeginBalanceFromPrevious(data.value.assets.deferredTaxAssets, previousData.assets.deferredTaxAssets)
+        }
+
+        if (previousData.liabilities) {
+          setBeginBalanceFromPrevious(data.value.liabilities.current, previousData.liabilities.current)
+          setBeginBalanceFromPrevious(data.value.liabilities.longTermLiabilities, previousData.liabilities.longTermLiabilities)
+          setBeginBalanceFromPrevious(data.value.liabilities.deferredTaxLiabilities, previousData.liabilities.deferredTaxLiabilities)
+        }
+
+        if (previousData.equity) {
+          setBeginBalanceFromPrevious(data.value.equity.items, previousData.equity.items)
+        }
+
+        console.log('期初余额设置完成')
+      } else {
+        console.log('上个月没有数据，无法自动设置期初余额')
       }
+    } else {
+      console.log('无法获取上个月数据，无法自动设置期初余额')
     }
   } catch (error) {
-    console.error('加载历史数据失败:', error)
+    console.error('自动设置期初余额失败:', error)
   }
 }
 
-// 计算累计值（从年初到当前期间的所有当期数据之和）
-const getCumulative = (itemName: string, currentValue: number | null): number => {
-  let cumulative = 0
-  
-  // 累加历史期间的数据（只统计当前期间之前的数据）
-  Object.keys(historicalPeriodData.value)
-    .filter(periodKey => periodKey < period.value) // 只统计之前的期间
-    .forEach(periodKey => {
-      const periodData = historicalPeriodData.value[periodKey]
-      if (periodData) {
-        // 查找对应项目的数据
-        const findItemValue = (data: any, name: string): number => {
-          if (!data) return 0
-          
-          // 递归搜索所有级别的数据
-          const searchInObject = (obj: any): number => {
-            if (Array.isArray(obj)) {
-              for (const item of obj) {
-                if (item.name === name && item.yearInitial !== null && item.yearInitial !== undefined) {
-                  return Number(item.yearInitial)
-                }
-                const found = searchInObject(item)
-                if (found) return found
-              }
-            } else if (typeof obj === 'object') {
-              for (const key in obj) {
-                const found = searchInObject(obj[key])
-                if (found) return found
-              }
-            }
-            return 0
-          }
-          
-          return searchInObject(data)
-        }
-        
-        cumulative += findItemValue(periodData, itemName)
-      }
-    })
-  
-  // 加上当前期间的数据（如果有的话）
-  if (currentValue !== null && currentValue !== undefined) {
-    cumulative += Number(currentValue)
-  }
-  
-  return cumulative
-}
-
-// 清空当期数据（保持累计计算不受影响）
+// 清空当期数据（保持期初余额不受影响）
 const clearCurrentData = () => {
-  // 递归清空所有yearInitial字段
-  const clearYearInitial = (obj: any) => {
+  // 递归清空所有endBalance字段
+  const clearEndBalance = (obj: any) => {
     if (Array.isArray(obj)) {
       obj.forEach(item => {
         if (item && typeof item === 'object') {
-          if ('yearInitial' in item) {
-            item.yearInitial = null
+          if ('endBalance' in item) {
+            item.endBalance = null
           }
-          clearYearInitial(item)
+          clearEndBalance(item)
         }
       })
     } else if (obj && typeof obj === 'object') {
       for (const key in obj) {
-        if (key === 'yearInitial') {
+        if (key === 'endBalance') {
           obj[key] = null
         } else {
-          clearYearInitial(obj[key])
+          clearEndBalance(obj[key])
         }
       }
     }
   }
-  
-  clearYearInitial(data.value)
+
+  clearEndBalance(data.value)
 }
+
+
 
 // 加载保存的数据
 const loadSavedData = async () => {
   // 首先清空当期数据
   clearCurrentData()
-  
+
   try {
-    const response = await fetch(`http://127.0.0.1:3000/forms/submission/${moduleId}/${period.value}`)
+    const response = await fetch(`http://127.0.0.1:3000/nanhua-balance-sheet/${period.value}`)
     if (response.ok) {
       const result = await response.json()
-      if (result.success && result.data && result.data.submission_data) {
-        // 解析保存的数据
-        const savedData = typeof result.data.submission_data === 'string' 
-          ? JSON.parse(result.data.submission_data) 
-          : result.data.submission_data
-        
+      if (result.success && result.data) {
+        // 直接使用返回的数据结构
+        const savedData = result.data
+
         // 将保存的数据赋值给表单
         if (savedData && typeof savedData === 'object') {
           // 深度合并保存的数据到当前data中
@@ -500,16 +534,31 @@ const loadSavedData = async () => {
           }
           mergeData(data.value, savedData)
         }
-        
-        console.log('数据加载成功:', savedData)
+
+        console.log('南华兰陵数据加载成功:', savedData)
       } else {
         console.log('当前期间没有保存的数据，显示空值')
+        // 如果没有数据且不是1月份，尝试从上个月设置期初余额
+        await autoSetBeginBalanceFromPreviousMonth()
       }
+    } else if (response.status === 404) {
+      console.log('当前期间没有保存的数据，显示空值')
+      // 如果没有数据且不是1月份，尝试从上个月设置期初余额
+      await autoSetBeginBalanceFromPreviousMonth()
     } else {
       console.log('请求失败，显示空值')
     }
   } catch (error) {
     console.log('没有找到保存的数据或加载失败，显示空值:', error)
+    // 如果没有数据且不是1月份，尝试从上个月设置期初余额
+    await autoSetBeginBalanceFromPreviousMonth()
+  }
+
+  // 如果有数据但不是1月份，也要自动设置期初余额
+  const currentPeriod = period.value.slice(0, 7)
+  if (!currentPeriod.endsWith('-01')) {
+    console.log('非1月份数据，自动设置期初余额')
+    await autoSetBeginBalanceFromPreviousMonth()
   }
 }
 
@@ -531,7 +580,6 @@ watch(() => route.query.period, async (newPeriod) => {
 
 // 监听期间变化
 watch(period, async () => {
-  await loadHistoricalPeriodData() // 重新加载历史数据
   await loadSavedData()
   await loadRemarksData()
 })
@@ -539,15 +587,46 @@ watch(period, async () => {
 // 保存功能
 const save = async () => {
   try {
-    console.log('保存上海南华兰陵资产负债表数据:', { period: period.value.slice(0, 7), data: data.value })
-    
-    // 记录表单提交
-    await recordFormSubmission(moduleId, period.value, data.value, remarks.value, suggestions.value)
-    alert('数据保存成功')
+    console.log('保存南华兰陵资产负债表数据:', { period: period.value.slice(0, 7), data: data.value })
+
+    const requestData = {
+      period: period.value.slice(0, 7),
+      data: data.value,
+      remarks: remarks.value,
+      suggestions: suggestions.value
+    }
+
+    const response = await fetch('http://127.0.0.1:3000/nanhua-balance-sheet', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(requestData)
+    })
+
+    if (!response.ok) {
+      const result = await response.json()
+      throw new Error(result.error || '保存失败')
+    }
+
+    const result = await response.json()
+    console.log('南华兰陵数据保存成功:', result)
+    alert(result.message || '数据保存成功')
+
   } catch (error) {
-    console.error('保存失败:', error)
+    console.error('保存南华兰陵数据失败:', error)
     alert('保存失败: ' + (error instanceof Error ? error.message : '网络错误'))
   }
+}
+
+// 计算总负债
+const getTotalLiabilities = () => {
+  return getCurrentPeriodTotal('liabilitiesTotal')
+}
+
+// 计算总计
+const getGrandTotal = () => {
+  return getCurrentPeriodTotal('liabilitiesAndEquityTotal')
 }
 
 // 重置功能
@@ -563,7 +642,6 @@ const reset = () => {
 
 onMounted(async () => {
   console.log('上海南华兰陵资产负债表组件挂载，当前期间:', period.value)
-  await loadHistoricalPeriodData() // 加载历史数据用于累计计算
   await loadSavedData()  // 先加载保存的数据
   await loadRemarksData() // 再加载备注和建议
 })
@@ -574,7 +652,7 @@ onMounted(async () => {
   .bg-gray-100 {
     background: white;
   }
-  
+
   button {
     display: none;
   }
@@ -589,4 +667,4 @@ table {
     grid-template-columns: 1fr;
   }
 }
-</style> 
+</style>

@@ -25,8 +25,7 @@
                 <tbody>
                     <template v-for="(item, index) in overdueReceivablesData.items" :key="`overdue-${index}`">
                         <tr>
-                            <td v-if="isFirstInSegment(index)" 
-                                :rowspan="getSegmentRowspan(item.segmentAttribute)" 
+                            <td v-if="isFirstInSegment(index)" :rowspan="getSegmentRowspan(item.segmentAttribute)"
                                 class="border border-gray-300 px-4 py-2 font-medium text-center">
                                 {{ item.segmentAttribute }}
                             </td>
@@ -37,22 +36,12 @@
                                 {{ formatNumber(item.yearBeginningBalance) }}
                             </td>
                             <td class="border border-gray-300 px-4 py-2">
-                                <input 
-                                    v-model="item.yearNewIncrease" 
-                                    type="number" 
-                                    class="w-full px-2 py-1 border rounded text-right" 
-                                    step="0.01"
-                                    placeholder="0.00"
-                                />
+                                <input v-model="item.yearNewIncrease" type="number"
+                                    class="w-full px-2 py-1 border rounded text-right" step="0.01" placeholder="0.00" />
                             </td>
                             <td class="border border-gray-300 px-4 py-2">
-                                <input 
-                                    v-model="item.currentCollected" 
-                                    type="number" 
-                                    class="w-full px-2 py-1 border rounded text-right" 
-                                    step="0.01"
-                                    placeholder="0.00"
-                                />
+                                <input v-model="item.currentCollected" type="number"
+                                    class="w-full px-2 py-1 border rounded text-right" step="0.01" placeholder="0.00" />
                             </td>
                             <td class="border border-gray-300 px-4 py-2 text-right">
                                 {{ formatNumber(item.cumulativeCollected) }}
@@ -91,12 +80,8 @@
         </div>
 
         <!-- 文件上传和备注组件 -->
-        <FormAttachmentAndRemarks 
-            :module-id="MODULE_IDS.TUOYUAN_OVERDUE_RECEIVABLES"
-            :period="period"
-            v-model:remarks="remarks"
-            v-model:suggestions="suggestions"
-        />
+        <FormAttachmentAndRemarks :module-id="MODULE_IDS.TUOYUAN_OVERDUE_RECEIVABLES" :period="period"
+            v-model:remarks="remarks" v-model:suggestions="suggestions" />
 
         <div class="mt-4 flex justify-end space-x-4">
             <button @click="handleSave" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
@@ -179,11 +164,11 @@ const calculateCumulativeCollected = async (targetPeriod: string) => {
     try {
         const [year] = targetPeriod.split('-')
         const currentMonth = parseInt(targetPeriod.split('-')[1])
-        
+
         // 为每个项目计算累计已收款
         for (let item of overdueReceivablesData.value.items) {
             let totalCollected = 0
-            
+
             // 从1月累计到当前月份的所有当期已收款
             for (let m = 1; m <= currentMonth; m++) {
                 const monthPeriod = `${year}-${m.toString().padStart(2, '0')}`
@@ -191,8 +176,8 @@ const calculateCumulativeCollected = async (targetPeriod: string) => {
                     const response = await fetch(`http://127.0.0.1:3000/tuoyuan-overdue-receivables/${monthPeriod}`)
                     if (response.ok) {
                         const result = await response.json()
-                        const itemData = result.data.items.find((i: any) => 
-                            i.segmentAttribute === item.segmentAttribute && 
+                        const itemData = result.data.items.find((i: any) =>
+                            i.segmentAttribute === item.segmentAttribute &&
                             i.customerAttribute === item.customerAttribute
                         )
                         if (itemData) {
@@ -203,14 +188,14 @@ const calculateCumulativeCollected = async (targetPeriod: string) => {
                     console.warn(`无法加载${monthPeriod}的数据:`, error)
                 }
             }
-            
+
             item.cumulativeCollected = totalCollected
-            
+
             // 计算收款进度 = 累计已收款 / (年初余额 + 本年新增) * 100%
             const totalOverdueAmount = (item.yearBeginningBalance || 0) + (item.yearNewIncrease || 0)
             item.collectionProgress = totalOverdueAmount > 0 ? (item.cumulativeCollected / totalOverdueAmount) * 100 : 0
         }
-        
+
     } catch (error) {
         console.error('计算累计已收款失败:', error)
     }
@@ -230,18 +215,18 @@ const totalData = computed(() => {
         cumulativeCollected: 0,
         collectionProgress: 0
     }
-    
+
     overdueReceivablesData.value.items.forEach(item => {
         total.yearBeginningBalance += item.yearBeginningBalance || 0
         total.yearNewIncrease += item.yearNewIncrease || 0
         total.currentCollected += item.currentCollected || 0
         total.cumulativeCollected += item.cumulativeCollected || 0
     })
-    
+
     // 计算总收款进度
     const totalOverdueAmount = total.yearBeginningBalance + total.yearNewIncrease
     total.collectionProgress = totalOverdueAmount > 0 ? (total.cumulativeCollected / totalOverdueAmount) * 100 : 0
-    
+
     return total
 })
 
@@ -269,7 +254,7 @@ const loadData = async (targetPeriod: string) => {
                 collectionProgress: Number(item.collectionProgress) || 0
             }))
         }
-        
+
         // 重新计算累计值
         await calculateCumulativeCollected(targetPeriod)
     } catch (error) {

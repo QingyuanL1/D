@@ -3,6 +3,7 @@
         <div class="flex justify-between items-center mb-6">
             <h1 class="text-2xl font-bold">应收账款情况（单位：万元）</h1>
             <div class="flex items-center space-x-4">
+                <span class="text-sm text-gray-600">当期应收余额已减去坏账准备</span>
                 <input v-model="period" type="month" class="px-3 py-2 border rounded" />
             </div>
         </div>
@@ -202,6 +203,9 @@ const projectData = ref<AccountsReceivableItem[]>(getInitialProjectData())
 // 存储所有历史月份数据，用于计算累计收款
 const allMonthsData = ref<Array<{ period: string; data: any[] }>>([])
 
+// 存储坏账准备数据，用于计算当期应收余额
+const badDebtProvisionData = ref<Array<{ segment: string; customerType: string; newAddition: number }>>([])
+
 // 备注和建议
 const remarks = ref('')
 const suggestions = ref('')
@@ -211,26 +215,60 @@ const formatNumber = (value: number): string => {
     return value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
 
+// 获取坏账准备本月新增数据
+const loadBadDebtProvisionData = async (targetPeriod: string) => {
+    try {
+        console.log(`正在加载坏账准备数据，期间: ${targetPeriod}`)
+        
+        const response = await fetch(`http://127.0.0.1:3000/bad-debt-provision/${targetPeriod}`)
+        
+        if (response.ok) {
+            const result = await response.json()
+            if (result.success && result.data && Array.isArray(result.data)) {
+                // 对于newTable版本，newAddition字段就是我们需要的本月新增
+                badDebtProvisionData.value = result.data.map((item: any) => ({
+                    segment: item.segment,
+                    customerType: item.customerType,
+                    newAddition: parseFloat(item.newAddition) || 0 // 本月新增
+                }))
+                console.log('成功加载坏账准备数据:', badDebtProvisionData.value)
+            }
+        } else {
+            console.log('未找到坏账准备数据，使用默认值0')
+            badDebtProvisionData.value = []
+        }
+    } catch (error) {
+        console.error('加载坏账准备数据失败:', error)
+        badDebtProvisionData.value = []
+    }
+}
+
+// 获取指定客户类型的坏账准备本月新增
+const getBadDebtProvision = (segment: string, customerType: string): number => {
+    const item = badDebtProvisionData.value.find(d => d.segment === segment && d.customerType === customerType)
+    return item ? item.newAddition : 0
+}
+
 // 计算当期应收余额、累计收款和累计新增开票
 const calculateCurrentBalance = (item: AccountsReceivableItem) => {
-    // 移除逗号并转换为数字
+    // 前端只做简单的实时计算预览，用于用户输入时的即时反馈
+    // 实际保存的数据仍以后端计算的累计值为准
     const initialBalance = parseFloat(item.initialBalance.replace(/,/g, '')) || 0
     const newInvoice = parseFloat(item.newInvoice.replace(/,/g, '')) || 0
     const currentReceipt = parseFloat(item.currentReceipt.replace(/,/g, '')) || 0
     
-    // 计算累计收款
-    const totalReceipt = calculateTotalReceipt(item.customerType, getSegmentFromItem(item))
-    item.totalReceipt = totalReceipt.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+    // 获取坏账准备本月新增
+    const badDebtProvision = getBadDebtProvision(getSegmentFromItem(item), item.customerType)
     
-    // 计算累计新增开票
-    const totalNewInvoice = calculateTotalNewInvoice(item.customerType, getSegmentFromItem(item))
-    item.totalNewInvoice = totalNewInvoice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+    // 简化的实时预览计算：年初余额 + 当月新增开票 - 当月收款 - 坏账准备本月新增
+    // 注意：这只是实时预览，不代表最终的累计结果
+    const currentBalance = initialBalance + newInvoice - currentReceipt - badDebtProvision
     
-    // 计算当期应收余额 = 年初应收余额 + 累计新增开票 - 累计收款
-    const currentBalance = initialBalance + totalNewInvoice - totalReceipt
-    
-    // 格式化为带千分位的数字
+    // 实时更新显示值（用户输入时的即时反馈）
     item.currentBalance = currentBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+    
+    // 注意：不更新累计值，因为累计值应该由后端计算并在loadData时设置
+    // item.totalNewInvoice 和 item.totalReceipt 保持后端返回的值不变
 }
 
 // 获取项目所属的板块
@@ -380,9 +418,12 @@ const mergeData = (templateData: AccountsReceivableItem[], loadedData: any[], se
                 // 年初应收余额始终使用静态数据，不受后端数据影响
                 initialBalance: budgetValue.toString(),
                 newInvoice: loadedItem.newInvoice || '0',
-                totalNewInvoice: '0', // 累计新增开票需要重新计算，不使用后端数据
+                // 优先使用后端计算的累计值，如果没有则设为0
+                totalNewInvoice: loadedItem.totalNewInvoice || '0',
                 currentReceipt: loadedItem.currentReceipt || '0',
-                totalReceipt: '0', // 累计收款需要重新计算，不使用后端数据
+                // 优先使用后端计算的累计值，如果没有则设为0
+                totalReceipt: loadedItem.totalReceipt || '0',
+                // 优先使用后端计算的当期余额，如果没有则使用预算值
                 currentBalance: loadedItem.currentBalance || budgetValue.toString(),
                 yearlyPlan: budgetValue
             }
@@ -496,10 +537,11 @@ const loadData = async (targetPeriod: string) => {
         projectData.value = mergeData(getInitialProjectData(), loadedData, '工程')
         console.log('合并后的数据:', { equipmentData: equipmentData.value, componentData: componentData.value, projectData: projectData.value })
         
-        // 加载所有月份数据并计算累计收款和累计新增开票
-        await loadAllMonthsData(targetPeriod)
-        updateAccumulatedReceipts()
-        updateAccumulatedInvoices()
+        // 加载坏账准备数据
+        await loadBadDebtProvisionData(targetPeriod)
+        
+        // 注意：不要重新计算currentBalance，因为后端已经计算好了，包括坏账准备的扣减
+        // 后端计算的结果是最终的、正确的值，前端只需要显示即可
         
     } catch (error) {
         console.error('加载数据失败:', error)
@@ -508,13 +550,11 @@ const loadData = async (targetPeriod: string) => {
         componentData.value = mergeData(getInitialComponentData(), [], '元件')
         projectData.value = mergeData(getInitialProjectData(), [], '工程')
         
-        // 即使出错也要尝试加载历史数据
+        // 即使出错也要尝试加载坏账准备数据
         try {
-            await loadAllMonthsData(targetPeriod)
-            updateAccumulatedReceipts()
-            updateAccumulatedInvoices()
+            await loadBadDebtProvisionData(targetPeriod)
         } catch (historyError) {
-            console.error('加载历史数据失败:', historyError)
+            console.error('加载坏账准备数据失败:', historyError)
         }
     }
 }

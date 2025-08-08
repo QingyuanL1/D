@@ -22,7 +22,7 @@
         </thead>
         <tbody>
           <!-- 设备板块 -->
-          <template v-for="(item, index) in equipmentData" :key="`equipment-${index}`">
+          <template v-for="(item, index) in equipmentData" :key="`设备-${item.customerType}`">
             <tr>
               <td
                 v-if="index === 0"
@@ -36,7 +36,13 @@
                 <span class="w-full px-2 py-1">{{ formatNumber(item.initialBalance) }}</span>
               </td>
               <td class="border border-gray-300 px-4 py-2">
-                <span class="w-full px-2 py-1">{{ formatNumber(item.newAddition) }}</span>
+                <input
+                  v-model.number="item.newAddition"
+                  type="number"
+                  class="w-full px-2 py-1 border rounded"
+                  step="0.01"
+                  @input="calculateTotal(item)"
+                />
               </td>
               <td class="border border-gray-300 px-4 py-2">
                 <input
@@ -59,7 +65,7 @@
           </template>
 
           <!-- 元件板块 -->
-          <template v-for="(item, index) in componentData" :key="`component-${index}`">
+          <template v-for="(item, index) in componentData" :key="`元件-${item.customerType}`">
             <tr>
               <td
                 v-if="index === 0"
@@ -73,7 +79,13 @@
                 <span class="w-full px-2 py-1">{{ formatNumber(item.initialBalance) }}</span>
               </td>
               <td class="border border-gray-300 px-4 py-2">
-                <span class="w-full px-2 py-1">{{ formatNumber(item.newAddition) }}</span>
+                <input
+                  v-model.number="item.newAddition"
+                  type="number"
+                  class="w-full px-2 py-1 border rounded"
+                  step="0.01"
+                  @input="calculateTotal(item)"
+                />
               </td>
               <td class="border border-gray-300 px-4 py-2">
                 <input
@@ -98,7 +110,7 @@
           <!-- 工程板块 -->
           <template
             v-for="(item, index) in engineeringData"
-            :key="`engineering-${index}`"
+            :key="`工程-${item.customerType}`"
           >
             <tr>
               <td
@@ -113,7 +125,13 @@
                 <span class="w-full px-2 py-1">{{ formatNumber(item.initialBalance) }}</span>
               </td>
               <td class="border border-gray-300 px-4 py-2">
-                <span class="w-full px-2 py-1">{{ formatNumber(item.newAddition) }}</span>
+                <input
+                  v-model.number="item.newAddition"
+                  type="number"
+                  class="w-full px-2 py-1 border rounded"
+                  step="0.01"
+                  @input="calculateTotal(item)"
+                />
               </td>
               <td class="border border-gray-300 px-4 py-2">
                 <input
@@ -158,6 +176,13 @@
           </tr>
         </tbody>
       </table>
+    </div>
+
+    <!-- 备注说明 -->
+    <div class="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded">
+      <p class="text-sm text-gray-700">
+        <strong>备注：</strong>坏账转回应说明去向
+      </p>
     </div>
 
     <!-- 按钮区域 -->

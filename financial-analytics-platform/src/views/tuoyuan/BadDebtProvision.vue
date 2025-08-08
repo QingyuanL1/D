@@ -4,7 +4,7 @@
             <h1 class="text-2xl font-bold">坏账准备情况</h1>
             <div class="flex items-center space-x-4">
                 <span class="text-sm text-gray-600">（单位：万元）</span>
-                <span class="text-xs text-gray-500">本年新增=后端自动计算 | 累计已收款=历史月份+当期已收款</span>
+                <span class="text-xs text-gray-500">累计已收款=历史月份+当期已收款</span>
                 <input v-model="period" type="month" class="px-3 py-2 border rounded" />
             </div>
         </div>
@@ -36,17 +36,24 @@
                             <td class="border border-gray-300 px-4 py-2 text-right bg-gray-50">
                                 {{ formatNumber(item.yearBeginningBalance) }}
                             </td>
-                            <td class="border border-gray-300 px-4 py-2 text-right bg-gray-50">
-                                <span class="text-blue-600 font-medium">{{ formatNumber(item.yearNewIncrease) }}</span>
-                                <span class="text-xs text-gray-500 ml-1">(计算值)</span>
-                            </td>
                             <td class="border border-gray-300 px-4 py-2">
                                 <input 
-                                    v-model="item.currentCollected" 
+                                    v-model.number="item.yearNewIncrease" 
                                     type="number" 
                                     class="w-full px-2 py-1 border rounded text-right" 
                                     step="0.01"
                                     placeholder="0.00"
+                                    @input="calculateProvisionBalance(item)"
+                                />
+                            </td>
+                            <td class="border border-gray-300 px-4 py-2">
+                                <input 
+                                    v-model.number="item.currentCollected" 
+                                    type="number" 
+                                    class="w-full px-2 py-1 border rounded text-right" 
+                                    step="0.01"
+                                    placeholder="0.00"
+                                    @input="onCurrentCollectedChange(item)"
                                 />
                             </td>
                             <td class="border border-gray-300 px-4 py-2 text-right">
@@ -129,7 +136,7 @@ interface BadDebtProvisionData {
 
 const fixedPlanData: BadDebtProvisionData = {
     items: [
-        { segmentAttribute: '设备', customerAttribute: '电业项目', yearBeginningBalance: 0, yearNewIncrease: 0, currentCollected: 0, cumulativeCollected: 0, provisionBalance: 0 },
+        { segmentAttribute: '设备', customerAttribute: '申业项目', yearBeginningBalance: 0, yearNewIncrease: 0, currentCollected: 0, cumulativeCollected: 0, provisionBalance: 0 },
         { segmentAttribute: '设备', customerAttribute: '用户项目', yearBeginningBalance: 0, yearNewIncrease: 0, currentCollected: 0, cumulativeCollected: 0, provisionBalance: 0 },
         { segmentAttribute: '设备', customerAttribute: '贸易', yearBeginningBalance: 0, yearNewIncrease: 0, currentCollected: 0, cumulativeCollected: 0, provisionBalance: 0 },
         { segmentAttribute: '设备', customerAttribute: '代理设备', yearBeginningBalance: 0, yearNewIncrease: 0, currentCollected: 0, cumulativeCollected: 0, provisionBalance: 0 },
@@ -151,6 +158,18 @@ const getProvisionColor = (balance: number): string => {
     if (balance > 0) return 'text-red-600'
     if (balance < 0) return 'text-green-600'
     return 'text-gray-600'
+}
+
+// 计算坏账准备余额
+const calculateProvisionBalance = (item: BadDebtProvisionItem) => {
+    // 坏账准备余额 = 年初余额 + 本年新增 - 累计已收款
+    item.provisionBalance = (item.yearBeginningBalance || 0) + (item.yearNewIncrease || 0) - (item.cumulativeCollected || 0)
+}
+
+// 当期已收款变化时的处理
+const onCurrentCollectedChange = async (item: BadDebtProvisionItem) => {
+    // 重新计算累计已收款
+    await calculateCumulativeCollected(period.value)
 }
 
 // 判断是否是板块的第一行
@@ -271,7 +290,6 @@ const loadData = async (targetPeriod: string) => {
 
 const resetToDefaultData = () => {
     badDebtProvisionData.value = JSON.parse(JSON.stringify(fixedPlanData))
-    // 注意：本年新增由后端自动计算
 }
 
 // 加载备注和建议
