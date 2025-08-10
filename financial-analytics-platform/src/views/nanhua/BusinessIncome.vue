@@ -257,7 +257,7 @@ const fixedPlanData: IncomeData = {
         { customerName: '苏州项目', yearlyPlan: 752.29, current: 0, accumulated: 0, completionRate: 0 },
         { customerName: '抢修', yearlyPlan: 137.61, current: 0, accumulated: 0, completionRate: 0 },
         { customerName: '运检', yearlyPlan: 1238.54, current: 0, accumulated: 0, completionRate: 0 },
-        { customerName: '自建项目', yearlyPlan: 0, current: 0, accumulated: 0, completionRate: 0 }
+        { customerName: '自接项目', yearlyPlan: 0, current: 0, accumulated: 0, completionRate: 0 }
     ]
 }
 

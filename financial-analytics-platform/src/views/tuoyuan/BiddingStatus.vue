@@ -14,8 +14,8 @@
                     <tr class="bg-gray-50">
                         <th class="border border-gray-300 px-4 py-2 w-32">板块</th>
                         <th class="border border-gray-300 px-4 py-2 w-32">客户属性</th>
-                        <th class="border border-gray-300 px-4 py-2 w-32">集采投标</th>
-                        <th class="border border-gray-300 px-4 py-2 w-32">中标数计</th>
+                        <th class="border border-gray-300 px-4 py-2 w-32">投标金额</th>
+                        <th class="border border-gray-300 px-4 py-2 w-32">中标金额</th>
                         <th class="border border-gray-300 px-4 py-2 w-32">中标率</th>
                     </tr>
                 </thead>

@@ -677,6 +677,14 @@ export const frameIn: Array<RouteRecordRaw> = [
         },
       },
       {
+        path: 'nanhua/net-profit-structure',
+        name: 'NanhuaNetProfitStructure',
+        component: () => import('@/views/nanhua/NetProfitStructure.vue'),
+        meta: {
+          title: '上海南华实业公司-净利润结构',
+        },
+      },
+      {
         path: 'nanhua/receipt-structure',
         name: 'NanhuaReceiptStructure',
         component: () => import('@/views/nanhua/ReceiptStructure.vue'),

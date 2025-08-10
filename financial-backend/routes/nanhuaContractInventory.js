@@ -51,24 +51,24 @@ router.get('/:period', createBudgetMiddleware('在建工程'), async (req, res) 
         
         rows.forEach(row => {
             const currentAmount = parseFloat(row.current_amount) || 0;
-            const beginningRollingData = parseFloat(row.beginning_rolling_data) || 0;
+            const beginningRollingData = parseFloat(row.initial_balance) || 0;
             const accumulatedAmount = parseFloat(row.accumulated_amount) || 0;
             const fluctuationRate = parseFloat(row.fluctuation_rate) || 0;
             
             const projectData = {
-                projectName: row.project_name,
+                projectName: row.customer_name,
                 beginningRollingData: beginningRollingData,
                 currentAmount: currentAmount,
                 accumulatedAmount: accumulatedAmount,
                 fluctuationRate: fluctuationRate
             };
             
-            // 根据模块名称分组
-            if (row.module_name === '运检项目') {
+            // 根据类别分组
+            if (row.category === '运检项目') {
                 contractData.yunJianProjects.push(projectData);
-            } else if (row.module_name === '运检合力项目') {
+            } else if (row.category === '运检合力项目') {
                 contractData.yunJianHeLiProject = projectData;
-            } else if (row.module_name === '工程') {
+            } else if (row.category === '工程项目') {
                 contractData.engineeringProjects.push(projectData);
             }
         });
@@ -111,8 +111,8 @@ router.post('/', async (req, res) => {
             // 准备插入数据
             const insertQuery = `
                 INSERT INTO nanhua_contract_inventory 
-                (period, module_name, project_name, beginning_rolling_data, current_amount, accumulated_amount, fluctuation_rate)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
+                (period, customer_name, initial_balance, yearly_increase, current_amount, accumulated_amount, monthly_transfer, yearly_transfer, fluctuation_rate, category, monthly_increase)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             `;
             
             // 插入运检项目数据
@@ -120,26 +120,35 @@ router.post('/', async (req, res) => {
                 for (const project of data.yunJianProjects) {
                     await connection.execute(insertQuery, [
                         period,
-                        '运检项目',
                         project.projectName,
-                        project.beginningRollingData || 0,
+                        project.beginningRollingData || 0,  // initial_balance
+                        0,                                  // yearly_increase
                         project.currentAmount || 0,
                         project.accumulatedAmount || 0,
-                        project.fluctuationRate || 0
+                        0,                                  // monthly_transfer
+                        0,                                  // yearly_transfer
+                        project.fluctuationRate || 0,
+                        '运检项目',                          // category
+                        project.currentAmount || 0          // monthly_increase
                     ]);
                 }
             }
             
             // 插入运检合力项目数据
             if (data.yunJianHeLiProject) {
+                const project = data.yunJianHeLiProject;
                 await connection.execute(insertQuery, [
                     period,
+                    project.projectName,
+                    project.beginningRollingData || 0,
+                    0,
+                    project.currentAmount || 0,
+                    project.accumulatedAmount || 0,
+                    0,
+                    0,
+                    project.fluctuationRate || 0,
                     '运检合力项目',
-                    data.yunJianHeLiProject.projectName,
-                    data.yunJianHeLiProject.beginningRollingData || 0,
-                    data.yunJianHeLiProject.currentAmount || 0,
-                    data.yunJianHeLiProject.accumulatedAmount || 0,
-                    data.yunJianHeLiProject.fluctuationRate || 0
+                    project.currentAmount || 0
                 ]);
             }
             
@@ -148,12 +157,16 @@ router.post('/', async (req, res) => {
                 for (const project of data.engineeringProjects) {
                     await connection.execute(insertQuery, [
                         period,
-                        '工程',
                         project.projectName,
                         project.beginningRollingData || 0,
+                        0,
                         project.currentAmount || 0,
                         project.accumulatedAmount || 0,
-                        project.fluctuationRate || 0
+                        0,
+                        0,
+                        project.fluctuationRate || 0,
+                        '工程项目',
+                        project.currentAmount || 0
                     ]);
                 }
             }

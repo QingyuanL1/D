@@ -13,6 +13,7 @@ router.get('/:period', async (req, res) => {
         customer_attribute,
         year_beginning_amount,
         current_period_new_amount,
+        current_period_write_off,
         current_year_cumulative,
         provision_rate
       FROM tuoyuan_cost_estimation 
@@ -80,9 +81,10 @@ router.post('/', async (req, res) => {
         customer_attribute,
         year_beginning_amount,
         current_period_new_amount,
+        current_period_write_off,
         current_year_cumulative,
         provision_rate
-      ) VALUES (?, ?, ?, ?, ?, ?, ?)
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `;
 
     for (const item of data.items) {
@@ -92,6 +94,7 @@ router.post('/', async (req, res) => {
         item.customerAttribute,
         item.yearBeginningAmount || 0,
         item.currentPeriodNewAmount || 0,
+        item.currentPeriodWriteOff || 0,
         item.currentYearCumulative || 0,
         item.provisionRate || 0
       ]);

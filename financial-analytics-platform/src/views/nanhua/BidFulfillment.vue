@@ -116,7 +116,7 @@ const fixedPlanData: BidData = {
         { customerName: '苏州项目', initialAmount: 1300.00, current: 0, accumulated: 0, fluctuationRate: 0 },
         { customerName: '抢修项目', initialAmount: 0.00, current: 0, accumulated: 0, fluctuationRate: 0 },
         { customerName: '运检项目', initialAmount: 0.00, current: 0, accumulated: 0, fluctuationRate: 0 },
-        { customerName: '自建项目', initialAmount: 0.00, current: 0, accumulated: 0, fluctuationRate: 0 }
+        { customerName: '自接项目', initialAmount: 0.00, current: 0, accumulated: 0, fluctuationRate: 0 }
     ]
 }
 

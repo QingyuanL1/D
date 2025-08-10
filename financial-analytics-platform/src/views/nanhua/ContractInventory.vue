@@ -290,8 +290,36 @@ const loadData = async (targetPeriod: string) => {
         }
         const result = await response.json()
         if (result.data) {
-            // 直接使用后端返回的数据
-            contractData.value = result.data
+            // 合并固定数据和API返回的数据
+            const apiData = result.data
+            const mergedData = JSON.parse(JSON.stringify(fixedPlanData))
+            
+            // 合并运检项目数据
+            if (apiData.yunJianProjects && Array.isArray(apiData.yunJianProjects)) {
+                apiData.yunJianProjects.forEach(apiProject => {
+                    const index = mergedData.yunJianProjects.findIndex(p => p.projectName === apiProject.projectName)
+                    if (index !== -1) {
+                        mergedData.yunJianProjects[index] = { ...mergedData.yunJianProjects[index], ...apiProject }
+                    }
+                })
+            }
+            
+            // 合并运检合力项目数据
+            if (apiData.yunJianHeLiProject && apiData.yunJianHeLiProject.projectName) {
+                mergedData.yunJianHeLiProject = { ...mergedData.yunJianHeLiProject, ...apiData.yunJianHeLiProject }
+            }
+            
+            // 合并工程项目数据
+            if (apiData.engineeringProjects && Array.isArray(apiData.engineeringProjects)) {
+                apiData.engineeringProjects.forEach(apiProject => {
+                    const index = mergedData.engineeringProjects.findIndex(p => p.projectName === apiProject.projectName)
+                    if (index !== -1) {
+                        mergedData.engineeringProjects[index] = { ...mergedData.engineeringProjects[index], ...apiProject }
+                    }
+                })
+            }
+            
+            contractData.value = mergedData
         }
     } catch (error) {
         console.error('加载数据失败:', error)

@@ -51,10 +51,10 @@
                         </tr>
                     </template>
 
-                    <!-- 自建项目行 -->
+                    <!-- 自接项目行 -->
                     <tr>
-                        <td class="border border-gray-300 px-4 py-2 font-medium text-center">自建项目</td>
-                        <td class="border border-gray-300 px-4 py-2">自建项目</td>
+                        <td class="border border-gray-300 px-4 py-2 font-medium text-center">自接项目</td>
+                        <td class="border border-gray-300 px-4 py-2">自接项目</td>
                         <td class="border border-gray-300 px-4 py-2 text-right">{{ formatNumber(selfBuiltProject.yearBeginningBalance) }}</td>
                         <td class="border border-gray-300 px-4 py-2">
                             <input v-model="selfBuiltProject.currentPeriodNewAddition" type="number" class="w-full px-2 py-1 border rounded text-right" step="0.01" />
@@ -202,7 +202,7 @@ const calculateYearNewAddition = async (targetPeriod: string) => {
             customer.endBalance = customer.yearBeginningBalance + customer.yearNewAddition
         }
         
-        // 计算自建项目的本年新增
+        // 计算自接项目的本年新增
         let selfBuiltYearNewAddition = 0
         for (let m = 1; m < currentMonth; m++) {
             const monthPeriod = `${year}-${m.toString().padStart(2, '0')}`
@@ -215,7 +215,7 @@ const calculateYearNewAddition = async (targetPeriod: string) => {
                     }
                 }
             } catch (error) {
-                console.warn(`无法加载${monthPeriod}的自建项目数据:`, error)
+                console.warn(`无法加载${monthPeriod}的自接项目数据:`, error)
             }
         }
         
@@ -223,7 +223,7 @@ const calculateYearNewAddition = async (targetPeriod: string) => {
         selfBuiltYearNewAddition += selfBuiltProject.value.currentPeriodNewAddition || 0
         
         selfBuiltProject.value.yearNewAddition = selfBuiltYearNewAddition
-        // 计算自建项目坏账准备余额 = 年初余额 + 本年新增（已包含当前月份）
+        // 计算自接项目坏账准备余额 = 年初余额 + 本年新增（已包含当前月份）
         selfBuiltProject.value.endBalance = selfBuiltProject.value.yearBeginningBalance + selfBuiltProject.value.yearNewAddition
         
     } catch (error) {
@@ -237,7 +237,7 @@ watch(() => badDebtData.value.items, async (newItems) => {
     await calculateYearNewAddition(period.value)
 }, { deep: true })
 
-// 监听自建项目数据变化
+// 监听自接项目数据变化
 watch(() => selfBuiltProject.value, async (newProject) => {
     // 当本期新增发生变化时，重新计算本年新增
     await calculateYearNewAddition(period.value)
@@ -259,7 +259,7 @@ const totalData = computed(() => {
         total.endBalance += item.endBalance || 0
     })
     
-    // 加上自建项目
+    // 加上自接项目
     total.yearBeginningBalance += selfBuiltProject.value.yearBeginningBalance || 0
     total.currentPeriodNewAddition += selfBuiltProject.value.currentPeriodNewAddition || 0
     total.yearNewAddition += selfBuiltProject.value.yearNewAddition || 0

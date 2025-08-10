@@ -110,6 +110,7 @@ const nanhuaBusinessContributionWithSelfBuiltRoutes = require('./routes/nanhuaBu
 const nanhuaBusinessProfitMarginWithSelfBuiltRoutes = require('./routes/nanhuaBusinessProfitMarginWithSelfBuilt');
 const nanhuaMainBusinessNetProfitRoutes = require('./routes/nanhuaMainBusinessNetProfit');
 const nanhuaNonMainBusinessNetProfitRoutes = require('./routes/nanhuaNonMainBusinessNetProfit');
+const nanhuaNetProfitStructureRoutes = require('./routes/nanhuaNetProfitStructure');
 const nanhuaAnalysisAppendixRoutes = require('./routes/nanhua-analysis-appendix');
 const nanhuaOverdueReceivablesRoutes = require('./routes/nanhua-overdue-receivables');
 const nanhuaBadDebtProvisionRoutes = require('./routes/nanhua-bad-debt-provision');
@@ -267,6 +268,7 @@ app.use('/nanhua-business-contribution-with-self-built', nanhuaBusinessContribut
 app.use('/nanhua-business-profit-margin-with-self-built', nanhuaBusinessProfitMarginWithSelfBuiltRoutes);
 app.use('/nanhua-main-business-net-profit', nanhuaMainBusinessNetProfitRoutes);
 app.use('/nanhua-non-main-business-net-profit', nanhuaNonMainBusinessNetProfitRoutes);
+app.use('/nanhua-net-profit-structure', nanhuaNetProfitStructureRoutes);
 app.use('/nanhua-analysis-appendix', nanhuaAnalysisAppendixRoutes);
 app.use('/nanhua-overdue-receivables', nanhuaOverdueReceivablesRoutes);
 app.use('/nanhua-bad-debt-provision', nanhuaBadDebtProvisionRoutes);

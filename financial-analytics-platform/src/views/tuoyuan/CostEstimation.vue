@@ -4,7 +4,7 @@
             <h1 class="text-2xl font-bold">拓源成本暂估入库和计提情况</h1>
             <div class="flex items-center space-x-4">
                 <span class="text-sm text-gray-600">（单位：万元）</span>
-                <span class="text-xs text-gray-500">本年累计 = 年初金额 + 当期新增累计</span>
+                <span class="text-xs text-gray-500">本年累计 = 年初金额 + 当期新增累计 - 当期冲销累计</span>
                 <input v-model="period" type="month" class="px-3 py-2 border rounded" />
             </div>
         </div>
@@ -15,8 +15,9 @@
                     <tr class="bg-gray-50">
                         <th class="border border-gray-300 px-4 py-2 w-32">板块</th>
                         <th class="border border-gray-300 px-4 py-2 w-32">客户属性</th>
-                        <th class="border border-gray-300 px-4 py-2 w-32">年初金额</th>
+                        <th class="border border-gray-300 px-4 py-2 w-32">年初余额</th>
                         <th class="border border-gray-300 px-4 py-2 w-32">当期新增</th>
+                        <th class="border border-gray-300 px-4 py-2 w-32">当期冲销</th>
                         <th class="border border-gray-300 px-4 py-2 w-32">本年累计</th>
                         <th class="border border-gray-300 px-4 py-2 w-32">计提率</th>
                     </tr>
@@ -43,6 +44,14 @@
                                     step="0.01"
                                 />
                             </td>
+                            <td class="border border-gray-300 px-4 py-2">
+                                <input 
+                                    v-model="item.currentPeriodWriteOff" 
+                                    type="number" 
+                                    class="w-full px-2 py-1 border rounded text-right" 
+                                    step="0.01"
+                                />
+                            </td>
                             <td class="border border-gray-300 px-4 py-2 text-right">
                                 {{ formatNumber(item.currentYearCumulative) }}
                             </td>
@@ -60,6 +69,9 @@
                         </td>
                         <td class="border border-gray-300 px-4 py-2 text-right">
                             {{ formatNumber(totalData.currentPeriodNewAmount) }}
+                        </td>
+                        <td class="border border-gray-300 px-4 py-2 text-right">
+                            {{ formatNumber(totalData.currentPeriodWriteOff) }}
                         </td>
                         <td class="border border-gray-300 px-4 py-2 text-right">
                             {{ formatNumber(totalData.currentYearCumulative) }}
@@ -105,6 +117,7 @@ interface CostEstimationItem {
     customerAttribute: string;
     yearBeginningAmount: number;
     currentPeriodNewAmount: number;
+    currentPeriodWriteOff: number;
     currentYearCumulative: number;
     provisionRate: number;
 }
@@ -115,12 +128,12 @@ interface CostEstimationData {
 
 const fixedPlanData: CostEstimationData = {
     items: [
-        { segmentAttribute: '设备', customerAttribute: '电业项目', yearBeginningAmount: 0.00, currentPeriodNewAmount: 0, currentYearCumulative: 0, provisionRate: 0 },
-        { segmentAttribute: '设备', customerAttribute: '用户项目', yearBeginningAmount: 0.00, currentPeriodNewAmount: 0, currentYearCumulative: 0, provisionRate: 0 },
-        { segmentAttribute: '设备', customerAttribute: '贸易', yearBeginningAmount: 0.00, currentPeriodNewAmount: 0, currentYearCumulative: 0, provisionRate: 0 },
-        { segmentAttribute: '设备', customerAttribute: '代理设备', yearBeginningAmount: 0.00, currentPeriodNewAmount: 0, currentYearCumulative: 0, provisionRate: 0 },
-        { segmentAttribute: '其他', customerAttribute: '代理工程', yearBeginningAmount: 0.00, currentPeriodNewAmount: 0, currentYearCumulative: 0, provisionRate: 0 },
-        { segmentAttribute: '其他', customerAttribute: '代理设计', yearBeginningAmount: 0.00, currentPeriodNewAmount: 0, currentYearCumulative: 0, provisionRate: 0 }
+        { segmentAttribute: '设备', customerAttribute: '电业项目', yearBeginningAmount: 0.00, currentPeriodNewAmount: 0, currentPeriodWriteOff: 0, currentYearCumulative: 0, provisionRate: 0 },
+        { segmentAttribute: '设备', customerAttribute: '用户项目', yearBeginningAmount: 0.00, currentPeriodNewAmount: 0, currentPeriodWriteOff: 0, currentYearCumulative: 0, provisionRate: 0 },
+        { segmentAttribute: '设备', customerAttribute: '贸易', yearBeginningAmount: 0.00, currentPeriodNewAmount: 0, currentPeriodWriteOff: 0, currentYearCumulative: 0, provisionRate: 0 },
+        { segmentAttribute: '设备', customerAttribute: '代理设备', yearBeginningAmount: 0.00, currentPeriodNewAmount: 0, currentPeriodWriteOff: 0, currentYearCumulative: 0, provisionRate: 0 },
+        { segmentAttribute: '其他', customerAttribute: '代理工程', yearBeginningAmount: 0.00, currentPeriodNewAmount: 0, currentPeriodWriteOff: 0, currentYearCumulative: 0, provisionRate: 0 },
+        { segmentAttribute: '其他', customerAttribute: '代理设计', yearBeginningAmount: 0.00, currentPeriodNewAmount: 0, currentPeriodWriteOff: 0, currentYearCumulative: 0, provisionRate: 0 }
     ]
 }
 
@@ -153,18 +166,25 @@ const getSegmentRowspan = (segmentAttribute: string): number => {
     return costEstimationData.value.items.filter(item => item.segmentAttribute === segmentAttribute).length
 }
 
-// 计算当期新增累计（年初到当前月份的累计）
+// 存储历史累计数据，用于实时计算
+const historicalCumulativeData = ref(new Map())
+
+// 计算当期新增累计和冲销累计（年初到当前月份的累计）
 const calculateCurrentYearCumulative = async (targetPeriod: string) => {
     try {
         const [year] = targetPeriod.split('-')
         const currentMonth = parseInt(targetPeriod.split('-')[1])
         
-        // 为每个项目计算当期新增累计
+        // 清空历史累计数据
+        historicalCumulativeData.value.clear()
+        
+        // 为每个项目计算累计值
         for (let item of costEstimationData.value.items) {
             let cumulativeNewAmount = 0
+            let cumulativeWriteOff = 0
             
-            // 从1月累计到当前月份的"当期新增"
-            for (let m = 1; m <= currentMonth; m++) {
+            // 从1月累计到当前月份的前一个月（不包括当前月份）
+            for (let m = 1; m < currentMonth; m++) {
                 const monthPeriod = `${year}-${m.toString().padStart(2, '0')}`
                 try {
                     const response = await fetch(`http://127.0.0.1:3000/tuoyuan-cost-estimation/${monthPeriod}`)
@@ -176,6 +196,7 @@ const calculateCurrentYearCumulative = async (targetPeriod: string) => {
                         )
                         if (projectData) {
                             cumulativeNewAmount += Number(projectData.current_period_new_amount) || 0
+                            cumulativeWriteOff += Number(projectData.current_period_write_off) || 0
                         }
                     }
                 } catch (error) {
@@ -183,35 +204,26 @@ const calculateCurrentYearCumulative = async (targetPeriod: string) => {
                 }
             }
             
-            // 如果计算的是当前月份，需要使用当前输入的值替换数据库中的值
-            if (targetPeriod === period.value) {
-                // 从累计中减去数据库中当前月份的值，加上当前输入的值
-                try {
-                    const currentResponse = await fetch(`http://127.0.0.1:3000/tuoyuan-cost-estimation/${targetPeriod}`)
-                    if (currentResponse.ok) {
-                        const currentResult = await currentResponse.json()
-                        const currentDbData = currentResult.data.items.find((p: any) => 
-                            p.segment_attribute === item.segmentAttribute && 
-                            p.customer_attribute === item.customerAttribute
-                        )
-                        if (currentDbData) {
-                            cumulativeNewAmount = cumulativeNewAmount - (Number(currentDbData.current_period_new_amount) || 0) + (Number(item.currentPeriodNewAmount) || 0)
-                        }
-                    }
-                } catch (error) {
-                    console.warn('获取当前月份数据失败:', error)
-                }
-            }
+            // 存储历史累计数据
+            const itemKey = `${item.segmentAttribute}-${item.customerAttribute}`
+            historicalCumulativeData.value.set(itemKey, {
+                historicalNewAmount: cumulativeNewAmount,
+                historicalWriteOff: cumulativeWriteOff
+            })
             
-            // 本年累计 = 年初金额 + 当期新增累计
-            item.currentYearCumulative = (Number(item.yearBeginningAmount) || 0) + cumulativeNewAmount
+            // 加上当前月份的输入值
+            const currentNewAmount = Number(item.currentPeriodNewAmount) || 0
+            const currentWriteOff = Number(item.currentPeriodWriteOff) || 0
             
-            // 计提率 = 当期新增累计 / 年初金额 * 100%
+            // 本年累计 = 年初金额 + 历史累计新增 + 当前新增 - 历史累计冲销 - 当前冲销
+            item.currentYearCumulative = (Number(item.yearBeginningAmount) || 0) + cumulativeNewAmount + currentNewAmount - cumulativeWriteOff - currentWriteOff
+            
+            // 计提率 = 本年累计 / 年初金额 * 100%
             item.provisionRate = item.yearBeginningAmount > 0 ? 
-                (cumulativeNewAmount / item.yearBeginningAmount) * 100 : 
-                (cumulativeNewAmount !== 0 ? (cumulativeNewAmount > 0 ? 100 : -100) : 0)
+                (item.currentYearCumulative / item.yearBeginningAmount) * 100 : 
+                (item.currentYearCumulative !== 0 ? (item.currentYearCumulative > 0 ? 100 : -100) : 0)
             
-            console.log(`${item.segmentAttribute}-${item.customerAttribute}: 年初=${item.yearBeginningAmount}, 累计新增=${cumulativeNewAmount}, 本年累计=${item.currentYearCumulative}`)
+            console.log(`${item.segmentAttribute}-${item.customerAttribute}: 年初=${item.yearBeginningAmount}, 历史累计新增=${cumulativeNewAmount}, 当前新增=${currentNewAmount}, 历史累计冲销=${cumulativeWriteOff}, 当前冲销=${currentWriteOff}, 本年累计=${item.currentYearCumulative}`)
         }
         
     } catch (error) {
@@ -219,15 +231,31 @@ const calculateCurrentYearCumulative = async (targetPeriod: string) => {
     }
 }
 
-// 监听当期新增字段变化，自动重新计算本年累计和计提率
-watch(() => costEstimationData.value.items.map(item => item.currentPeriodNewAmount), () => {
-    // 简化计算：直接基于当前输入值计算
+// 监听当期新增和冲销字段变化，自动重新计算本年累计和计提率
+watch(() => costEstimationData.value.items.map(item => [item.currentPeriodNewAmount, item.currentPeriodWriteOff]), () => {
+    // 使用历史累计数据 + 当前输入值计算
     costEstimationData.value.items.forEach(item => {
-        const cumulativeNewAmount = Number(item.currentPeriodNewAmount) || 0
-        item.currentYearCumulative = (Number(item.yearBeginningAmount) || 0) + cumulativeNewAmount
+        const itemKey = `${item.segmentAttribute}-${item.customerAttribute}`
+        const historicalData = historicalCumulativeData.value.get(itemKey)
+        
+        if (historicalData) {
+            // 历史累计 + 当前输入
+            const currentNewAmount = Number(item.currentPeriodNewAmount) || 0
+            const currentWriteOff = Number(item.currentPeriodWriteOff) || 0
+            const totalCumulativeNewAmount = historicalData.historicalNewAmount + currentNewAmount
+            const totalCumulativeWriteOff = historicalData.historicalWriteOff + currentWriteOff
+            
+            item.currentYearCumulative = (Number(item.yearBeginningAmount) || 0) + totalCumulativeNewAmount - totalCumulativeWriteOff
+        } else {
+            // 如果没有历史数据，则只使用当前输入值（适用于1月份或首次输入）
+            const currentNewAmount = Number(item.currentPeriodNewAmount) || 0
+            const currentWriteOff = Number(item.currentPeriodWriteOff) || 0
+            item.currentYearCumulative = (Number(item.yearBeginningAmount) || 0) + currentNewAmount - currentWriteOff
+        }
+        
         item.provisionRate = item.yearBeginningAmount > 0 ? 
-            (cumulativeNewAmount / item.yearBeginningAmount) * 100 : 
-            (cumulativeNewAmount !== 0 ? (cumulativeNewAmount > 0 ? 100 : -100) : 0)
+            (item.currentYearCumulative / item.yearBeginningAmount) * 100 : 
+            (item.currentYearCumulative !== 0 ? (item.currentYearCumulative > 0 ? 100 : -100) : 0)
     })
 }, { deep: true })
 
@@ -236,6 +264,7 @@ const totalData = computed(() => {
     const total = {
         yearBeginningAmount: 0,
         currentPeriodNewAmount: 0,
+        currentPeriodWriteOff: 0,
         currentYearCumulative: 0,
         provisionRate: 0
     }
@@ -243,14 +272,14 @@ const totalData = computed(() => {
     costEstimationData.value.items.forEach(item => {
         total.yearBeginningAmount += item.yearBeginningAmount || 0
         total.currentPeriodNewAmount += item.currentPeriodNewAmount || 0
+        total.currentPeriodWriteOff += item.currentPeriodWriteOff || 0
         total.currentYearCumulative += item.currentYearCumulative || 0
     })
     
-    // 计算总计提率 = 总当期新增累计 / 总年初金额 * 100%
-    const totalCumulativeNewAmount = total.currentYearCumulative - total.yearBeginningAmount
+    // 计算总计提率 = 总本年累计 / 总年初金额 * 100%
     total.provisionRate = total.yearBeginningAmount > 0 ? 
-        (totalCumulativeNewAmount / total.yearBeginningAmount) * 100 : 
-        (totalCumulativeNewAmount !== 0 ? (totalCumulativeNewAmount > 0 ? 100 : -100) : 0)
+        (total.currentYearCumulative / total.yearBeginningAmount) * 100 : 
+        (total.currentYearCumulative !== 0 ? (total.currentYearCumulative > 0 ? 100 : -100) : 0)
     
     return total
 })
@@ -284,6 +313,7 @@ const loadData = async (targetPeriod: string) => {
                     customerAttribute: defaultItem.customerAttribute,
                     yearBeginningAmount: dbItem ? Number(dbItem.year_beginning_amount) || 0 : defaultItem.yearBeginningAmount,
                     currentPeriodNewAmount: dbItem ? Number(dbItem.current_period_new_amount) || 0 : 0,
+                    currentPeriodWriteOff: dbItem ? Number(dbItem.current_period_write_off) || 0 : 0,
                     currentYearCumulative: dbItem ? Number(dbItem.current_year_cumulative) || 0 : 0,
                     provisionRate: dbItem ? Number(dbItem.provision_rate) || 0 : 0
                 }
@@ -352,7 +382,7 @@ const handleSave = async () => {
                         customerAttribute: item.customerAttribute,
                         yearBeginningAmount: item.yearBeginningAmount,
                         currentPeriodNewAmount: item.currentPeriodNewAmount,
-                        // 不保存累计值和计提率，由前端计算
+                        currentPeriodWriteOff: item.currentPeriodWriteOff,
                     }))
                 }
             })

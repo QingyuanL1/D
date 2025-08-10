@@ -112,7 +112,7 @@ const fixedYearBeginningData: ContractData = {
         { customerName: '苏州项目', yearBeginning: 460.00, currentEvaluation: 0, fluctuationRate: 0 },
         { customerName: '抢修项目', yearBeginning: 0.00, currentEvaluation: 0, fluctuationRate: 0 },
         { customerName: '运检项目', yearBeginning: 0.00, currentEvaluation: 0, fluctuationRate: 0 },
-        { customerName: '自建项目', yearBeginning: 0.00, currentEvaluation: 0, fluctuationRate: 0 }
+        { customerName: '自接项目', yearBeginning: 0.00, currentEvaluation: 0, fluctuationRate: 0 }
     ]
 }
 

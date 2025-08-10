@@ -7,9 +7,9 @@
                     <tr class="bg-gray-50">
                         <th class="border border-gray-300 px-4 py-2">板块</th>
                         <th class="border border-gray-300 px-4 py-2">客户属性</th>
-                        <th class="border border-gray-300 px-4 py-2">集采投标</th>
+                        <th class="border border-gray-300 px-4 py-2">投标金额</th>
                         <th class="border border-gray-300 px-4 py-2">当期中标</th>
-                        <th class="border border-gray-300 px-4 py-2">累计中标</th>
+                        <th class="border border-gray-300 px-4 py-2">中标金额</th>
                         <th class="border border-gray-300 px-4 py-2">中标率</th>
                     </tr>
                 </thead>

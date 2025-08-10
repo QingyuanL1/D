@@ -116,7 +116,7 @@ const fixedPlanData: OrderData = {
         { customerName: '苏州项目', newContractTotal: 218.00, current: 0, accumulated: 0, completionRate: 0 },
         { customerName: '投标项目', newContractTotal: 0.00, current: 0, accumulated: 0, completionRate: 0 },
         { customerName: '运检项目', newContractTotal: 0.00, current: 0, accumulated: 0, completionRate: 0 },
-        { customerName: '自建项目', newContractTotal: 0.00, current: 0, accumulated: 0, completionRate: 0 }
+        { customerName: '自接项目', newContractTotal: 0.00, current: 0, accumulated: 0, completionRate: 0 }
     ]
 }
 

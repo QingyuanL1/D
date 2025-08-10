@@ -23,7 +23,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <!-- 工程板块项目（包含自建项目） -->
+                                            <!-- 工程板块项目（包含自接项目） -->
                     <template v-for="(item, index) in overdueData.items" :key="`item-${index}`">
                         <tr>
                             <td v-if="index === 0" :rowspan="overdueData.items.length"
@@ -31,8 +31,8 @@
                                 工程
                             </td>
                             <td class="border border-gray-300 px-4 py-2">
-                                <!-- 自建项目需要缩进显示 -->
-                                <span v-if="item.customerAttribute === '自建项目'" class="ml-4">
+                                <!-- 自接项目需要缩进显示 -->
+                                <span v-if="item.customerAttribute === '自接项目'" class="ml-4">
                                     {{ item.customerAttribute }}
                                 </span>
                                 <span v-else>
@@ -131,7 +131,7 @@ const fixedPlanData: OverdueData = {
         { customerAttribute: '苏州项目', yearBeginningBalance: 0.00, currentPeriodNewAddition: 0, currentPeriodAccumulatedCollection: 0, yearNewAddition: 0, collectionProgress: 0, cumulativeNewOverdue: 0 },
         { customerAttribute: '抢修项目', yearBeginningBalance: 0.00, currentPeriodNewAddition: 0, currentPeriodAccumulatedCollection: 0, yearNewAddition: 0, collectionProgress: 0, cumulativeNewOverdue: 0 },
         { customerAttribute: '运检项目', yearBeginningBalance: 0.00, currentPeriodNewAddition: 0, currentPeriodAccumulatedCollection: 0, yearNewAddition: 0, collectionProgress: 0, cumulativeNewOverdue: 0 },
-        { customerAttribute: '自建项目', yearBeginningBalance: 0.00, currentPeriodNewAddition: 0, currentPeriodAccumulatedCollection: 0, yearNewAddition: 0, collectionProgress: 0, cumulativeNewOverdue: 0 }
+        { customerAttribute: '自接项目', yearBeginningBalance: 0.00, currentPeriodNewAddition: 0, currentPeriodAccumulatedCollection: 0, yearNewAddition: 0, collectionProgress: 0, cumulativeNewOverdue: 0 }
     ]
 }
 

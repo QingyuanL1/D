@@ -188,7 +188,7 @@ const staticYearlyPlans = {
         '运检项目': 1070.12,
         '设备外服': 242.25,
         '派遣': 207.07,
-        '自建项目': 0.00
+        '自接项目': 0.00
     }
 }
 
@@ -210,7 +210,7 @@ const getInitialData = () => {
             { customerType: '运检项目', yearlyPlan: staticYearlyPlans.project['运检项目'], planExecutionRate: 0, currentMaterialCost: 0, cumulativeMaterialCost: 0, currentLaborCost: 0, cumulativeLaborCost: 0 },
             { customerType: '设备外服', yearlyPlan: staticYearlyPlans.project['设备外服'], planExecutionRate: 0, currentMaterialCost: 0, cumulativeMaterialCost: 0, currentLaborCost: 0, cumulativeLaborCost: 0 },
             { customerType: '派遣', yearlyPlan: staticYearlyPlans.project['派遣'], planExecutionRate: 0, currentMaterialCost: 0, cumulativeMaterialCost: 0, currentLaborCost: 0, cumulativeLaborCost: 0 },
-            { customerType: '自建项目', yearlyPlan: staticYearlyPlans.project['自建项目'], planExecutionRate: 0, currentMaterialCost: 0, cumulativeMaterialCost: 0, currentLaborCost: 0, cumulativeLaborCost: 0 }
+            { customerType: '自接项目', yearlyPlan: staticYearlyPlans.project['自接项目'], planExecutionRate: 0, currentMaterialCost: 0, cumulativeMaterialCost: 0, currentLaborCost: 0, cumulativeLaborCost: 0 }
         ]
     }
 }

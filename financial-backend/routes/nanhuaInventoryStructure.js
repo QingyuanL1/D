@@ -1,70 +1,91 @@
 const express = require('express');
 const router = express.Router();
 const { pool } = require('../config/database');
+const { createBudgetMiddleware } = require('../middleware/budgetMiddleware');
 
 // 获取南华存量结构与质量数据
-router.get('/:period', async (req, res) => {
-  const { period } = req.params;
-  
-  try {
-    // 固定的客户列表和年初金额
-    const fixedData = {
-      customers: [
-        { customerName: '一包项目', initialAmount: 10000.00 },
-        { customerName: '二包项目', initialAmount: 4400.00 },
-        { customerName: '域内合作项目', initialAmount: 8600.00 },
-        { customerName: '域外合作项目', initialAmount: 4900.00 },
-        { customerName: '新能源项目', initialAmount: 1900.00 },
-        { customerName: '苏州项目', initialAmount: 4200.00 },
-        { customerName: '抢修项目', initialAmount: 0.00 },
-        { customerName: '运检项目', initialAmount: 0.00 },
-        { customerName: '自建项目', initialAmount: 0.00 }
-      ]
-    };
-    
-    // 从数据库获取当期数据
-    const [currentRows] = await pool.execute(
-      'SELECT customer_name, initial_amount, current_amount, accumulated_amount, fluctuation_rate FROM nanhua_inventory_structure WHERE period = ?',
-      [period]
-    );
-
-    // 计算累计数据（所有历史期间的当期总和）
-    const [accumulatedRows] = await pool.execute(
-      'SELECT customer_name, SUM(current_amount) as total_accumulated FROM nanhua_inventory_structure WHERE period <= ? GROUP BY customer_name',
-      [period]
-    );
-
-    // 合并数据
-    const result = {
-      customers: fixedData.customers.map(item => {
-        const currentItem = currentRows.find(row => row.customer_name === item.customerName);
-        const accumulatedItem = accumulatedRows.find(row => row.customer_name === item.customerName);
+router.get('/:period', createBudgetMiddleware('nanhua_inventory_structure'), async (req, res) => {
+    try {
+        const { period } = req.params;
         
-        const current = currentItem ? parseFloat(currentItem.current_amount) : 0;
-        const accumulated = accumulatedItem ? parseFloat(accumulatedItem.total_accumulated) : 0;
-        const fluctuationRate = item.initialAmount > 0 ? ((accumulated - item.initialAmount) / item.initialAmount * 100) : 0;
+        // 获取中标未履约当期余额
+        const bidFulfillmentQuery = `
+            SELECT customer_name, current_amount as bid_current_amount
+            FROM nanhua_bid_fulfillment
+            WHERE period = ?
+        `;
         
-        return {
-          customerName: item.customerName,
-          initialAmount: item.initialAmount,
-          current: current,
-          accumulated: accumulated,
-          fluctuationRate: parseFloat(fluctuationRate.toFixed(2))
+        const contractInventoryEvaluationQuery = `
+            SELECT customer_name, current_evaluation
+            FROM nanhua_contract_inventory_evaluation
+            WHERE period = ?
+        `;
+        
+        const [bidFulfillmentRows] = await pool.execute(bidFulfillmentQuery, [period]);
+        const [contractEvaluationRows] = await pool.execute(contractInventoryEvaluationQuery, [period]);
+        
+        // 创建数据映射
+        const createDataMap = (rows, customerField, valueField) => {
+            const map = {};
+            rows.forEach(row => {
+                const customerName = row[customerField];
+                const value = parseFloat(row[valueField]) || 0;
+                map[customerName] = value;
+            });
+            return map;
         };
-      })
-    };
 
-    res.json({
-      success: true,
-      data: result
-    });
-  } catch (error) {
-    console.error('获取南华存量结构与质量数据失败:', error);
-    res.status(500).json({
-      success: false,
-      message: '获取数据失败'
-    });
-  }
+        const bidFulfillmentMap = createDataMap(bidFulfillmentRows, 'customer_name', 'bid_current_amount');
+        const contractEvaluationMap = createDataMap(contractEvaluationRows, 'customer_name', 'current_evaluation');
+        
+        // 固定的客户列表和年初金额（用于界面显示）
+        const fixedDisplayData = [
+            { customerName: '一包项目', initialAmount: 10000.00 },
+            { customerName: '二包项目', initialAmount: 4400.00 },
+            { customerName: '域内合作项目', initialAmount: 8600.00 },
+            { customerName: '域外合作项目', initialAmount: 4900.00 },
+            { customerName: '新能源项目', initialAmount: 1900.00 },
+            { customerName: '苏州项目', initialAmount: 4200.00 },
+            { customerName: '抢修项目', initialAmount: 0.00 },
+            { customerName: '运检项目', initialAmount: 0.00 },
+            { customerName: '自建项目', initialAmount: 0.00 }
+        ];
+        
+        // 计算数据
+        const customers = fixedDisplayData.map(item => {
+            const customerName = item.customerName;
+            const bidAmount = bidFulfillmentMap[customerName] || 0;
+            const progressAmount = contractEvaluationMap[customerName] || 0; // 使用合同库存评估作为新订单
+            const initialAmount = item.initialAmount;
+
+            // 计算当期金额：中标未履约当期余额 + 合同存量评估当期金额
+            const current = bidAmount + progressAmount;
+            
+            // 计算波动率（基于当期金额）
+            const fluctuationRate = initialAmount > 0 ? ((current - initialAmount) / initialAmount * 100) : 0;
+
+            return {
+                customerName,
+                initialAmount,
+                current,
+                fluctuationRate: parseFloat(fluctuationRate.toFixed(2))
+            };
+        });
+        
+        const data = { customers };
+        
+        res.json({
+            success: true,
+            data: data,
+            period: period
+        });
+    } catch (error) {
+        console.error('获取南华存量结构与质量数据失败:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: '服务器内部错误' 
+        });
+    }
 });
 
 // 保存南华存量结构与质量数据
@@ -92,18 +113,17 @@ router.post('/', async (req, res) => {
     // 插入新数据
     for (const item of data.customers) {
       if (item.current > 0) {
-        const fluctuationRate = item.initialAmount > 0 ? ((item.accumulated - item.initialAmount) / item.initialAmount * 100) : 0;
+        const fluctuationRate = item.initialAmount > 0 ? ((item.current - item.initialAmount) / item.initialAmount * 100) : 0;
         
         await connection.execute(
           `INSERT INTO nanhua_inventory_structure 
-           (period, customer_name, initial_amount, current_amount, accumulated_amount, fluctuation_rate, category) 
-           VALUES (?, ?, ?, ?, ?, ?, ?)`,
+           (period, customer_name, initial_amount, current_amount, fluctuation_rate, category) 
+           VALUES (?, ?, ?, ?, ?, ?)`,
           [
             period,
             item.customerName,
             item.initialAmount || 0,
             item.current || 0,
-            item.accumulated || 0,
             fluctuationRate,
             '工程'
           ]

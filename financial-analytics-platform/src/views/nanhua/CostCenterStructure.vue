@@ -141,7 +141,7 @@ const fixedData: CostCenterData = {
         { customerName: '苏州项目', yearlyPlannedIncome: 12.88, currentIncome: 0, accumulatedIncome: 0, contributionRate: 0 },
         { customerName: '抢修项目', yearlyPlannedIncome: 41.77, currentIncome: 0, accumulatedIncome: 0, contributionRate: 0 },
         { customerName: '运检项目', yearlyPlannedIncome: 68.06, currentIncome: 0, accumulatedIncome: 0, contributionRate: 0 },
-        { customerName: '自建项目', yearlyPlannedIncome: 0.00, currentIncome: 0, accumulatedIncome: 0, contributionRate: 0 }
+        { customerName: '自接项目', yearlyPlannedIncome: 0.00, currentIncome: 0, accumulatedIncome: 0, contributionRate: 0 }
     ],
     nonMainBusiness: [
         { customerName: '存货盘盈', yearlyPlannedIncome: 0.47, currentIncome: 0, accumulatedIncome: 0, contributionRate: 0 },

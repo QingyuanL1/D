@@ -116,7 +116,7 @@ const fixedPlanData: StockData = {
         { customerName: '苏州项目', stockBalance: 4200.00, current: 0, accumulated: 0, conversionRate: 0 },
         { customerName: '投标项目', stockBalance: 0.00, current: 0, accumulated: 0, conversionRate: 0 },
         { customerName: '运检项目', stockBalance: 0.00, current: 0, accumulated: 0, conversionRate: 0 },
-        { customerName: '自建项目', stockBalance: 0.00, current: 0, accumulated: 0, conversionRate: 0 }
+        { customerName: '自接项目', stockBalance: 0.00, current: 0, accumulated: 0, conversionRate: 0 }
     ]
 }
 

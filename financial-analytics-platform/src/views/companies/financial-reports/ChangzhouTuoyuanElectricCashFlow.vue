@@ -1,22 +1,22 @@
 <template>
-    <div class="max-w-[1200px] mx-auto bg-white rounded-lg shadow-lg p-6">
+    <div class="max-w-[1600px] mx-auto bg-white rounded-lg shadow-lg p-6">
         <div class="flex justify-between items-center mb-6">
-            <h1 class="text-2xl font-bold">现金流量表（常州拓源电气有限公司）（单位：元）</h1>
+            <h1 class="text-2xl font-bold">现金流量表（常州拓源电气有限公司）（单位：万元）</h1>
             <div class="flex items-center space-x-4">
                 <input v-model="period" type="month" class="px-3 py-2 border rounded" />
             </div>
         </div>
 
         <div class="overflow-x-auto">
-            <table class="w-full border-collapse border border-gray-300">
+            <table class="w-full border-collapse border border-gray-300 min-w-[1400px]">
                 <thead class="sticky top-0 bg-white">
                     <tr class="bg-gray-50">
-                        <th class="border border-gray-300 px-4 py-2 w-60">项目</th>
-                        <th class="border border-gray-300 px-4 py-2 w-40">本期金额</th>
-                        <th class="border border-gray-300 px-4 py-2 w-40">本年累计金额</th>
-                        <th class="border border-gray-300 px-4 py-2 w-60">项目</th>
-                        <th class="border border-gray-300 px-4 py-2 w-40">本期金额</th>
-                        <th class="border border-gray-300 px-4 py-2 w-40">本年累计金额</th>
+                        <th class="border border-gray-300 px-4 py-2 w-80">项目</th>
+                        <th class="border border-gray-300 px-4 py-2 w-48">本期金额</th>
+                        <th class="border border-gray-300 px-4 py-2 w-48">本年累计金额</th>
+                        <th class="border border-gray-300 px-4 py-2 w-80">项目</th>
+                        <th class="border border-gray-300 px-4 py-2 w-48">本期金额</th>
+                        <th class="border border-gray-300 px-4 py-2 w-48">本年累计金额</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -46,15 +46,22 @@
                                 </td>
                              
                                 <td class="border border-gray-300 px-4 py-2">
-                                    <input 
-                                        v-model.number="item.currentAmount" 
-                                        type="number"
-                                        class="w-full px-2 py-1 border rounded"
-                                        step="0.01" 
-                                        :data-field="item.field"
-                                        @input="onCurrentAmountChange"
-                                        placeholder="0"
-                                    />
+                                    <template v-if="isCalculatedField(item.field)">
+                                        <span class="w-full px-2 py-1 text-right block bg-gray-50">
+                                            {{ item.currentAmount !== null && item.currentAmount !== undefined ? item.currentAmount.toLocaleString() : '' }}
+                                        </span>
+                                    </template>
+                                    <template v-else>
+                                        <input 
+                                            v-model.number="item.currentAmount" 
+                                            type="number"
+                                            class="w-full px-2 py-1 border rounded"
+                                            step="0.01" 
+                                            :data-field="item.field"
+                                            @input="onCurrentAmountChange"
+                                            placeholder="0"
+                                        />
+                                    </template>
                                 </td>
                                 <td class="border border-gray-300 px-4 py-2">
                                     <span class="w-full px-2 py-1 text-right block">
@@ -72,15 +79,22 @@
                                     </td>
                               
                                     <td class="border border-gray-300 px-4 py-2">
-                                        <input 
-                                            v-model.number="section.rightItems[itemIndex].currentAmount" 
-                                            type="number"
-                                            class="w-full px-2 py-1 border rounded"
-                                            step="0.01" 
-                                            :data-field="section.rightItems[itemIndex].field"
-                                            @input="onCurrentAmountChange"
-                                            placeholder="0"
-                                        />
+                                        <template v-if="isCalculatedField(section.rightItems[itemIndex].field)">
+                                            <span class="w-full px-2 py-1 text-right block bg-gray-50">
+                                                {{ section.rightItems[itemIndex].currentAmount !== null && section.rightItems[itemIndex].currentAmount !== undefined ? section.rightItems[itemIndex].currentAmount.toLocaleString() : '' }}
+                                            </span>
+                                        </template>
+                                        <template v-else>
+                                            <input 
+                                                v-model.number="section.rightItems[itemIndex].currentAmount" 
+                                                type="number"
+                                                class="w-full px-2 py-1 border rounded"
+                                                step="0.01" 
+                                                :data-field="section.rightItems[itemIndex].field"
+                                                @input="onCurrentAmountChange"
+                                                placeholder="0"
+                                            />
+                                        </template>
                                     </td>
                                     <td class="border border-gray-300 px-4 py-2">
                                         <span class="w-full px-2 py-1 text-right block">
@@ -111,15 +125,22 @@
                                     </td>
                                     
                                     <td class="border border-gray-300 px-4 py-2">
-                                        <input 
-                                            v-model.number="item.currentAmount" 
-                                            type="number"
-                                            class="w-full px-2 py-1 border rounded"
-                                            step="0.01" 
-                                            :data-field="item.field"
-                                            @input="onCurrentAmountChange"
-                                            placeholder="0"
-                                        />
+                                        <template v-if="isCalculatedField(item.field)">
+                                            <span class="w-full px-2 py-1 text-right block bg-gray-50">
+                                                {{ item.currentAmount !== null && item.currentAmount !== undefined ? item.currentAmount.toLocaleString() : '' }}
+                                            </span>
+                                        </template>
+                                        <template v-else>
+                                            <input 
+                                                v-model.number="item.currentAmount" 
+                                                type="number"
+                                                class="w-full px-2 py-1 border rounded"
+                                                step="0.01" 
+                                                :data-field="item.field"
+                                                @input="onCurrentAmountChange"
+                                                placeholder="0"
+                                            />
+                                        </template>
                                     </td>
                                     <td class="border border-gray-300 px-4 py-2">
                                         <span class="w-full px-2 py-1 text-right block">
@@ -170,13 +191,127 @@ const suggestions = ref('')
 
 let calculateTimeout: NodeJS.Timeout | null = null
 
+const calculatedFields = new Set([
+    'operating_inflow_total',
+    'operating_outflow_total', 
+    'operating_net_flow',
+    'investment_inflow_total',
+    'investment_outflow_total',
+    'investment_net_flow',
+    'financing_inflow_total',
+    'financing_outflow_total',
+    'financing_net_flow',
+    'cash_net_increase',
+    'cash_net_increase_reconciled',
+    'operating_cash_flow_reconciled'
+])
+
+const isCalculatedField = (field: string): boolean => {
+    return calculatedFields.has(field)
+}
+
+const calculateSubtotalsAndTotals = () => {
+    const items = cashFlowData.value.flatMap(section => [...section.leftItems, ...(section.rightItems || [])])
+    
+    const getAmount = (field: string): number => {
+        const item = items.find(item => item.field === field)
+        return item?.currentAmount || 0
+    }
+    
+    const setAmount = (field: string, amount: number) => {
+        const item = items.find(item => item.field === field)
+        if (item) {
+            item.currentAmount = amount
+        }
+    }
+
+    setAmount('operating_inflow_total', 
+        getAmount('sales_cash') + 
+        getAmount('tax_refund') + 
+        getAmount('other_operating_received')
+    )
+    
+    setAmount('operating_outflow_total',
+        getAmount('purchase_payment') + 
+        getAmount('employee_payment') + 
+        getAmount('tax_payment') + 
+        getAmount('other_operating_payment')
+    )
+    
+    setAmount('operating_net_flow',
+        getAmount('operating_inflow_total') - getAmount('operating_outflow_total')
+    )
+
+    setAmount('investment_inflow_total',
+        getAmount('investment_recovery') + 
+        getAmount('investment_income_received') + 
+        getAmount('asset_disposal_cash') + 
+        getAmount('other_investment_received')
+    )
+    
+    setAmount('investment_outflow_total',
+        getAmount('capex_payment') + 
+        getAmount('investment_payment') + 
+        getAmount('other_investment_payment')
+    )
+    
+    setAmount('investment_net_flow',
+        getAmount('investment_inflow_total') - getAmount('investment_outflow_total')
+    )
+
+    setAmount('financing_inflow_total',
+        getAmount('capital_received') + 
+        getAmount('borrowing_received') + 
+        getAmount('other_financing_received')
+    )
+    
+    setAmount('financing_outflow_total',
+        getAmount('debt_repayment') + 
+        getAmount('dividend_interest_payment') + 
+        getAmount('other_financing_payment')
+    )
+    
+    setAmount('financing_net_flow',
+        getAmount('financing_inflow_total') - getAmount('financing_outflow_total')
+    )
+
+    setAmount('cash_net_increase',
+        getAmount('operating_net_flow') + 
+        getAmount('investment_net_flow') + 
+        getAmount('financing_net_flow') + 
+        getAmount('exchange_rate_effect')
+    )
+    
+    const reconciliedAmount = 
+        getAmount('net_profit') +
+        getAmount('asset_impairment') +
+        getAmount('depreciation') +
+        getAmount('intangible_amortization') +
+        getAmount('deferred_expense_amortization') +
+        getAmount('disposal_loss') +
+        getAmount('fixed_asset_scrap_loss') +
+        getAmount('fair_value_change_loss') +
+        getAmount('fixed_asset_disposal_loss') +
+        getAmount('financial_expenses') +
+        getAmount('investment_loss') +
+        getAmount('deferred_tax_asset_decrease') +
+        getAmount('inventory_decrease') +
+        getAmount('operating_receivables_decrease') +
+        getAmount('operating_payables_increase') +
+        getAmount('other_adjustments')
+    
+    setAmount('operating_cash_flow_reconciled', reconciliedAmount)
+    setAmount('cash_net_increase_reconciled', getAmount('cash_net_increase'))
+}
+
 const onCurrentAmountChange = () => {
     if (calculateTimeout) {
         clearTimeout(calculateTimeout)
     }
     calculateTimeout = setTimeout(() => {
+        calculateSubtotalsAndTotals()
         calculateYearAmounts(period.value)
-    }, 1000)
+    }, 300)
 }
 
 const calculateYearAmounts = async (targetPeriod: string) => {
@@ -245,12 +380,10 @@ const calculateYearAmounts = async (targetPeriod: string) => {
     }
 }
 
-// 加载数据
 const loadData = async (targetPeriod: string): Promise<void> => {
     try {
         console.log(`正在加载常州拓源现金流量表数据，期间: ${targetPeriod}`)
         
-        // 首先清空所有本期金额，累计金额将重新计算
         resetCurrentAmounts()
         console.log('已清空本期金额，准备加载新数据')
         
@@ -258,7 +391,6 @@ const loadData = async (targetPeriod: string): Promise<void> => {
         if (!response.ok) {
             if (response.status === 404) {
                 console.log('该期间暂无数据，使用初始模板')
-                // 即使没有数据，也要重新计算累计金额
                 await calculateYearAmounts(targetPeriod)
                 return
             }
@@ -273,10 +405,8 @@ const loadData = async (targetPeriod: string): Promise<void> => {
             
             let parsedData
             try {
-                // 处理可能的双重JSON编码
                 if (typeof result.data === 'string') {
                     parsedData = JSON.parse(result.data)
-                    // 如果解析结果仍然是字符串，说明有双重编码
                     if (typeof parsedData === 'string') {
                         parsedData = JSON.parse(parsedData)
                     }
@@ -289,12 +419,10 @@ const loadData = async (targetPeriod: string): Promise<void> => {
                 return
             }
             
-            // 将数据恢复到表单中
             Object.keys(parsedData).forEach(key => {
                 const item = cashFlowData.value.flatMap(section => [...section.leftItems, ...(section.rightItems || [])])
                     .find(item => item.field === key)
                 if (item) {
-                    // 只恢复本期金额，累计金额将通过calculateYearAmounts重新计算
                     item.currentAmount = parsedData[key].current_amount !== null ? 
                         parsedData[key].current_amount : null
                     console.log(`恢复字段 ${key} 本期金额:`, parsedData[key].current_amount)
@@ -303,7 +431,7 @@ const loadData = async (targetPeriod: string): Promise<void> => {
             console.log('数据恢复完成')
         }
         
-        // 重新计算累计金额
+        calculateSubtotalsAndTotals()
         await calculateYearAmounts(targetPeriod)
         
     } catch (error) {
@@ -311,7 +439,6 @@ const loadData = async (targetPeriod: string): Promise<void> => {
     }
 }
 
-// 重置本期金额为null，累计金额保持不变（将通过calculateYearAmounts重新计算）
 const resetCurrentAmounts = () => {
     cashFlowData.value.forEach(section => {
         section.leftItems.forEach(item => {
@@ -325,7 +452,6 @@ const resetCurrentAmounts = () => {
     })
 }
 
-// 监听路由参数变化
 watch(() => route.query.period, (newPeriod) => {
     if (newPeriod) {
         period.value = newPeriod.toString()
@@ -336,7 +462,6 @@ watch(() => route.query.period, (newPeriod) => {
     }
 })
 
-// 监听期间变化
 watch(period, (newPeriod) => {
     loadData(newPeriod).then(() => {
         calculateYearAmounts(newPeriod)
@@ -364,7 +489,6 @@ const handleSave = async () => {
         const result = await response.json()
         console.log('保存成功:', result.message)
 
-        // 记录表单提交
         await recordFormSubmission(moduleId, period.value, dataToSave, remarks.value, suggestions.value)
 
         alert('保存成功')
@@ -389,7 +513,6 @@ const handleReset = () => {
     })
 }
 
-// 加载备注和建议
 const loadRemarksData = async () => {
   const { remarks: loadedRemarks, suggestions: loadedSuggestions } = await loadRemarksAndSuggestions(moduleId, period.value)
   remarks.value = loadedRemarks
@@ -398,7 +521,6 @@ const loadRemarksData = async () => {
 
 onMounted(async () => {
     console.log('常州拓源现金流量表组件挂载，当前期间:', period.value)
-    // 加载当前期间的数据
     if (route.query.period) {
         await loadData(route.query.period.toString())
         await calculateYearAmounts(route.query.period.toString())
@@ -411,5 +533,4 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-/* 可以添加需要的样式 */
 </style> 

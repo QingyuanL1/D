@@ -10,22 +10,22 @@ router.get('/:period', async (req, res) => {
     // 固定的客户列表
     const fixedData = {
       customers: [
-        { customerName: '一包项目', yearBeginBalance: 1164.76, monthlyIncrease: 0, yearlyAccumulated: 0, provisionRate: 0 },
-        { customerName: '二包项目', yearBeginBalance: 426.90, monthlyIncrease: 0, yearlyAccumulated: 0, provisionRate: 0 },
-        { customerName: '域内合作项目', yearBeginBalance: 474.41, monthlyIncrease: 0, yearlyAccumulated: 0, provisionRate: 0 },
-        { customerName: '域外合作项目', yearBeginBalance: 661.56, monthlyIncrease: 0, yearlyAccumulated: 0, provisionRate: 0 },
-        { customerName: '新能源项目', yearBeginBalance: 730.12, monthlyIncrease: 0, yearlyAccumulated: 0, provisionRate: 0 },
-        { customerName: '苏州项目', yearBeginBalance: 93.99, monthlyIncrease: 0, yearlyAccumulated: 0, provisionRate: 0 },
-        { customerName: '抢修项目', yearBeginBalance: 0.00, monthlyIncrease: 0, yearlyAccumulated: 0, provisionRate: 0 },
-        { customerName: '运检项目', yearBeginBalance: 242.66, monthlyIncrease: 0, yearlyAccumulated: 0, provisionRate: 0 },
-        { customerName: '派遣', yearBeginBalance: 19.50, monthlyIncrease: 0, yearlyAccumulated: 0, provisionRate: 0 },
-        { customerName: '自建', yearBeginBalance: 0.00, monthlyIncrease: 0, yearlyAccumulated: 0, provisionRate: 0 }
+        { customerName: '一包项目', yearBeginBalance: 1164.76, monthlyIncrease: 0, monthlyWriteOff: 0, yearlyAccumulated: 0, provisionRate: 0 },
+        { customerName: '二包项目', yearBeginBalance: 426.90, monthlyIncrease: 0, monthlyWriteOff: 0, yearlyAccumulated: 0, provisionRate: 0 },
+        { customerName: '域内合作项目', yearBeginBalance: 474.41, monthlyIncrease: 0, monthlyWriteOff: 0, yearlyAccumulated: 0, provisionRate: 0 },
+        { customerName: '域外合作项目', yearBeginBalance: 661.56, monthlyIncrease: 0, monthlyWriteOff: 0, yearlyAccumulated: 0, provisionRate: 0 },
+        { customerName: '新能源项目', yearBeginBalance: 730.12, monthlyIncrease: 0, monthlyWriteOff: 0, yearlyAccumulated: 0, provisionRate: 0 },
+        { customerName: '苏州项目', yearBeginBalance: 93.99, monthlyIncrease: 0, monthlyWriteOff: 0, yearlyAccumulated: 0, provisionRate: 0 },
+        { customerName: '抢修项目', yearBeginBalance: 0.00, monthlyIncrease: 0, monthlyWriteOff: 0, yearlyAccumulated: 0, provisionRate: 0 },
+        { customerName: '运检项目', yearBeginBalance: 242.66, monthlyIncrease: 0, monthlyWriteOff: 0, yearlyAccumulated: 0, provisionRate: 0 },
+        { customerName: '派遣', yearBeginBalance: 19.50, monthlyIncrease: 0, monthlyWriteOff: 0, yearlyAccumulated: 0, provisionRate: 0 },
+        { customerName: '自建', yearBeginBalance: 0.00, monthlyIncrease: 0, monthlyWriteOff: 0, yearlyAccumulated: 0, provisionRate: 0 }
       ]
     };
     
     // 从数据库获取数据
     const [rows] = await pool.execute(
-      'SELECT customer_name, year_begin_balance, monthly_increase, yearly_accumulated, provision_rate FROM nanhua_cost_provision WHERE period = ?',
+      'SELECT customer_name, year_begin_balance, monthly_increase, monthly_write_off, yearly_accumulated, provision_rate FROM nanhua_cost_provision WHERE period = ?',
       [period]
     );
 
@@ -37,6 +37,7 @@ router.get('/:period', async (req, res) => {
           customerName: item.customerName,
           yearBeginBalance: item.yearBeginBalance,
           monthlyIncrease: dbItem ? parseFloat(dbItem.monthly_increase) : 0,
+          monthlyWriteOff: dbItem ? parseFloat(dbItem.monthly_write_off) : 0,
           yearlyAccumulated: dbItem ? parseFloat(dbItem.yearly_accumulated) : 0,
           provisionRate: dbItem ? parseFloat(dbItem.provision_rate) : 0
         };
@@ -80,8 +81,8 @@ router.post('/', async (req, res) => {
       // 准备批量插入数据
       const insertQuery = `
         INSERT INTO nanhua_cost_provision 
-        (period, customer_name, year_begin_balance, monthly_increase, yearly_accumulated, provision_rate) 
-        VALUES (?, ?, ?, ?, ?, ?)
+        (period, customer_name, year_begin_balance, monthly_increase, monthly_write_off, yearly_accumulated, provision_rate) 
+        VALUES (?, ?, ?, ?, ?, ?, ?)
       `;
       
       // 处理客户数据
@@ -91,6 +92,7 @@ router.post('/', async (req, res) => {
           item.customerName,
           item.yearBeginBalance || 0,
           item.monthlyIncrease || 0,
+          item.monthlyWriteOff || 0,
           item.yearlyAccumulated || 0,
           item.provisionRate || 0
         ]);

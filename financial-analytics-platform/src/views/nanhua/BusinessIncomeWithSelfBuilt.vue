@@ -43,7 +43,7 @@
                             </td>
                             <td class="border border-gray-300 px-4 py-2">
                                 <!-- 苏州项目的子项目需要缩进显示 -->
-                                <span v-if="['抢修', '运检', '自建项目'].includes(item.customerName)" class="ml-4">
+                                <span v-if="['抢修', '运检', '自接项目'].includes(item.customerName)" class="ml-4">
                                     {{ item.customerName }}
                                 </span>
                                 <span v-else>
@@ -129,7 +129,7 @@ interface IncomeData {
     customers: IncomeItem[];
 }
 
-// 固定的年度计划数据 (根据实际截图数据，运检项目下添加自建项目) - 百分比格式
+    // 固定的年度计划数据 (根据实际截图数据，运检项目下添加自接项目) - 百分比格式
 const fixedPlanData: IncomeData = {
     customers: [
         { customerName: '一包项目', yearlyPlan: 26.52, current: 0, deviation: 0 },
@@ -140,7 +140,7 @@ const fixedPlanData: IncomeData = {
         { customerName: '苏州项目', yearlyPlan: 6.00, current: 0, deviation: 0 },
         { customerName: '抢修', yearlyPlan: 100.00, current: 0, deviation: 0 },
         { customerName: '运检', yearlyPlan: 30.00, current: 0, deviation: 0 },
-        { customerName: '自建项目', yearlyPlan: 0, current: 0, deviation: 0 }
+        { customerName: '自接项目', yearlyPlan: 0, current: 0, deviation: 0 }
     ]
 }
 

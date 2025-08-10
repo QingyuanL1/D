@@ -1,7 +1,11 @@
 <template>
     <div class="max-w-[1500px] mx-auto bg-white rounded-lg shadow-lg p-6">
-        <div class="mb-6">
+        <div class="flex justify-between items-center mb-6">
             <h1 class="text-2xl font-bold">成本计提情况:（单位：万元）</h1>
+            <div class="flex items-center space-x-4">
+                <span class="text-xs text-gray-500">本年累计 = 年初余额 + 当期新增累计 - 当期冲销累计</span>
+                <input v-model="period" type="month" class="px-3 py-2 border rounded" />
+            </div>
         </div>
 
         <div class="overflow-x-auto my-6">
@@ -11,7 +15,8 @@
                         <th class="border border-gray-300 px-4 py-2">板块</th>
                         <th class="border border-gray-300 px-4 py-2">客户属性</th>
                         <th class="border border-gray-300 px-4 py-2">年初余额</th>
-                        <th class="border border-gray-300 px-4 py-2">本月新增</th>
+                        <th class="border border-gray-300 px-4 py-2">当期新增</th>
+                        <th class="border border-gray-300 px-4 py-2">当期冲销</th>
                         <th class="border border-gray-300 px-4 py-2">本年累计</th>
                         <th class="border border-gray-300 px-4 py-2">计提率</th>
                     </tr>
@@ -32,6 +37,9 @@
                             <td class="border border-gray-300 px-4 py-2">
                                 <input v-model="item.monthlyIncrease" type="number" class="w-full px-2 py-1 border rounded text-right" step="0.01" />
                             </td>
+                            <td class="border border-gray-300 px-4 py-2">
+                                <input v-model="item.monthlyWriteOff" type="number" class="w-full px-2 py-1 border rounded text-right" step="0.01" />
+                            </td>
                             <td class="border border-gray-300 px-4 py-2 text-right">
                                 {{ formatNumber(item.yearlyAccumulated) }}
                             </td>
@@ -49,6 +57,9 @@
                         </td>
                         <td class="border border-gray-300 px-4 py-2 text-right">
                             {{ formatNumber(totalData.monthlyIncrease) }}
+                        </td>
+                        <td class="border border-gray-300 px-4 py-2 text-right">
+                            {{ formatNumber(totalData.monthlyWriteOff) }}
                         </td>
                         <td class="border border-gray-300 px-4 py-2 text-right">
                             {{ formatNumber(totalData.yearlyAccumulated) }}
@@ -93,6 +104,7 @@ interface CostProvisionItem {
     customerName: string;
     yearBeginBalance: number;
     monthlyIncrease: number;
+    monthlyWriteOff: number;
     yearlyAccumulated: number;
     provisionRate: number;
 }
@@ -104,16 +116,16 @@ interface CostProvisionData {
 // 固定的年初余额数据 - 更新为与图片一致
 const fixedBalanceData: CostProvisionData = {
     customers: [
-        { customerName: '一包项目', yearBeginBalance: 1164.76, monthlyIncrease: 0, yearlyAccumulated: 0, provisionRate: 0 },
-        { customerName: '二包项目', yearBeginBalance: 426.90, monthlyIncrease: 0, yearlyAccumulated: 0, provisionRate: 0 },
-        { customerName: '域内合作项目', yearBeginBalance: 474.41, monthlyIncrease: 0, yearlyAccumulated: 0, provisionRate: 0 },
-        { customerName: '域外合作项目', yearBeginBalance: 661.56, monthlyIncrease: 0, yearlyAccumulated: 0, provisionRate: 0 },
-        { customerName: '新能源项目', yearBeginBalance: 730.12, monthlyIncrease: 0, yearlyAccumulated: 0, provisionRate: 0 },
-        { customerName: '苏州项目', yearBeginBalance: 93.99, monthlyIncrease: 0, yearlyAccumulated: 0, provisionRate: 0 },
-        { customerName: '抢修项目', yearBeginBalance: 0.00, monthlyIncrease: 0, yearlyAccumulated: 0, provisionRate: 0 },
-        { customerName: '运检项目', yearBeginBalance: 242.66, monthlyIncrease: 0, yearlyAccumulated: 0, provisionRate: 0 },
-        { customerName: '派遣', yearBeginBalance: 19.50, monthlyIncrease: 0, yearlyAccumulated: 0, provisionRate: 0 },
-        { customerName: '自建', yearBeginBalance: 0.00, monthlyIncrease: 0, yearlyAccumulated: 0, provisionRate: 0 }
+        { customerName: '一包项目', yearBeginBalance: 1164.76, monthlyIncrease: 0, monthlyWriteOff: 0, yearlyAccumulated: 0, provisionRate: 0 },
+        { customerName: '二包项目', yearBeginBalance: 426.90, monthlyIncrease: 0, monthlyWriteOff: 0, yearlyAccumulated: 0, provisionRate: 0 },
+        { customerName: '域内合作项目', yearBeginBalance: 474.41, monthlyIncrease: 0, monthlyWriteOff: 0, yearlyAccumulated: 0, provisionRate: 0 },
+        { customerName: '域外合作项目', yearBeginBalance: 661.56, monthlyIncrease: 0, monthlyWriteOff: 0, yearlyAccumulated: 0, provisionRate: 0 },
+        { customerName: '新能源项目', yearBeginBalance: 730.12, monthlyIncrease: 0, monthlyWriteOff: 0, yearlyAccumulated: 0, provisionRate: 0 },
+        { customerName: '苏州项目', yearBeginBalance: 93.99, monthlyIncrease: 0, monthlyWriteOff: 0, yearlyAccumulated: 0, provisionRate: 0 },
+        { customerName: '抢修项目', yearBeginBalance: 0.00, monthlyIncrease: 0, monthlyWriteOff: 0, yearlyAccumulated: 0, provisionRate: 0 },
+        { customerName: '运检项目', yearBeginBalance: 242.66, monthlyIncrease: 0, monthlyWriteOff: 0, yearlyAccumulated: 0, provisionRate: 0 },
+        { customerName: '派遣', yearBeginBalance: 19.50, monthlyIncrease: 0, monthlyWriteOff: 0, yearlyAccumulated: 0, provisionRate: 0 },
+        { customerName: '自接', yearBeginBalance: 0.00, monthlyIncrease: 0, monthlyWriteOff: 0, yearlyAccumulated: 0, provisionRate: 0 }
     ]
 }
 
@@ -145,7 +157,8 @@ const calculateAccumulated = async (targetPeriod: string) => {
         
         // 为每个客户计算累计值
         for (let customer of costProvisionData.value.customers) {
-            let accumulated = 0
+            let accumulatedIncrease = 0
+            let accumulatedWriteOff = 0
             
             // 从1月累计到当前月份
             for (let m = 1; m <= currentMonth; m++) {
@@ -156,7 +169,8 @@ const calculateAccumulated = async (targetPeriod: string) => {
                         const result = await response.json()
                         const customerData = result.data.customers.find((c: any) => c.customerName === customer.customerName)
                         if (customerData) {
-                            accumulated += customerData.monthlyIncrease || 0
+                            accumulatedIncrease += customerData.monthlyIncrease || 0
+                            accumulatedWriteOff += customerData.monthlyWriteOff || 0
                         }
                     }
                 } catch (error) {
@@ -164,9 +178,10 @@ const calculateAccumulated = async (targetPeriod: string) => {
                 }
             }
             
-            customer.yearlyAccumulated = accumulated
+            // 本年累计 = 年初余额 + 累计新增 - 累计冲销
+            customer.yearlyAccumulated = customer.yearBeginBalance + accumulatedIncrease - accumulatedWriteOff
             
-            // 计算计提率 = 年累计 / 年初余额 * 100%
+            // 计算计提率 = 本年累计 / 年初余额 * 100%
             if (customer.yearBeginBalance > 0) {
                 customer.provisionRate = (customer.yearlyAccumulated / customer.yearBeginBalance) * 100
             } else {
@@ -178,11 +193,25 @@ const calculateAccumulated = async (targetPeriod: string) => {
     }
 }
 
+// 监听当期新增和冲销字段变化，自动重新计算本年累计和计提率
+watch(() => costProvisionData.value.customers.map(item => [item.monthlyIncrease, item.monthlyWriteOff]), () => {
+    // 简化计算：直接基于当前输入值计算
+    costProvisionData.value.customers.forEach(item => {
+        const cumulativeIncrease = Number(item.monthlyIncrease) || 0
+        const cumulativeWriteOff = Number(item.monthlyWriteOff) || 0
+        item.yearlyAccumulated = item.yearBeginBalance + cumulativeIncrease - cumulativeWriteOff
+        item.provisionRate = item.yearBeginBalance > 0 ? 
+            (item.yearlyAccumulated / item.yearBeginBalance) * 100 : 
+            (item.yearlyAccumulated !== 0 ? (item.yearlyAccumulated > 0 ? 100 : -100) : 0)
+    })
+}, { deep: true })
+
 // 计算合计数据
 const totalData = computed(() => {
     const total = {
         yearBeginBalance: 0,
         monthlyIncrease: 0,
+        monthlyWriteOff: 0,
         yearlyAccumulated: 0,
         provisionRate: 0
     }
@@ -190,6 +219,7 @@ const totalData = computed(() => {
     costProvisionData.value.customers.forEach(item => {
         total.yearBeginBalance += item.yearBeginBalance || 0
         total.monthlyIncrease += item.monthlyIncrease || 0
+        total.monthlyWriteOff += item.monthlyWriteOff || 0
         total.yearlyAccumulated += item.yearlyAccumulated || 0
     })
     
@@ -218,6 +248,7 @@ const loadData = async (targetPeriod: string) => {
                 customerName: item.customerName,
                 yearBeginBalance: Number(item.yearBeginBalance) || 0,
                 monthlyIncrease: Number(item.monthlyIncrease) || 0,
+                monthlyWriteOff: Number(item.monthlyWriteOff) || 0,
                 yearlyAccumulated: Number(item.yearlyAccumulated) || 0,
                 provisionRate: Number(item.provisionRate) || 0
             }))

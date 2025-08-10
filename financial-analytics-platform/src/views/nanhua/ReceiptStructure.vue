@@ -117,7 +117,7 @@ const fixedPlanData: ReceiptData = {
         { customerName: '苏州项目', yearlyPlan: 1000.00, current: 0, accumulated: 0, executionProgress: 0 },
         { customerName: '抢修项目', yearlyPlan: 110.00, current: 0, accumulated: 0, executionProgress: 0 },
         { customerName: '运检项目', yearlyPlan: 900.00, current: 0, accumulated: 0, executionProgress: 0 },
-        { customerName: '自建项目', yearlyPlan: 0.00, current: 0, accumulated: 0, executionProgress: 0 }
+        { customerName: '自接项目', yearlyPlan: 0.00, current: 0, accumulated: 0, executionProgress: 0 }
     ]
 }
 

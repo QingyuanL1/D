@@ -1,7 +1,7 @@
 <template>
   <div class="max-w-[1500px] mx-auto bg-white rounded-lg shadow-lg p-6">
       <div class="flex justify-between items-center mb-6">
-          <h1 class="text-2xl font-bold">利润表（月报）</h1>
+          <h1 class="text-2xl font-bold">利润表（月报）（单位：万元）</h1>
           <div class="text-sm text-gray-600">
               编制单位：常州拓源电气集团有限公司
           </div>

@@ -31,7 +31,7 @@
                             </td>
                             <td class="border border-gray-300 px-4 py-2">
                                 <!-- 苏州项目的子项目需要缩进显示 -->
-                                <span v-if="['抢修', '运检项目', '自建项目'].includes(item.customerName)" class="ml-4">
+                                <span v-if="['抢修', '运检项目', '自接项目'].includes(item.customerName)" class="ml-4">
                                     {{ item.customerName }}
                                 </span>
                                 <span v-else>
@@ -112,7 +112,7 @@ interface ProfitMarginData {
     customers: ProfitMarginItem[];
 }
 
-// 固定的年度计划数据 (根据截图数据，运检项目下添加自建项目) - 百分比格式
+    // 固定的年度计划数据 (根据截图数据，运检项目下添加自接项目) - 百分比格式
 const fixedPlanData: ProfitMarginData = {
     customers: [
         { customerName: '一包项目', yearlyPlan: 14.54, current: 0 },
@@ -123,7 +123,7 @@ const fixedPlanData: ProfitMarginData = {
         { customerName: '苏州项目', yearlyPlan: 6.00, current: 0 },
         { customerName: '抢修', yearlyPlan: 33.52, current: 0 },
         { customerName: '运检项目', yearlyPlan: 13.60, current: 0 },
-        { customerName: '自建项目', yearlyPlan: 0, current: 0 }
+        { customerName: '自接项目', yearlyPlan: 0, current: 0 }
     ]
 }
 
