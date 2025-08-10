@@ -101,7 +101,7 @@ const fetchContributionRateData = async () => {
       const period = `${selectedYear.value}-${month.toString().padStart(2, '0')}`
       
       try {
-        const response = await fetch(`http://127.0.0.1:3000/nanhua-business-contribution-with-self-built/${period}`)
+        const response = await fetch(`http://47.111.95.19:3000/nanhua-business-contribution-with-self-built/${period}`)
         
         if (response.ok) {
           const result = await response.json()

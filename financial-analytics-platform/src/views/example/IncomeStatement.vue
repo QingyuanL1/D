@@ -110,7 +110,7 @@ const handleInputChange = () => {
 // 加载数据
 const loadData = async (targetPeriod: string) => {
   try {
-    const response = await fetch(`http://127.0.0.1:3000/income-statement/${targetPeriod}`)
+    const response = await fetch(`http://47.111.95.19:3000/income-statement/${targetPeriod}`)
     if (!response.ok) {
       if (response.status !== 404) {
         throw new Error('加载数据失败')
@@ -155,7 +155,7 @@ const handleSave = async () => {
   try {
     const dataToSave = convertToStorageFormat(period.value)
 
-    const response = await fetch('http://127.0.0.1:3000/income-statement', {
+    const response = await fetch('http://47.111.95.19:3000/income-statement', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'

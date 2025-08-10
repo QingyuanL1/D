@@ -235,7 +235,7 @@ const fetchData = async () => {
 // 获取成本中心数据
 const fetchCostCenterData = async () => {
   try {
-    const response = await fetch(`http://127.0.0.1:3000/analytics/cost-center/${selectedYear.value}`)
+    const response = await fetch(`http://47.111.95.19:3000/analytics/cost-center/${selectedYear.value}`)
     if (response.ok) {
       const result = await response.json()
       if (result.success && result.data) {

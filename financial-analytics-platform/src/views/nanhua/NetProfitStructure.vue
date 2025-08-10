@@ -339,7 +339,7 @@ const nonMainBusinessTotalData = computed(() => {
 // 加载主营业务数据
 const loadMainBusinessData = async (targetPeriod: string) => {
     try {
-        const response = await fetch(`http://127.0.0.1:3000/nanhua-main-business-net-profit/${targetPeriod}`)
+        const response = await fetch(`http://47.111.95.19:3000/nanhua-main-business-net-profit/${targetPeriod}`)
         if (response.ok) {
             const result = await response.json()
             if (result.data && result.data.customers) {
@@ -364,7 +364,7 @@ const loadMainBusinessData = async (targetPeriod: string) => {
 // 加载非主营业务数据
 const loadNonMainBusinessData = async (targetPeriod: string) => {
     try {
-        const response = await fetch(`http://127.0.0.1:3000/nanhua-non-main-business-net-profit/${targetPeriod}`)
+        const response = await fetch(`http://47.111.95.19:3000/nanhua-non-main-business-net-profit/${targetPeriod}`)
         if (response.ok) {
             const result = await response.json()
             if (result.data && result.data.items) {
@@ -390,7 +390,7 @@ const loadNonMainBusinessData = async (targetPeriod: string) => {
 const loadData = async (targetPeriod: string) => {
     try {
         // 加载净利润结构数据
-        const response = await fetch(`http://127.0.0.1:3000/nanhua-net-profit-structure/${targetPeriod}`)
+        const response = await fetch(`http://47.111.95.19:3000/nanhua-net-profit-structure/${targetPeriod}`)
         if (response.ok) {
             const result = await response.json()
             if (result.success && result.data) {
@@ -478,7 +478,7 @@ const handleSave = async () => {
             total: data.total
         }
 
-        const response = await fetch('http://127.0.0.1:3000/nanhua-net-profit-structure', {
+        const response = await fetch('http://47.111.95.19:3000/nanhua-net-profit-structure', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

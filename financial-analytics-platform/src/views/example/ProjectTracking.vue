@@ -220,7 +220,7 @@ const loadAllMonthsData = async (currentPeriod: string) => {
         for (let month = 1; month < currentMonth; month++) {
             const monthPeriod = `${currentYear}-${month.toString().padStart(2, '0')}`
             try {
-                const response = await fetch(`http://127.0.0.1:3000/project-tracking/${monthPeriod}`)
+                const response = await fetch(`http://47.111.95.19:3000/project-tracking/${monthPeriod}`)
                 if (response.ok) {
                     const result = await response.json()
                     if (result.success && result.data) {
@@ -332,7 +332,7 @@ const mergeData = (templateData: ProjectItem[], loadedData: any[]): ProjectItem[
 // 加载数据 - 从 project_tracking 表读取
 const loadData = async (targetPeriod: string) => {
     try {
-        const apiUrl = `http://127.0.0.1:3000/project-tracking/${targetPeriod}`
+        const apiUrl = `http://47.111.95.19:3000/project-tracking/${targetPeriod}`
         console.log(`正在加载期间 ${targetPeriod} 的数据...`)
         console.log(`API URL: ${apiUrl}`)
         
@@ -465,7 +465,7 @@ const handleSave = async () => {
         console.log('保存数据:', saveData) // 调试用
 
         // 1. 保存到 project_tracking 表
-        const response = await fetch('http://127.0.0.1:3000/project-tracking', {
+        const response = await fetch('http://47.111.95.19:3000/project-tracking', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

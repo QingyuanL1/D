@@ -76,11 +76,11 @@ sleep 3
 
 # 8. 健康检查
 echo "🔍 进行健康检查..."
-HEALTH_CHECK=$(curl -s http://127.0.0.1:3000/health || echo "failed")
+HEALTH_CHECK=$(curl -s http://47.111.95.19:3000/health || echo "failed")
 if [[ $HEALTH_CHECK == *"ok"* ]]; then
     echo "✅ 服务启动成功！"
-    echo "   - 服务地址: http://127.0.0.1:3000"
-    echo "   - 健康检查: http://127.0.0.1:3000/health"
+    echo "   - 服务地址: http://47.111.95.19:3000"
+    echo "   - 健康检查: http://47.111.95.19:3000/health"
     echo "   - 服务状态: $(echo $HEALTH_CHECK | jq -r '.message' 2>/dev/null || echo '财务分析后端服务运行正常')"
 else
     echo "❌ 服务启动失败，请检查日志:"

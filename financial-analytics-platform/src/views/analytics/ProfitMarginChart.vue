@@ -101,7 +101,7 @@ const formatNumber = (num: number) => {
 // 获取毛利率数据
 const fetchProfitMarginData = async () => {
   try {
-    const response = await fetch(`http://127.0.0.1:3000/analytics/profit-margin/${selectedYear.value}`)
+    const response = await fetch(`http://47.111.95.19:3000/analytics/profit-margin/${selectedYear.value}`)
 
     if (response.ok) {
       const result = await response.json()

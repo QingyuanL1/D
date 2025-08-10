@@ -162,7 +162,7 @@ const totalProgress = computed(() => {
 const loadData = async (targetPeriod: string) => {
   console.log(`正在加载年度重大投资情况数据，期间: ${targetPeriod}`)
   try {
-    const response = await fetch(`http://127.0.0.1:3000/major-investment-analysis/${targetPeriod}`)
+    const response = await fetch(`http://47.111.95.19:3000/major-investment-analysis/${targetPeriod}`)
     if (!response.ok) {
       if (response.status !== 404) {
         throw new Error('加载数据失败')
@@ -210,7 +210,7 @@ const saveData = async () => {
     }
     
     // 保存到专用表
-    const response = await fetch('http://127.0.0.1:3000/major-investment-analysis', {
+    const response = await fetch('http://47.111.95.19:3000/major-investment-analysis', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'

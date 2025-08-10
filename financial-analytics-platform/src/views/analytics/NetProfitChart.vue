@@ -70,6 +70,23 @@
           </div>
           <div class="h-[500px]" ref="chartRef"></div>
         </div>
+
+        <!-- 表三：标准利润表净利润曲线 -->
+        <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
+          <div class="flex justify-between items-center mb-6">
+            <h3 class="text-lg font-semibold text-gray-900">{{ selectedYear }}年净利润月度趋势（标准利润表）</h3>
+            <div class="flex items-center space-x-4">
+              <div class="flex items-center">
+                <div class="w-4 h-4 bg-green-500 rounded mr-2"></div>
+                <span class="text-sm text-gray-600">月度净利润</span>
+              </div>
+              <div class="text-sm text-gray-600">
+                当月：{{ formatNumber(curveSummary.currentNetProfit || 0) }} 万元
+              </div>
+            </div>
+          </div>
+          <div class="h-[400px]" ref="curveChartRef"></div>
+        </div>
   
       </div>
     </div>
@@ -106,9 +123,11 @@
   
   // 图表引用
   const chartRef = ref<HTMLElement | null>(null)
+  const curveChartRef = ref<HTMLElement | null>(null)
   
   // 图表实例
   const chartInstance = ref<echarts.ECharts | null>(null)
+  const curveChartInstance = ref<echarts.ECharts | null>(null)
   
   // 数据
   const months = ref<string[]>([])
@@ -120,6 +139,15 @@
     previousYearSame: 0,
     growth_rate: 0,
     growth_amount: 0
+  })
+  
+  // 曲线图数据
+  const curveMonths = ref<string[]>([])
+  const curveData = ref<number[]>([])
+  const curveSummary = ref<any>({
+    currentNetProfit: 0,
+    monthlyGrowth: 0,
+    totalMonths: 0
   })
   // 工具函数
   const formatNumber = (num: number) => {
@@ -154,8 +182,12 @@
   const fetchData = async () => {
     try {
       loading.value = true
-      await fetchNetProfitData()
+      await Promise.all([
+        fetchNetProfitData(),
+        fetchNetProfitCurveData()
+      ])
       updateTrendChart()
+      updateCurveChart()
     } catch (error) {
       console.error('获取数据失败:', error)
     } finally {
@@ -181,7 +213,7 @@
   const fetchNetProfitData = async () => {
     try {
       console.log('Fetching net profit data for year:', selectedYear.value, 'company:', selectedCompany.value);
-      const response = await fetch(`http://127.0.0.1:3000/analytics/net-profit/${selectedYear.value}?company=${selectedCompany.value}`);
+      const response = await fetch(`http://47.111.95.19:3000/analytics/net-profit/${selectedYear.value}?company=${selectedCompany.value}`);
 
       if (response.ok) {
         const result = await response.json();
@@ -212,12 +244,66 @@
       resetDataToDefault()
     }
   }
+
+  // 获取净利润曲线数据（从标准利润表）
+  const fetchNetProfitCurveData = async () => {
+    try {
+      console.log('Fetching net profit curve data for year:', selectedYear.value);
+      const response = await fetch(`http://47.111.95.19:3000/analytics/net-profit-curve/${selectedYear.value}`);
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log('Net profit curve data response:', result);
+        
+        if (result.success && result.data && result.data.hasData) {
+          curveMonths.value = result.data.months || [];
+          curveData.value = result.data.monthlyData || [];
+          curveSummary.value = result.data.summary || {
+            currentNetProfit: 0,
+            monthlyGrowth: 0,
+            totalMonths: 0
+          };
+        } else {
+          // 没有数据时重置为默认值
+          curveMonths.value = [];
+          curveData.value = [];
+          curveSummary.value = {
+            currentNetProfit: 0,
+            monthlyGrowth: 0,
+            totalMonths: 0
+          };
+        }
+      } else {
+        // 请求失败时重置为默认值
+        curveMonths.value = [];
+        curveData.value = [];
+        curveSummary.value = {
+          currentNetProfit: 0,
+          monthlyGrowth: 0,
+          totalMonths: 0
+        };
+      }
+    } catch (error) {
+      console.error('获取净利润曲线数据失败:', error);
+      // 出错时重置为默认值
+      curveMonths.value = [];
+      curveData.value = [];
+      curveSummary.value = {
+        currentNetProfit: 0,
+        monthlyGrowth: 0,
+        totalMonths: 0
+      };
+    }
+  }
   
   
   // 初始化图表
   const initCharts = () => {
     if (chartRef.value) {
       chartInstance.value = echarts.init(chartRef.value)
+    }
+    if (curveChartRef.value) {
+      curveChartInstance.value = echarts.init(curveChartRef.value)
     }
   }
   
@@ -329,11 +415,116 @@
       console.error('更新趋势图表失败:', error);
     }
   }
+
+  // 更新净利润曲线图
+  const updateCurveChart = () => {
+    if (!curveChartInstance.value) return
+
+    try {
+      // 检查是否有数据
+      const hasData = curveMonths.value.length > 0 && curveData.value.length > 0
+      
+      console.log('Curve chart data:', { curveMonths: curveMonths.value, curveData: curveData.value, hasData });
+    
+      // 基本配置
+      const option = {
+        title: {
+          text: `${selectedYear.value}年净利润月度趋势`,
+          textStyle: {
+            fontSize: 16,
+            fontWeight: 'bold',
+            color: '#374151'
+          },
+          left: 'center',
+          top: 10
+        },
+        tooltip: {
+          trigger: 'axis',
+          formatter: function(params: any[]) {
+            if (!hasData) return '暂无数据'
+            let result = `${params[0].name}<br/>`
+            params.forEach(param => {
+              result += `${param.seriesName}: ${formatNumber(param.value)} 万元<br/>`
+            })
+            return result
+          }
+        },
+        legend: {
+          top: 40,
+          type: 'scroll'
+        },
+        grid: {
+          left: '8%',
+          right: '5%',
+          bottom: '15%',
+          top: '20%',
+          containLabel: true
+        },
+        xAxis: {
+          type: 'category',
+          data: hasData ? curveMonths.value : [],
+          axisLabel: {
+            fontSize: 12
+          }
+        },
+        yAxis: {
+          type: 'value',
+          name: '万元',
+          nameTextStyle: {
+            fontSize: 12
+          },
+          axisLabel: {
+            formatter: function(value: number) {
+              return formatNumber(value)
+            },
+            fontSize: 12
+          }
+        },
+        series: hasData ? [
+          {
+            name: '月度净利润',
+            type: 'line',
+            data: curveData.value,
+            smooth: true,
+            lineStyle: {
+              color: '#10B981',
+              width: 3
+            },
+            itemStyle: {
+              color: '#10B981'
+            },
+            areaStyle: {
+              color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                { offset: 0, color: '#10B98140' },
+                { offset: 1, color: '#10B98110' }
+              ])
+            }
+          }
+        ] : [],
+        graphic: hasData ? [] : [{
+          type: 'text',
+          left: 'center',
+          top: 'middle',
+          style: {
+            text: '暂无数据',
+            fontSize: 16,
+            fontWeight: 'bold',
+            fill: '#999'
+          }
+        }]
+      };
+      
+      curveChartInstance.value.setOption(option, true);
+    } catch (error) {
+      console.error('更新曲线图表失败:', error);
+    }
+  }
   
   
   // 处理窗口大小变化
   const handleResize = () => {
     chartInstance.value?.resize()
+    curveChartInstance.value?.resize()
   }
   
   onMounted(async () => {
@@ -346,6 +537,7 @@
   
   onUnmounted(() => {
     chartInstance.value?.dispose()
+    curveChartInstance.value?.dispose()
     window.removeEventListener('resize', handleResize)
   })
   </script>

@@ -311,7 +311,7 @@ const coverageRate = computed(() => {
 // 方法
 const fetchRoles = async () => {
   try {
-    const response = await fetch('http://127.0.0.1:3000/permissions/roles')
+    const response = await fetch('http://47.111.95.19:3000/permissions/roles')
     const result = await response.json()
     if (result.success) {
       roles.value = result.data
@@ -323,7 +323,7 @@ const fetchRoles = async () => {
 
 const fetchModules = async () => {
   try {
-    const response = await fetch('http://127.0.0.1:3000/permissions/modules')
+    const response = await fetch('http://47.111.95.19:3000/permissions/modules')
     const result = await response.json()
     if (result.success) {
       modules.value = result.data.modules
@@ -335,7 +335,7 @@ const fetchModules = async () => {
 
 const fetchRolePermissions = async (roleId: string) => {
   try {
-    const response = await fetch(`http://127.0.0.1:3000/permissions/role/${roleId}`)
+    const response = await fetch(`http://47.111.95.19:3000/permissions/role/${roleId}`)
     const result = await response.json()
     if (result.success) {
       const rolePermissions: RolePermissions = result.data
@@ -392,7 +392,7 @@ const savePermissions = async () => {
       permissionsToSave[module.id] = permissions[module.id] || null
     })
     
-    const response = await fetch(`http://127.0.0.1:3000/permissions/role/${selectedRoleId.value}`, {
+    const response = await fetch(`http://47.111.95.19:3000/permissions/role/${selectedRoleId.value}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json'

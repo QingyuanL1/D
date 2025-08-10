@@ -281,7 +281,7 @@ const loadAllMonthsData = async (currentPeriod: string) => {
         for (let month = 1; month < currentMonth; month++) {
             const monthPeriod = `${currentYear}-${month.toString().padStart(2, '0')}`
             try {
-                const response = await fetch(`http://127.0.0.1:3000/main-business-income/${monthPeriod}`)
+                const response = await fetch(`http://47.111.95.19:3000/main-business-income/${monthPeriod}`)
                 if (response.ok) {
                     const result = await response.json()
                     if (result.success && result.data) {
@@ -486,7 +486,7 @@ const loadData = async (targetPeriod: string) => {
     console.log('开始加载主营业务收入分解数据:', targetPeriod)
     try {
         // 先加载专用表数据
-        const response = await fetch(`http://127.0.0.1:3000/main-business-income/${targetPeriod}`)
+        const response = await fetch(`http://47.111.95.19:3000/main-business-income/${targetPeriod}`)
         let businessData = null
         if (response.ok) {
             const result = await response.json()
@@ -497,7 +497,7 @@ const loadData = async (targetPeriod: string) => {
         }
         
         // 再加载form_submissions表数据
-        const formResponse = await fetch(`http://127.0.0.1:3000/forms/submission/${MODULE_IDS.MAIN_BUSINESS_INCOME}/${targetPeriod}`)
+        const formResponse = await fetch(`http://47.111.95.19:3000/forms/submission/${MODULE_IDS.MAIN_BUSINESS_INCOME}/${targetPeriod}`)
         let formData = null
         if (formResponse.ok) {
             const formResult = await formResponse.json()
@@ -618,7 +618,7 @@ const handleSave = async () => {
     try {
         // 双重保存：专用表 + 系统表
         const saveBusinessData = async () => {
-            const response = await fetch('http://127.0.0.1:3000/main-business-income', {
+            const response = await fetch('http://47.111.95.19:3000/main-business-income', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

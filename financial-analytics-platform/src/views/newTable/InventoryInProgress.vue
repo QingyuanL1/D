@@ -235,7 +235,7 @@ const calculateCumulativeIncome = async (customerType: string, category: string)
             const periodStr = `${currentYear}-${month.toString().padStart(2, '0')}`;
             
             try {
-                const response = await fetch(`http://127.0.0.1:3000/inventory-in-progress/${periodStr}`);
+                const response = await fetch(`http://47.111.95.19:3000/inventory-in-progress/${periodStr}`);
                 if (response.ok) {
                     const result = await response.json();
                     if (result.success && result.data) {
@@ -311,7 +311,7 @@ const totalData = computed(() => {
 const loadData = async (targetPeriod: string) => {
     try {
         console.log(`正在加载在产情况数据，期间: ${targetPeriod}`)
-        const response = await fetch(`http://127.0.0.1:3000/inventory-in-progress/${targetPeriod}`)
+        const response = await fetch(`http://47.111.95.19:3000/inventory-in-progress/${targetPeriod}`)
         if (!response.ok) {
             if (response.status === 404) {
                 console.log('该期间暂无数据，保持年度预算但清空当月收入')
@@ -346,7 +346,7 @@ const loadData = async (targetPeriod: string) => {
 // 加载备注数据
 const loadRemarks = async (targetPeriod: string) => {
     try {
-        const response = await fetch(`http://127.0.0.1:3000/forms/submission/${MODULE_IDS.INVENTORY_IN_PROGRESS}/${targetPeriod}`)
+        const response = await fetch(`http://47.111.95.19:3000/forms/submission/${MODULE_IDS.INVENTORY_IN_PROGRESS}/${targetPeriod}`)
         if (response.ok) {
             const result = await response.json()
             if (result.data) {
@@ -385,7 +385,7 @@ const handleSave = async () => {
             project: projectData.value
         }
         
-        const response = await fetch('http://127.0.0.1:3000/inventory-in-progress', {
+        const response = await fetch('http://47.111.95.19:3000/inventory-in-progress', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

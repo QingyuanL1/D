@@ -168,7 +168,7 @@ const calculateProfitMargin = async (targetPeriod: string) => {
     try {
         console.log(`正在计算南华业务利润率，期间: ${targetPeriod}`)
 
-        const response = await fetch(`http://127.0.0.1:3000/nanhua-business-profit-margin-with-self-built/calculate/${targetPeriod}`)
+        const response = await fetch(`http://47.111.95.19:3000/nanhua-business-profit-margin-with-self-built/calculate/${targetPeriod}`)
 
         if (response.ok) {
             const result = await response.json()
@@ -206,7 +206,7 @@ const loadData = async (targetPeriod: string) => {
         await calculateProfitMargin(targetPeriod)
 
         // 然后尝试加载已保存的数据（如果有的话）
-        const response = await fetch(`http://127.0.0.1:3000/nanhua-business-profit-margin-with-self-built/${targetPeriod}`)
+        const response = await fetch(`http://47.111.95.19:3000/nanhua-business-profit-margin-with-self-built/${targetPeriod}`)
         let loadedData: any = null
 
         if (response.ok) {
@@ -249,7 +249,7 @@ const loadData = async (targetPeriod: string) => {
 // 加载已保存的备注和建议
 const loadRemarksAndSuggestions = async (targetPeriod: string) => {
     try {
-        const response = await fetch(`http://127.0.0.1:3000/forms/submission/${MODULE_IDS.NANHUA_BUSINESS_PROFIT_MARGIN_WITH_SELF_BUILT}/${targetPeriod}`)
+        const response = await fetch(`http://47.111.95.19:3000/forms/submission/${MODULE_IDS.NANHUA_BUSINESS_PROFIT_MARGIN_WITH_SELF_BUILT}/${targetPeriod}`)
         if (response.ok) {
             const result = await response.json()
             if (result.success && result.data) {
@@ -282,7 +282,7 @@ const handleSave = async () => {
         console.log('保存数据:', { period: period.value, data: profitMarginData.value })
 
         // 1. 保存到专用表
-        const response = await fetch('http://127.0.0.1:3000/nanhua-business-profit-margin-with-self-built', {
+        const response = await fetch('http://47.111.95.19:3000/nanhua-business-profit-margin-with-self-built', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

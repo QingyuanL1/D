@@ -32,7 +32,7 @@ const API_ENDPOINTS = [
     { name: '成本暂估入库和计提情况', url: '/cost-estimation/2025-06', expectedFields: ['equipment', 'component', 'project'] }
 ];
 
-const BASE_URL = 'http://127.0.0.1:3000';
+const BASE_URL = 'http://47.111.95.19:3000';
 
 // 测试结果统计
 let totalTests = 0;

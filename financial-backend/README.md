@@ -60,7 +60,7 @@ pm2 delete financial-backend
 
 ### 健康检查
 ```bash
-curl http://127.0.0.1:3000/health
+curl http://47.111.95.19:3000/health
 ```
 
 ## 🛠️ 环境要求
@@ -153,7 +153,7 @@ npm install
 2. 配置环境变量
 复制 `.env` 文件并修改数据库配置：
 ```
-DB_HOST=127.0.0.1
+DB_HOST=47.111.95.19
 DB_PORT=3306
 DB_USER=root
 DB_PASSWORD=12345678

@@ -433,7 +433,7 @@ const mergeData = (initialData: any, loadedData: any) => {
 const loadData = async (targetPeriod: string) => {
   try {
     console.log(`正在加载生产执行分析数据，期间: ${targetPeriod}`)
-    const response = await fetch(`http://127.0.0.1:3000/production-execution/${targetPeriod}`)
+    const response = await fetch(`http://47.111.95.19:3000/production-execution/${targetPeriod}`)
     if (!response.ok) {
       if (response.status !== 404) {
         throw new Error('加载数据失败')
@@ -514,7 +514,7 @@ const handleSave = async () => {
 
     // 第一步：保存到专用表
     console.log('步骤1：保存到专用表...')
-    const response = await fetch('http://127.0.0.1:3000/production-execution', {
+    const response = await fetch('http://47.111.95.19:3000/production-execution', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'

@@ -150,7 +150,7 @@ router.get('/calculate/:period', async (req, res) => {
         );
 
         // 2. 获取主营业务成本数据（使用API而不是直接查询数据库）
-        const costResponse = await fetch(`http://127.0.0.1:3000/main-business-cost/${period}`);
+        const costResponse = await fetch(`http://47.111.95.19:3000/main-business-cost/${period}`);
         let costData = null;
 
         if (costResponse.ok) {

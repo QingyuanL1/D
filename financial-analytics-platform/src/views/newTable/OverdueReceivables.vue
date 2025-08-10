@@ -351,7 +351,7 @@ const loadHistoricalData = async (currentPeriod: string) => {
 
         for (const period of previousPeriods) {
             try {
-                const response = await fetch(`http://127.0.0.1:3000/overdue-receivables/${period}`)
+                const response = await fetch(`http://47.111.95.19:3000/overdue-receivables/${period}`)
 
                 if (response.ok) {
                     const result = await response.json()
@@ -440,7 +440,7 @@ const loadData = async (targetPeriod: string) => {
         // 首先加载历史数据
         await loadHistoricalData(targetPeriod)
 
-        const response = await fetch(`http://127.0.0.1:3000/overdue-receivables/${targetPeriod}`)
+        const response = await fetch(`http://47.111.95.19:3000/overdue-receivables/${targetPeriod}`)
         let loadedData: any[] = []
 
         if (response.ok) {
@@ -521,7 +521,7 @@ const handleSave = async () => {
         console.log('保存数据:', saveData)
 
         // 1. 保存到 overdue_receivables 表
-        const response = await fetch('http://127.0.0.1:3000/overdue-receivables', {
+        const response = await fetch('http://47.111.95.19:3000/overdue-receivables', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

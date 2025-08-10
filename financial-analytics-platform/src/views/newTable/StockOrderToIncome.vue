@@ -214,7 +214,7 @@ const loadAllMonthsData = async (currentPeriod: string) => {
         for (let month = 1; month < currentMonth; month++) {
             const monthPeriod = `${currentYear}-${month.toString().padStart(2, '0')}`
             try {
-                const response = await fetch(`http://127.0.0.1:3000/stock-order-to-income/${monthPeriod}`)
+                const response = await fetch(`http://47.111.95.19:3000/stock-order-to-income/${monthPeriod}`)
                 if (response.ok) {
                     const result = await response.json()
                     if (result.success && result.data) {
@@ -367,7 +367,7 @@ const loadData = async (targetPeriod: string) => {
     try {
         console.log(`正在加载存量订单转收入数据，期间: ${targetPeriod}`)
         
-        const response = await fetch(`http://127.0.0.1:3000/stock-order-to-income/${targetPeriod}`)
+        const response = await fetch(`http://47.111.95.19:3000/stock-order-to-income/${targetPeriod}`)
         if (!response.ok) {
             if (response.status === 404) {
                 console.log('该期间暂无数据，保持年度计划但清空当月转收入')
@@ -443,7 +443,7 @@ const handleSave = async () => {
 
         // 第一步：保存到专用表
         console.log('步骤1：保存到专用表...')
-        const response = await fetch('http://127.0.0.1:3000/stock-order-to-income', {
+        const response = await fetch('http://47.111.95.19:3000/stock-order-to-income', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

@@ -13,8 +13,8 @@ BLUE='\033[0;34m'
 PURPLE='\033[0;35m'
 NC='\033[0m'
 
-BACKEND_DIR="/root/D/financial-backend"
-FRONTEND_DIR="/root/D/financial-analytics-platform"
+BACKEND_DIR="/root/D/D/financial-backend"
+FRONTEND_DIR="/root/D/D/financial-analytics-platform"
 DIST_DIR="$FRONTEND_DIR/dist"
 BACKUP_DIR="/root/D/backup"
 
@@ -43,27 +43,59 @@ check_dependencies() {
     log "检查系统依赖..."
     
     local missing_deps=()
+    local need_install=false
     
     if ! command -v npm &> /dev/null; then
         missing_deps+=("npm")
+        need_install=true
     fi
     
     if ! command -v nginx &> /dev/null; then
         missing_deps+=("nginx")
+        need_install=true
     fi
     
     if ! command -v pm2 &> /dev/null; then
         missing_deps+=("pm2")
+        need_install=true
     fi
     
     if ! command -v curl &> /dev/null; then
         missing_deps+=("curl")
+        need_install=true
     fi
     
-    if [ ${#missing_deps[@]} -ne 0 ]; then
-        error "缺少依赖: ${missing_deps[*]}"
-        log "请先安装缺少的依赖"
-        exit 1
+    if [ "$need_install" = true ]; then
+        warning "缺少依赖: ${missing_deps[*]}"
+        log "正在自动安装缺少的依赖..."
+        
+        apt update
+        
+        for dep in "${missing_deps[@]}"; do
+            case $dep in
+                "npm")
+                    log "安装 Node.js 和 npm..."
+                    curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
+                    apt install -y nodejs
+                    ;;
+                "nginx")
+                    log "安装 nginx..."
+                    apt install -y nginx
+                    systemctl enable nginx
+                    systemctl start nginx
+                    ;;
+                "pm2")
+                    log "安装 pm2..."
+                    npm install -g pm2
+                    ;;
+                "curl")
+                    log "安装 curl..."
+                    apt install -y curl
+                    ;;
+            esac
+        done
+        
+        success "依赖安装完成"
     fi
     
     success "依赖检查通过"
@@ -155,11 +187,11 @@ EOF
     local max_retries=10
     
     while [ $retry_count -lt $max_retries ]; do
-        HEALTH_CHECK=$(curl -s http://127.0.0.1:3000/health || echo "failed")
+        HEALTH_CHECK=$(curl -s http://47.111.95.19:3000/health || echo "failed")
         if [[ $HEALTH_CHECK == *"ok"* ]]; then
             success "后端服务启动成功！"
-            success "   - 服务地址: http://127.0.0.1:3000"
-            success "   - 健康检查: http://127.0.0.1:3000/health"
+            success "   - 服务地址: http://47.111.95.19:3000"
+            success "   - 健康检查: http://47.111.95.19:3000/health"
             return 0
         fi
         
@@ -188,6 +220,16 @@ deploy_frontend() {
     fi
     
     backup_current
+    
+    log "安装前端依赖..."
+    npm install --ignore-scripts
+    
+    if [ $? -ne 0 ]; then
+        error "前端依赖安装失败"
+        return 1
+    fi
+    
+    success "前端依赖安装完成"
     
     log "开始构建前端项目..."
     
@@ -232,7 +274,7 @@ deploy_frontend() {
     log "验证前端部署..."
     sleep 2
     
-    if curl -f -s http://127.0.0.1 > /dev/null; then
+    if curl -f -s http://47.111.95.19 > /dev/null; then
         success "前端部署验证成功 - 网站可访问"
         return 0
     else
@@ -265,9 +307,9 @@ show_deployment_info() {
     echo "备份目录: $BACKUP_DIR"
     echo ""
     echo "访问地址:"
-    echo "   前端: http://127.0.0.1"
-    echo "   后端API: http://127.0.0.1:3000"
-    echo "   健康检查: http://127.0.0.1:3000/health"
+    echo "   前端: http://47.111.95.19"
+    echo "   后端API: http://47.111.95.19:3000"
+    echo "   健康检查: http://47.111.95.19:3000/health"
     echo ""
     echo "常用管理命令:"
     echo "   查看后端状态: pm2 status"

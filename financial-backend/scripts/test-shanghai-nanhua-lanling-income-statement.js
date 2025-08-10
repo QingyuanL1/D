@@ -88,7 +88,7 @@ async function testShanghaiNanhuaLanlingIncomeStatement() {
 
         // 调用计算API
         const fetch = (await import('node-fetch')).default;
-        const response = await fetch('http://127.0.0.1:3000/shanghai-nanhua-lanling-income-statement/calculate-cumulative', {
+        const response = await fetch('http://47.111.95.19:3000/shanghai-nanhua-lanling-income-statement/calculate-cumulative', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -136,7 +136,7 @@ async function testShanghaiNanhuaLanlingIncomeStatement() {
 
         // 5. 测试自动计算保存
         console.log('\n5. 测试自动计算保存功能...');
-        const saveResponse = await fetch('http://127.0.0.1:3000/shanghai-nanhua-lanling-income-statement', {
+        const saveResponse = await fetch('http://47.111.95.19:3000/shanghai-nanhua-lanling-income-statement', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

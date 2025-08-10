@@ -185,7 +185,7 @@ const fetchData = async () => {
 
 const fetchNewOrdersData = async () => {
   try {
-    const response = await fetch(`http://127.0.0.1:3000/analytics/tuoyuan-new-orders/${selectedYear.value}`)
+    const response = await fetch(`http://47.111.95.19:3000/analytics/tuoyuan-new-orders/${selectedYear.value}`)
     if (response.ok) {
       const result = await response.json()
       if (result.success && result.data) {
@@ -213,7 +213,7 @@ const resetDataToDefault = () => {
 
 const fetchPieData = async () => {
   try {
-    const response = await fetch(`http://127.0.0.1:3000/analytics/tuoyuan-new-orders-breakdown/${selectedYear.value}`)
+    const response = await fetch(`http://47.111.95.19:3000/analytics/tuoyuan-new-orders-breakdown/${selectedYear.value}`)
     if (response.ok) {
       const result = await response.json()
       if (result.success && result.data) {

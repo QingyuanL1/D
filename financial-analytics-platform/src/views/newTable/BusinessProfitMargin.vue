@@ -373,7 +373,7 @@ const calculateProfitMargin = async (targetPeriod: string) => {
     try {
         console.log(`正在计算业务利润率，期间: ${targetPeriod}`)
 
-        const response = await fetch(`http://127.0.0.1:3000/business-profit-margin/calculate/${targetPeriod}`)
+        const response = await fetch(`http://47.111.95.19:3000/business-profit-margin/calculate/${targetPeriod}`)
 
         if (response.ok) {
             const result = await response.json()
@@ -417,7 +417,7 @@ const loadData = async (targetPeriod: string) => {
         await calculateProfitMargin(targetPeriod)
 
         // 然后尝试加载已保存的数据（如果有的话）
-        const response = await fetch(`http://127.0.0.1:3000/business-profit-margin/${targetPeriod}`)
+        const response = await fetch(`http://47.111.95.19:3000/business-profit-margin/${targetPeriod}`)
         let loadedData: any = null
 
         if (response.ok) {
@@ -473,7 +473,7 @@ const handleSave = async () => {
         console.log('保存数据:', { period: period.value, data: data })
 
         // 1. 保存到专用表
-        const response = await fetch('http://127.0.0.1:3000/business-profit-margin', {
+        const response = await fetch('http://47.111.95.19:3000/business-profit-margin', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

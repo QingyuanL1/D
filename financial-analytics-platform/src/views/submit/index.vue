@@ -326,7 +326,7 @@ const fetchUserModules = async () => {
     const selectedCompany = localStorage.getItem('selectedCompany') || ''
     console.log('🔍 [SUBMIT DEBUG] 用户ID:', userId, '选择的公司:', selectedCompany)
     
-    const response = await fetch(`http://127.0.0.1:3000/permissions/user/${userId}`)
+    const response = await fetch(`http://47.111.95.19:3000/permissions/user/${userId}`)
     console.log('🔍 [SUBMIT DEBUG] API响应状态:', response.status)
     
     if (!response.ok) {
@@ -376,7 +376,7 @@ const fetchSubmissions = async () => {
   try {
     const userId = userStore.userInfo?.id || 1
     // 获取用户可访问的模块的提交状态
-    const response = await fetch(`http://127.0.0.1:3000/forms/status/${selectedPeriod.value}?userId=${userId}`)
+    const response = await fetch(`http://47.111.95.19:3000/forms/status/${selectedPeriod.value}?userId=${userId}`)
     
     if (!response.ok) {
       throw new Error('获取提交记录失败')
@@ -399,7 +399,7 @@ const fetchSubmissions = async () => {
     console.error('获取提交记录失败:', error)
     // 如果新API失败，回退到简单的方式
     try {
-      const fallbackResponse = await fetch(`http://127.0.0.1:3000/permissions/user/${userStore.userInfo?.id || 1}/submissions?period=${selectedPeriod.value}`)
+      const fallbackResponse = await fetch(`http://47.111.95.19:3000/permissions/user/${userStore.userInfo?.id || 1}/submissions?period=${selectedPeriod.value}`)
       if (fallbackResponse.ok) {
         const fallbackResult = await fallbackResponse.json()
         if (fallbackResult.success) {
@@ -416,7 +416,7 @@ const fetchSubmissions = async () => {
 const fetchPendingForms = async () => {
   try {
     const userId = userStore.userInfo?.id || 1
-    const response = await fetch(`http://127.0.0.1:3000/permissions/user/${userId}/pending-forms?period=${selectedPeriod.value}`)
+    const response = await fetch(`http://47.111.95.19:3000/permissions/user/${userId}/pending-forms?period=${selectedPeriod.value}`)
     
     if (!response.ok) {
       throw new Error('获取待提交表单失败')

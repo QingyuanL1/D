@@ -410,7 +410,7 @@ const calculateCumulativeCosts = async (targetPeriod: string) => {
             const periodStr = `${year}-${monthStr}`
             console.log(`获取期间 ${periodStr} 的数据`)
             promises.push(
-                fetch(`http://127.0.0.1:3000/main-business-cost/${periodStr}`)
+                fetch(`http://47.111.95.19:3000/main-business-cost/${periodStr}`)
                     .then(response => response.ok ? response.json() : { success: false })
                     .catch(() => ({ success: false }))
             )
@@ -513,7 +513,7 @@ const calculateCumulativeCosts = async (targetPeriod: string) => {
 const loadData = async (targetPeriod: string) => {
     try {
         console.log(`正在加载主营业务成本数据，期间: ${targetPeriod}`)
-        const response = await fetch(`http://127.0.0.1:3000/main-business-cost/${targetPeriod}`)
+        const response = await fetch(`http://47.111.95.19:3000/main-business-cost/${targetPeriod}`)
         if (!response.ok) {
             if (response.status === 404) {
                 console.log('未找到数据，使用初始模板')
@@ -623,7 +623,7 @@ const handleSave = async () => {
 
         // 第一步：保存到专用表
         console.log('步骤1：保存到专用表...')
-        const response = await fetch('http://127.0.0.1:3000/main-business-cost', {
+        const response = await fetch('http://47.111.95.19:3000/main-business-cost', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

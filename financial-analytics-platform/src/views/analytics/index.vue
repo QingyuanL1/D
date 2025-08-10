@@ -692,7 +692,7 @@ const formatNumber = (num: number) => {
 // 获取营业收入数据
 const fetchBusinessIncomeData = async () => {
   try {
-    const response = await fetch(`http://127.0.0.1:3000/analytics/business-income/${currentYear.value}`)
+    const response = await fetch(`http://47.111.95.19:3000/analytics/business-income/${currentYear.value}`)
     if (response.ok) {
       const result = await response.json()
       if (result.success && result.data) {
@@ -748,7 +748,7 @@ const resetRevenueData = () => {
 const fetchNetProfitData = async () => {
   try {
     console.log('Fetching net profit data for year:', currentYear.value)
-    const response = await fetch(`http://127.0.0.1:3000/analytics/net-profit/${currentYear.value}`)
+    const response = await fetch(`http://47.111.95.19:3000/analytics/net-profit/${currentYear.value}`)
     if (response.ok) {
       const result = await response.json()
       console.log('Net profit data response:', result)
@@ -784,7 +784,7 @@ const resetNetProfitData = () => {
 // 获取ROE数据
 const fetchROEData = async () => {
   try {
-    const response = await fetch(`http://127.0.0.1:3000/analytics/roe/${currentYear.value}`)
+    const response = await fetch(`http://47.111.95.19:3000/analytics/roe/${currentYear.value}`)
     if (response.ok) {
       const result = await response.json()
       if (result.success && result.data) {
@@ -820,7 +820,7 @@ const resetROEData = () => {
 // 获取边际贡献率数据
 const fetchContributionRateData = async () => {
   try {
-    const response = await fetch(`http://127.0.0.1:3000/analytics/contribution-rate/${currentYear.value}`)
+    const response = await fetch(`http://47.111.95.19:3000/analytics/contribution-rate/${currentYear.value}`)
     if (response.ok) {
       const result = await response.json()
       if (result.success && result.data && result.data.hasData !== false) {
@@ -848,7 +848,7 @@ const resetContributionRateData = () => {
 // 获取毛利率数据
 const fetchProfitMarginData = async () => {
   try {
-    const response = await fetch(`http://127.0.0.1:3000/analytics/profit-margin/${currentYear.value}`)
+    const response = await fetch(`http://47.111.95.19:3000/analytics/profit-margin/${currentYear.value}`)
     if (response.ok) {
       const result = await response.json()
       if (result.success && result.data && result.data.hasData !== false) {
@@ -876,7 +876,7 @@ const resetProfitMarginData = () => {
 // 获取净利率数据
 const fetchNetProfitMarginData = async () => {
   try {
-    const response = await fetch(`http://127.0.0.1:3000/analytics/net-profit-margin/${currentYear.value}`)
+    const response = await fetch(`http://47.111.95.19:3000/analytics/net-profit-margin/${currentYear.value}`)
     if (response.ok) {
       const result = await response.json()
       if (result.success && result.data && result.data.hasData !== false) {
@@ -905,7 +905,7 @@ const resetNetProfitMarginData = () => {
 // 获取资产负债率数据
 const fetchAssetLiabilityData = async () => {
   try {
-    const response = await fetch(`http://127.0.0.1:3000/analytics/asset-liability-ratio/${currentYear.value}`)
+    const response = await fetch(`http://47.111.95.19:3000/analytics/asset-liability-ratio/${currentYear.value}`)
     if (response.ok) {
       const result = await response.json()
       if (result.success && result.data && result.data.hasData !== false) {
@@ -935,7 +935,7 @@ const resetAssetLiabilityData = () => {
 const fetchInventoryData = async () => {
   try {
     console.log('Fetching inventory data for year:', currentYear.value)
-    const response = await fetch(`http://127.0.0.1:3000/analytics/inventory-metrics/${currentYear.value}`)
+    const response = await fetch(`http://47.111.95.19:3000/analytics/inventory-metrics/${currentYear.value}`)
     if (response.ok) {
       const result = await response.json()
       console.log('Inventory data response:', result)
@@ -998,7 +998,7 @@ const refreshMetricsData = async () => {
     const promises = metricsDetails.value.map(async (metric) => {
       try {
         const apiUrl = metric.api.replace(':year', currentYear.value)
-        const response = await fetch(`http://127.0.0.1:3000${apiUrl}`)
+        const response = await fetch(`http://47.111.95.19:3000${apiUrl}`)
         if (response.ok) {
           const result = await response.json()
           if (result.success && result.data) {

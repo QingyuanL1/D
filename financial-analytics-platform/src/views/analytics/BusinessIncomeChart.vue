@@ -199,7 +199,7 @@ const resetDataToDefault = () => {
 // 获取营业收入数据
 const fetchBusinessIncomeData = async () => {
   try {
-    const response = await fetch(`http://127.0.0.1:3000/analytics/business-income/${selectedYear.value}`)
+    const response = await fetch(`http://47.111.95.19:3000/analytics/business-income/${selectedYear.value}`)
     if (response.ok) {
       const result = await response.json()
       if (result.success && result.data) {
@@ -247,7 +247,7 @@ const fetchBusinessIncomeData = async () => {
 // 获取当月营业收入数据
 const fetchMonthlyCurrentData = async () => {
   try {
-    const response = await fetch(`http://127.0.0.1:3000/analytics/business-income-monthly/${selectedYear.value}`)
+    const response = await fetch(`http://47.111.95.19:3000/analytics/business-income-monthly/${selectedYear.value}`)
     if (response.ok) {
       const result = await response.json()
       if (result.success && result.data) {

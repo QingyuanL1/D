@@ -438,7 +438,7 @@ const loadAllMonthsData = async (currentPeriod: string) => {
         for (let i = 1; i <= currentMonth; i++) {
             const monthPeriod = `${year}-${i.toString().padStart(2, '0')}`
             try {
-                const response = await fetch(`http://127.0.0.1:3000/non-main-business-net-profit/${monthPeriod}`)
+                const response = await fetch(`http://47.111.95.19:3000/non-main-business-net-profit/${monthPeriod}`)
                 if (response.ok) {
                     const result = await response.json()
                     if (result.data && Array.isArray(result.data)) {
@@ -572,7 +572,7 @@ const calculateCumulativeValues = async () => {
             const monthPeriod = `${year}-${month.toString().padStart(2, '0')}`
             
             try {
-                const response = await fetch(`http://127.0.0.1:3000/net-profit-structure/${monthPeriod}`)
+                const response = await fetch(`http://47.111.95.19:3000/net-profit-structure/${monthPeriod}`)
                 if (response.ok) {
                     const result = await response.json()
                     if (result.success && result.data) {
@@ -634,7 +634,7 @@ const loadData = async (targetPeriod: string) => {
         console.log(`正在加载净利润结构数据，期间: ${targetPeriod}`)
 
         // 加载净利润结构数据
-        const response = await fetch(`http://127.0.0.1:3000/net-profit-structure/${targetPeriod}`)
+        const response = await fetch(`http://47.111.95.19:3000/net-profit-structure/${targetPeriod}`)
         let loadedData: any = null
 
         if (response.ok) {
@@ -692,7 +692,7 @@ const loadData = async (targetPeriod: string) => {
 // 获取月度数据
 const fetchMonthlyData = async (monthPeriod: string) => {
     try {
-        const response = await fetch(`http://127.0.0.1:3000/main-business-net-profit/monthly-data/${monthPeriod}`)
+        const response = await fetch(`http://47.111.95.19:3000/main-business-net-profit/monthly-data/${monthPeriod}`)
 
         if (response.ok) {
             const result = await response.json()
@@ -724,7 +724,7 @@ const loadMainBusinessData = async (targetPeriod: string) => {
     try {
         console.log(`正在加载主营净利润贡献数据，期间: ${targetPeriod}`)
 
-        const response = await fetch(`http://127.0.0.1:3000/main-business-net-profit/${targetPeriod}`)
+        const response = await fetch(`http://47.111.95.19:3000/main-business-net-profit/${targetPeriod}`)
         let loadedData: any[] = []
 
         if (response.ok) {
@@ -819,7 +819,7 @@ const loadNonMainBusinessData = async (targetPeriod: string) => {
     try {
         console.log(`正在加载非主营业务净利润数据，期间: ${targetPeriod}`)
 
-        const response = await fetch(`http://127.0.0.1:3000/non-main-business-net-profit/${targetPeriod}`)
+        const response = await fetch(`http://47.111.95.19:3000/non-main-business-net-profit/${targetPeriod}`)
         if (!response.ok) {
             if (response.status === 404) {
                 console.log('该期间暂无数据，保持年度计划但清空当期值')
@@ -896,7 +896,7 @@ const handleSave = async () => {
 
         console.log('保存净利润结构数据:', saveData)
 
-        const response = await fetch('http://127.0.0.1:3000/net-profit-structure', {
+        const response = await fetch('http://47.111.95.19:3000/net-profit-structure', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -943,7 +943,7 @@ const saveMainBusinessData = async () => {
         console.log('保存主营业务数据:', saveData)
 
         // 1. 保存到 main_business_net_profit 表
-        const response = await fetch('http://127.0.0.1:3000/main-business-net-profit', {
+        const response = await fetch('http://47.111.95.19:3000/main-business-net-profit', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -984,7 +984,7 @@ const saveNonMainBusinessData = async () => {
         console.log('保存非主营业务数据:', saveData)
 
         // 1. 保存到 non_main_business_net_profit 表
-        const response = await fetch('http://127.0.0.1:3000/non-main-business-net-profit', {
+        const response = await fetch('http://47.111.95.19:3000/non-main-business-net-profit', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

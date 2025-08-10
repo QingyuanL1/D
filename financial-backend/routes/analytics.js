@@ -811,10 +811,15 @@ router.get('/net-profit/:year', async (req, res) => {
               JSON.parse(mainRow.data) : mainRow.data;
             
             // 汇总所有actual字段
-            mainBusinessTotal = mainData.reduce((sum, item) => {
-              const actual = parseFloat(String(item.actual || 0).replace(/,/g, ''));
-              return sum + actual;
-            }, 0);
+            if (Array.isArray(mainData)) {
+              mainBusinessTotal = mainData.reduce((sum, item) => {
+                const actual = parseFloat(String(item.actual || 0).replace(/,/g, ''));
+                return sum + actual;
+              }, 0);
+            } else {
+              console.log(`主营业务数据不是数组格式: ${period}`, mainData);
+              mainBusinessTotal = 0;
+            }
           } catch (error) {
             console.error(`解析主营业务数据失败: ${period}`, error);
           }
@@ -829,10 +834,15 @@ router.get('/net-profit/:year', async (req, res) => {
               JSON.parse(nonMainRow.data) : nonMainRow.data;
             
             // 汇总所有accumulated字段
-            nonMainBusinessTotal = nonMainData.reduce((sum, item) => {
-              const accumulated = parseFloat(String(item.accumulated || 0).replace(/,/g, ''));
-              return sum + accumulated;
-            }, 0);
+            if (Array.isArray(nonMainData)) {
+              nonMainBusinessTotal = nonMainData.reduce((sum, item) => {
+                const accumulated = parseFloat(String(item.accumulated || 0).replace(/,/g, ''));
+                return sum + accumulated;
+              }, 0);
+            } else {
+              console.log(`非主营业务数据不是数组格式: ${period}`, nonMainData);
+              nonMainBusinessTotal = 0;
+            }
           } catch (error) {
             console.error(`解析非主营业务数据失败: ${period}`, error);
           }
@@ -859,7 +869,7 @@ router.get('/net-profit/:year', async (req, res) => {
           summary: {
             yearlyPlan: monthlyData.yearlyPlan,
             currentTotal: latestCumulative,
-            completion_rate,
+            completion_rate: completionRate,
             previousYearSame: 0, // 暂无去年数据
             growth_amount: 0,
             growth_rate: 0
@@ -1028,7 +1038,7 @@ router.get('/net-profit-breakdown/:year', async (req, res) => {
     const { year } = req.params;
     const currentMonth = new Date().getMonth() + 1;
     const currentMonthStr = currentMonth < 10 ? `0${currentMonth}` : `${currentMonth}`;
-    const period = `${year}-${currentMonthStr}`;
+    const period = `${year}-${currentMonthStr}-01`;
     
     // 查询利润表中的最新数据
     const [rows] = await pool.execute(
@@ -1039,8 +1049,8 @@ router.get('/net-profit-breakdown/:year', async (req, res) => {
     if (rows.length === 0) {
       // 如果当前期间没有数据，尝试获取最近的一期数据
       const [latestRows] = await pool.execute(
-        'SELECT data FROM income_statement WHERE period LIKE ? ORDER BY period DESC LIMIT 1',
-        [`${year}%`]
+        'SELECT data FROM income_statement WHERE YEAR(period) = ? ORDER BY period DESC LIMIT 1',
+        [year]
       );
       
       if (latestRows.length === 0) {
@@ -1075,23 +1085,23 @@ router.get('/net-profit-breakdown/:year', async (req, res) => {
     const components = [
       { 
         name: '营业利润', 
-        value: rawData.operating_profit && rawData.operating_profit.current_amount ? 
-          Number(rawData.operating_profit.current_amount) : 0 
+        value: rawData.operating_profit && rawData.operating_profit.cumulative_amount ? 
+          Number(rawData.operating_profit.cumulative_amount) : 0 
       },
       { 
         name: '营业外收入', 
-        value: rawData.non_operating_income && rawData.non_operating_income.current_amount ? 
-          Number(rawData.non_operating_income.current_amount) : 0 
+        value: rawData.non_operating_income && rawData.non_operating_income.cumulative_amount ? 
+          Number(rawData.non_operating_income.cumulative_amount) : 0 
       },
       { 
         name: '营业外支出', 
-        value: rawData.non_operating_expenses && rawData.non_operating_expenses.current_amount ? 
-          -Math.abs(Number(rawData.non_operating_expenses.current_amount)) : 0 
+        value: rawData.non_operating_expenses && rawData.non_operating_expenses.cumulative_amount ? 
+          -Math.abs(Number(rawData.non_operating_expenses.cumulative_amount)) : 0 
       },
       { 
         name: '所得税费用', 
-        value: rawData.income_tax_expense && rawData.income_tax_expense.current_amount ? 
-          -Math.abs(Number(rawData.income_tax_expense.current_amount)) : 0 
+        value: rawData.income_tax_expense && rawData.income_tax_expense.cumulative_amount ? 
+          -Math.abs(Number(rawData.income_tax_expense.cumulative_amount)) : 0 
       }
     ];
     
@@ -1277,25 +1287,80 @@ router.get('/completion-rates/:year', async (req, res) => {
       completionRates.businessIncome = 0;
     }
 
-    // 4. 获取净利润完成率
+    // 4. 获取净利润完成率（使用混合计算方式）
     try {
-      const [netProfitRows] = await pool.execute(`
-        SELECT data
-        FROM income_statement
-        WHERE YEAR(period) = ?
-        ORDER BY period DESC
-        LIMIT 1
-      `, [year]);
+      // 获取主营业务净利润数据
+      const [mainBusinessRows] = await pool.execute(`
+        SELECT period, data
+        FROM main_business_net_profit
+        WHERE period LIKE ?
+        ORDER BY period ASC
+      `, [`${year}-%`]);
 
-      if (netProfitRows.length > 0) {
-        const data = typeof netProfitRows[0].data === 'string' ?
-          JSON.parse(netProfitRows[0].data) : netProfitRows[0].data;
+      // 获取非主营业务净利润数据
+      const [nonMainBusinessRows] = await pool.execute(`
+        SELECT period, data
+        FROM non_main_business_net_profit
+        WHERE period LIKE ?
+        ORDER BY period ASC
+      `, [`${year}-%`]);
 
-        const currentTotal = data.net_profit && data.net_profit.current_amount ?
-          Number(data.net_profit.current_amount) : 0;
-        const yearlyPlan = 4000; // 默认年度计划
+      // 获取所有有数据的月份
+      const allPeriods = new Set();
+      mainBusinessRows.forEach(row => allPeriods.add(row.period));
+      nonMainBusinessRows.forEach(row => allPeriods.add(row.period));
+      
+      const sortedPeriods = Array.from(allPeriods).sort();
 
-        completionRates.netProfit = yearlyPlan > 0 ? Math.round((currentTotal / yearlyPlan) * 100) : 0;
+      if (sortedPeriods.length > 0) {
+        let latestCumulative = 0;
+
+        // 计算最新期间的净利润总计
+        const latestPeriod = sortedPeriods[sortedPeriods.length - 1];
+        
+        // 计算主营业务净利润累计
+        let mainBusinessTotal = 0;
+        const mainRow = mainBusinessRows.find(row => row.period === latestPeriod);
+        if (mainRow) {
+          try {
+            const mainData = typeof mainRow.data === 'string' ? 
+              JSON.parse(mainRow.data) : mainRow.data;
+            
+            if (Array.isArray(mainData)) {
+              mainBusinessTotal = mainData.reduce((sum, item) => {
+                const actual = parseFloat(String(item.actual || 0).replace(/,/g, ''));
+                return sum + actual;
+              }, 0);
+            }
+          } catch (error) {
+            console.error(`解析主营业务数据失败: ${latestPeriod}`, error);
+          }
+        }
+
+        // 计算非主营业务净利润累计
+        let nonMainBusinessTotal = 0;
+        const nonMainRow = nonMainBusinessRows.find(row => row.period === latestPeriod);
+        if (nonMainRow) {
+          try {
+            const nonMainData = typeof nonMainRow.data === 'string' ? 
+              JSON.parse(nonMainRow.data) : nonMainRow.data;
+            
+            if (Array.isArray(nonMainData)) {
+              nonMainBusinessTotal = nonMainData.reduce((sum, item) => {
+                const accumulated = parseFloat(String(item.accumulated || 0).replace(/,/g, ''));
+                return sum + accumulated;
+              }, 0);
+            }
+          } catch (error) {
+            console.error(`解析非主营业务数据失败: ${latestPeriod}`, error);
+          }
+        }
+
+        // 计算净利润总计
+        latestCumulative = mainBusinessTotal + nonMainBusinessTotal;
+        
+        const yearlyPlan = 4000; // 电气公司年度计划
+        completionRates.netProfit = yearlyPlan > 0 ? Math.round((latestCumulative / yearlyPlan) * 100) : 0;
       } else {
         completionRates.netProfit = 0;
       }
@@ -1815,7 +1880,7 @@ router.get('/nanhua-profit-margin/:year', async (req, res) => {
       
       try {
         // 调用计算API获取该月数据
-        const response = await fetch(`http://127.0.0.1:3000/nanhua-business-profit-margin-with-self-built/calculate/${period}`);
+        const response = await fetch(`http://47.111.95.19:3000/nanhua-business-profit-margin-with-self-built/calculate/${period}`);
         
         if (response.ok) {
           const result = await response.json();
@@ -1986,9 +2051,49 @@ router.get('/roe/:year', async (req, res) => {
             JSON.parse(balanceData.data) : balanceData.data;
 
           const netProfit = incomeJson.total_profit && incomeJson.total_profit.current_amount ? 
-            Number(incomeJson.total_profit.current_amount) : 0;
-          const shareholderEquity = balanceJson.equityTotal && balanceJson.equityTotal.endBalance ? 
-            Number(balanceJson.equityTotal.endBalance) : 0;
+            Number(incomeJson.total_profit.current_amount) : 
+            (incomeJson.net_profit && incomeJson.net_profit.current_amount ? 
+              Number(incomeJson.net_profit.current_amount) : 0);
+          
+          // 尝试多种方式获取股东权益
+          let shareholderEquity = 0;
+          
+          // 方式1：直接从equityTotal获取
+          if (balanceJson.equityTotal && balanceJson.equityTotal.endBalance) {
+            shareholderEquity = Number(balanceJson.equityTotal.endBalance);
+          }
+          
+          // 方式2：如果equityTotal为0，尝试从equity数组中找到股东权益合计
+          if (shareholderEquity === 0 && balanceJson.equity && Array.isArray(balanceJson.equity)) {
+            const equityTotal = balanceJson.equity.find(item => 
+              item.name && (
+                item.name.includes('股东权益') || 
+                item.name.includes('所有者权益') ||
+                item.total === true
+              )
+            );
+            if (equityTotal && equityTotal.endBalance) {
+              shareholderEquity = Number(equityTotal.endBalance);
+            }
+          }
+          
+          // 方式3：如果还是0，计算所有权益项目的总和（排除少数股东权益）
+          if (shareholderEquity === 0 && balanceJson.equity && Array.isArray(balanceJson.equity)) {
+            let totalEquity = 0;
+            balanceJson.equity.forEach(item => {
+              if (item.endBalance && 
+                  !item.special && // 排除少数股东权益
+                  !item.highlight && // 排除特殊标记项
+                  !item.name.includes('少数股东') &&
+                  !item.name.includes('#') &&
+                  !item.name.includes('△')) {
+                totalEquity += Number(item.endBalance) || 0;
+              }
+            });
+            shareholderEquity = totalEquity;
+          }
+          
+          console.log(`月份${month}: 净利润=${netProfit}, 股东权益=${shareholderEquity}`);
 
           if (shareholderEquity > 0 && netProfit !== 0) {
             monthROE = parseFloat(((netProfit / shareholderEquity) * 100).toFixed(2));
@@ -2325,17 +2430,26 @@ router.get('/asset-liability-ratio/:year', async (req, res) => {
           const parsedData = typeof monthData.data === 'string' ? 
             JSON.parse(monthData.data) : monthData.data;
           
-          // 获取资产总计
-          const totalAssets = parsedData.total && 
-            parsedData.total.endBalance !== null ? 
-            Number(parsedData.total.endBalance) : 0;
+          // 计算资产总计 = 流动资产总计 + 非流动资产总计
+          const currentAssets = parsedData.assets && parsedData.assets.currentTotal && 
+            parsedData.assets.currentTotal.endBalance !== null ? 
+            Number(parsedData.assets.currentTotal.endBalance) : 0;
+          const nonCurrentAssets = parsedData.assets && parsedData.assets.nonCurrentTotal && 
+            parsedData.assets.nonCurrentTotal.endBalance !== null ? 
+            Number(parsedData.assets.nonCurrentTotal.endBalance) : 0;
+          const totalAssets = currentAssets + nonCurrentAssets;
           
-          // 获取所有者权益合计
-          const equityTotal = parsedData.equityTotal && 
-            parsedData.equityTotal.endBalance !== null ?
-            Number(parsedData.equityTotal.endBalance) : 0;
+          // 计算所有者权益总计
+          let equityTotal = 0;
+          if (parsedData.equity && Array.isArray(parsedData.equity)) {
+            parsedData.equity.forEach(item => {
+              if (item.endBalance && typeof item.endBalance === 'number') {
+                equityTotal += item.endBalance;
+              }
+            });
+          }
           
-          // 使用会计恒等式计算负债合计：负债 = 资产 - 所有者权益
+          // 使用会计恒等式计算负债：负债 = 资产 - 所有者权益
           const totalLiabilities = totalAssets - equityTotal;
           
           // 计算资产负债率 = 负债合计 / 资产合计 * 100
@@ -2344,7 +2458,7 @@ router.get('/asset-liability-ratio/:year', async (req, res) => {
             latestRate = assetLiabilityRatio;
           }
           
-          console.log(`Period: ${targetPeriod}, Total assets: ${totalAssets}元, Equity: ${equityTotal}元, Total liabilities: ${totalLiabilities}元, Ratio: ${assetLiabilityRatio}%`);
+          console.log(`Period: ${targetPeriod}, Current assets: ${currentAssets}元, Non-current assets: ${nonCurrentAssets}元, Total assets: ${totalAssets}元, Equity total: ${equityTotal}元, Total liabilities: ${totalLiabilities}元, Ratio: ${assetLiabilityRatio}%`);
           
         } catch (error) {
           console.error(`解析${month}月数据失败:`, error);
@@ -3018,6 +3132,78 @@ router.get('/tuoyuan-new-orders-breakdown/:year', async (req, res) => {
       success: false,
       message: '获取数据失败',
       error: error.message
+    });
+  }
+});
+
+// 获取净利润曲线数据（从标准利润表）
+router.get('/net-profit-curve/:year', async (req, res) => {
+  try {
+    const { year } = req.params;
+    
+    // 从标准利润表获取该年度的净利润数据
+    const [rows] = await pool.execute(`
+      SELECT 
+        DATE_FORMAT(period, '%Y-%m') as period_ym,
+        JSON_EXTRACT(data, '$.net_profit.cumulative_amount') as cumulative_amount,
+        JSON_EXTRACT(data, '$.net_profit.current_amount') as current_amount
+      FROM income_statement 
+      WHERE YEAR(period) = ?
+      ORDER BY period ASC
+    `, [year]);
+
+    if (rows.length === 0) {
+      return res.json({
+        success: true,
+        data: {
+          months: [],
+          monthlyData: [],
+          hasData: false
+        }
+      });
+    }
+
+    // 处理数据
+    const months = [];
+    const monthlyData = [];
+    
+    rows.forEach(row => {
+      const [, month] = row.period_ym.split('-');
+      months.push(`${parseInt(month)}月`);
+      
+      // 使用当期金额
+      const currentAmount = row.current_amount !== null && row.current_amount !== undefined ? 
+        parseFloat(row.current_amount) : 0;
+      monthlyData.push(currentAmount);
+    });
+
+    // 计算当前净利润和增长情况
+    const currentNetProfit = monthlyData[monthlyData.length - 1] || 0;
+    const previousMonthProfit = monthlyData.length > 1 ? 
+      monthlyData[monthlyData.length - 2] : 0;
+    const monthlyGrowth = previousMonthProfit !== 0 ? 
+      parseFloat(((currentNetProfit - previousMonthProfit) / Math.abs(previousMonthProfit) * 100).toFixed(2)) : 0;
+
+    res.json({
+      success: true,
+      data: {
+        months,
+        monthlyData,
+        hasData: true,
+        summary: {
+          currentNetProfit,
+          monthlyGrowth,
+          totalMonths: months.length
+        }
+      }
+    });
+
+  } catch (error) {
+    console.error('获取净利润曲线数据失败:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: '获取净利润曲线数据失败', 
+      error: error.message 
     });
   }
 });

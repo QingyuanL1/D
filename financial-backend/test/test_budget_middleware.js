@@ -4,7 +4,7 @@ const axios = require('axios');
 async function testBudgetMiddleware() {
     console.log('=== 测试预算中间件功能 ===\n');
     
-    const baseUrl = 'http://127.0.0.1:3000';
+    const baseUrl = 'http://47.111.95.19:3000';
     const testPeriod = '2025-01'; // 测试期间
     
     try {

@@ -81,7 +81,7 @@ popd >/dev/null
 
 # 关键信息
 log "前端开发服务器: http://localhost:8080 (Vite 默认端口)"
-log "后端健康检查:   http://127.0.0.1:${PORT:-3000}/health"
+log "后端健康检查:   http://47.111.95.19:${PORT:-3000}/health"
 echo
 log "以下持续显示后端日志（按 Ctrl+C 退出并同时关闭前后端）："
 echo

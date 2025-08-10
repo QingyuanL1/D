@@ -30,7 +30,7 @@
 
 ```javascript
 // 获取新签订单数据
-const response = await fetch('http://127.0.0.1:3000/new-orders/2024-01');
+const response = await fetch('http://47.111.95.19:3000/new-orders/2024-01');
 const result = await response.json();
 
 // 数据结构示例
@@ -94,13 +94,13 @@ await runAllBudgetTests('2024-01');
 ### 1. 后端验证
 ```bash
 # 测试新签订单接口
-curl -X GET "http://127.0.0.1:3000/new-orders/2024-01" | jq '.'
+curl -X GET "http://47.111.95.19:3000/new-orders/2024-01" | jq '.'
 
 # 测试项目跟踪接口
-curl -X GET "http://127.0.0.1:3000/project-tracking/2025-06" | jq '.'
+curl -X GET "http://47.111.95.19:3000/project-tracking/2025-06" | jq '.'
 
 # 测试营业收入结构接口
-curl -X GET "http://127.0.0.1:3000/business-income/2025-06" | jq '.'
+curl -X GET "http://47.111.95.19:3000/business-income/2025-06" | jq '.'
 ```
 
 ### 2. 前端验证

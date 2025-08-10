@@ -82,7 +82,7 @@
 <script lang="ts" setup>
 import { ref, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useChangzhouTuoyuanIncomeStatementData } from './changzhouTuoyuanIncomeStatementData'
+import { useChangzhouTuoyuanIncomeStatementData } from '../companies/financial-reports/changzhouTuoyuanIncomeStatementData'
 import FormAttachmentAndRemarks from '@/components/FormAttachmentAndRemarks.vue'
 import { recordFormSubmission, loadRemarksAndSuggestions, MODULE_IDS } from '@/utils/formSubmissionHelper'
 
@@ -125,7 +125,7 @@ const calculateCumulative = async (silent = true) => {
     // 收集当前数据（只包含当月金额）
     const currentData = convertToStorageFormat(period.value)
     
-    const response = await fetch('http://127.0.0.1:3000/changzhou-tuoyuan-income-statement/calculate-cumulative', {
+    const response = await fetch('http://47.111.95.19:3000/changzhou-tuoyuan-income-statement/calculate-cumulative', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -169,7 +169,7 @@ const calculateCumulative = async (silent = true) => {
 // 加载数据
 const loadData = async (targetPeriod: string) => {
   try {
-    const response = await fetch(`http://127.0.0.1:3000/changzhou-tuoyuan-income-statement/${targetPeriod}`)
+    const response = await fetch(`http://47.111.95.19:3000/changzhou-tuoyuan-income-statement/${targetPeriod}`)
     if (!response.ok) {
       if (response.status !== 404) { // 404是正常的（新建报表时）
         throw new Error('加载数据失败')
@@ -233,7 +233,7 @@ const handleSave = async () => {
     
     const dataToSave = convertToStorageFormat(period.value)
 
-    const response = await fetch('http://127.0.0.1:3000/changzhou-tuoyuan-income-statement', {
+    const response = await fetch('http://47.111.95.19:3000/changzhou-tuoyuan-income-statement', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'

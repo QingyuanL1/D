@@ -99,7 +99,7 @@ const loadData = async (targetPeriod: string) => {
     resetAllAmounts()
     console.log('已清空本期金额，准备加载新数据')
 
-    const response = await fetch(`http://127.0.0.1:3000/shanghai-nanhua-lanling-income-statement/${targetPeriod}`, {
+    const response = await fetch(`http://47.111.95.19:3000/shanghai-nanhua-lanling-income-statement/${targetPeriod}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -189,7 +189,7 @@ const calculateYearAmounts = async (targetPeriod: string) => {
       const monthPeriod = `${currentYear}-${month.toString().padStart(2, '0')}`
       
       try {
-                 const response = await fetch(`http://127.0.0.1:3000/shanghai-nanhua-lanling-income-statement/${monthPeriod}`)
+                 const response = await fetch(`http://47.111.95.19:3000/shanghai-nanhua-lanling-income-statement/${monthPeriod}`)
         if (response.ok) {
           const result = await response.json()
           if (result.success && result.data) {
@@ -268,7 +268,7 @@ const handleSave = async () => {
   try {
     const dataToSave = convertToStorageFormat(period.value)
 
-    const response = await fetch('http://127.0.0.1:3000/shanghai-nanhua-lanling-income-statement', {
+    const response = await fetch('http://47.111.95.19:3000/shanghai-nanhua-lanling-income-statement', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'

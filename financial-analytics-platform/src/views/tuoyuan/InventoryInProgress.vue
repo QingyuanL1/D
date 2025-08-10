@@ -185,7 +185,7 @@ const totalData = computed(() => {
 // 加载数据
 const loadData = async (targetPeriod: string) => {
     try {
-        const response = await fetch(`http://127.0.0.1:3000/tuoyuan-inventory-in-progress/${targetPeriod}`)
+        const response = await fetch(`http://47.111.95.19:3000/tuoyuan-inventory-in-progress/${targetPeriod}`)
         if (!response.ok) {
             if (response.status !== 404) {
                 throw new Error('加载数据失败')
@@ -228,7 +228,7 @@ const resetToDefaultData = () => {
 // 加载备注和建议
 const loadRemarksAndSuggestions = async (targetPeriod: string) => {
     try {
-        const response = await fetch(`http://127.0.0.1:3000/forms/submission/${MODULE_IDS.TUOYUAN_INVENTORY_IN_PROGRESS}/${targetPeriod}`)
+        const response = await fetch(`http://47.111.95.19:3000/forms/submission/${MODULE_IDS.TUOYUAN_INVENTORY_IN_PROGRESS}/${targetPeriod}`)
         if (response.ok) {
             const result = await response.json()
             if (result.success && result.data) {
@@ -263,7 +263,7 @@ watch(period, async (newPeriod, oldPeriod) => {
 
 const handleSave = async () => {
     try {
-        const response = await fetch('http://127.0.0.1:3000/tuoyuan-inventory-in-progress', {
+        const response = await fetch('http://47.111.95.19:3000/tuoyuan-inventory-in-progress', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

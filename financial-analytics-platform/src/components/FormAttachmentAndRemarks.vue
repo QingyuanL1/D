@@ -88,7 +88,7 @@
               <!-- 操作按钮 -->
               <div class="flex items-center space-x-2 ml-4">
                 <a 
-                  :href="`http://127.0.0.1:3000/files/download/${file.id}`" 
+                  :href="`http://47.111.95.19:3000/files/download/${file.id}`" 
                   target="_blank"
                   class="px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-150"
                 >

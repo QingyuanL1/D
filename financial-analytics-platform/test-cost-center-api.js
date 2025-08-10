@@ -1,7 +1,7 @@
 // 测试成本中心API的脚本
 const testCostCenterAPI = async () => {
   const period = '2025-01'
-  const API_BASE_URL = 'http://127.0.0.1:3000'
+  const API_BASE_URL = 'http://47.111.95.19:3000'
   
   try {
     console.log(`测试获取 ${period} 期间的成本中心数据...`)

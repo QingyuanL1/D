@@ -152,7 +152,7 @@ const fetchData = async () => {
 // 获取存量指标数据
 const fetchInventoryMetricsData = async () => {
   try {
-    const response = await fetch(`http://127.0.0.1:3000/analytics/inventory-metrics/${selectedYear.value}`)
+    const response = await fetch(`http://47.111.95.19:3000/analytics/inventory-metrics/${selectedYear.value}`)
 
     if (response.ok) {
       const result = await response.json()

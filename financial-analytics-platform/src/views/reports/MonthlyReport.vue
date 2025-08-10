@@ -2733,7 +2733,7 @@ const updateKeyIndicatorsFromAPI = async () => {
 
           // 1. 获取新签订单数据 - 使用直接的newOrders API
     try {
-      const newOrdersResponse = await fetch(`http://127.0.0.1:3000/new-orders/${selectedPeriod.value}`)
+      const newOrdersResponse = await fetch(`http://47.111.95.19:3000/new-orders/${selectedPeriod.value}`)
       if (newOrdersResponse.ok) {
         const newOrdersResult = await newOrdersResponse.json()
         if (newOrdersResult.success && newOrdersResult.data) {
@@ -2800,7 +2800,7 @@ const updateKeyIndicatorsFromAPI = async () => {
 
     // 2. 获取主营业务收入数据 - 使用直接的mainBusinessIncome API
     try {
-      const mainBusinessIncomeResponse = await fetch(`http://127.0.0.1:3000/main-business-income/${selectedPeriod.value}`)
+      const mainBusinessIncomeResponse = await fetch(`http://47.111.95.19:3000/main-business-income/${selectedPeriod.value}`)
       if (mainBusinessIncomeResponse.ok) {
         const mainBusinessIncomeResult = await mainBusinessIncomeResponse.json()
         if (mainBusinessIncomeResult.success && mainBusinessIncomeResult.data) {
@@ -2867,7 +2867,7 @@ const updateKeyIndicatorsFromAPI = async () => {
 
     // 3. 获取净利润数据 - 使用直接的netProfitStructure API
     try {
-      const netProfitResponse = await fetch(`http://127.0.0.1:3000/net-profit-structure/${selectedPeriod.value}`)
+      const netProfitResponse = await fetch(`http://47.111.95.19:3000/net-profit-structure/${selectedPeriod.value}`)
       if (netProfitResponse.ok) {
         const netProfitResult = await netProfitResponse.json()
         if (netProfitResult.success && netProfitResult.data) {
@@ -2932,7 +2932,7 @@ const updateKeyIndicatorsFromAPI = async () => {
 
     // 4. 获取成本中心数据 - 使用直接的costCenterStructure API
     try {
-      const costCenterResponse = await fetch(`http://127.0.0.1:3000/cost-center-structure/${selectedPeriod.value}`)
+      const costCenterResponse = await fetch(`http://47.111.95.19:3000/cost-center-structure/${selectedPeriod.value}`)
       if (costCenterResponse.ok) {
         const costCenterResult = await costCenterResponse.json()
         if (costCenterResult.success && costCenterResult.data) {
@@ -2998,7 +2998,7 @@ const updateQualityIndicatorsFromAPI = async () => {
 
     // 1. 获取边际贡献率数据 - 使用电气公司专用API
     try {
-      const contributionRateResponse = await fetch(`http://127.0.0.1:3000/analytics/contribution-rate/${currentYear}`)
+      const contributionRateResponse = await fetch(`http://47.111.95.19:3000/analytics/contribution-rate/${currentYear}`)
       if (contributionRateResponse.ok) {
         const contributionRateResult = await contributionRateResponse.json()
         console.log('边际贡献率API响应:', contributionRateResult)
@@ -3035,7 +3035,7 @@ const updateQualityIndicatorsFromAPI = async () => {
 
     // 2. 获取毛利率数据 - 使用电气公司专用API
     try {
-      const profitMarginResponse = await fetch(`http://127.0.0.1:3000/analytics/profit-margin/${currentYear}`)
+      const profitMarginResponse = await fetch(`http://47.111.95.19:3000/analytics/profit-margin/${currentYear}`)
       if (profitMarginResponse.ok) {
         const profitMarginResult = await profitMarginResponse.json()
         console.log('毛利率API响应:', profitMarginResult)
@@ -3070,7 +3070,7 @@ const updateQualityIndicatorsFromAPI = async () => {
 
     // 3. 获取净利率数据 - 使用电气公司专用API
     try {
-      const netProfitMarginResponse = await fetch(`http://127.0.0.1:3000/analytics/net-profit-margin/${currentYear}`)
+      const netProfitMarginResponse = await fetch(`http://47.111.95.19:3000/analytics/net-profit-margin/${currentYear}`)
       if (netProfitMarginResponse.ok) {
         const netProfitMarginResult = await netProfitMarginResponse.json()
         if (netProfitMarginResult.success && netProfitMarginResult.data && netProfitMarginResult.data.hasData) {
@@ -3103,7 +3103,7 @@ const updateQualityIndicatorsFromAPI = async () => {
 
     // 4. 获取ROE数据 - 使用电气公司专用API
     try {
-      const roeResponse = await fetch(`http://127.0.0.1:3000/analytics/roe/${currentYear}?company=main`)
+      const roeResponse = await fetch(`http://47.111.95.19:3000/analytics/roe/${currentYear}?company=main`)
       if (roeResponse.ok) {
         const roeResult = await roeResponse.json()
         if (roeResult.success && roeResult.data && roeResult.data.summary) {
@@ -3136,7 +3136,7 @@ const updateQualityIndicatorsFromAPI = async () => {
 
     // 5. 获取资产负债率数据 - 使用电气公司专用API
     try {
-      const assetLiabilityResponse = await fetch(`http://127.0.0.1:3000/analytics/asset-liability-ratio/${currentYear}?company=main`)
+      const assetLiabilityResponse = await fetch(`http://47.111.95.19:3000/analytics/asset-liability-ratio/${currentYear}?company=main`)
       if (assetLiabilityResponse.ok) {
         const assetLiabilityResult = await assetLiabilityResponse.json()
         if (assetLiabilityResult.success && assetLiabilityResult.data && assetLiabilityResult.data.hasData) {
@@ -3169,7 +3169,7 @@ const updateQualityIndicatorsFromAPI = async () => {
 
     // 6. 获取存量指标数据 - 使用电气公司专用API
     try {
-      const inventoryResponse = await fetch(`http://127.0.0.1:3000/analytics/inventory-metrics/${currentYear}`)
+      const inventoryResponse = await fetch(`http://47.111.95.19:3000/analytics/inventory-metrics/${currentYear}`)
       if (inventoryResponse.ok) {
         const inventoryResult = await inventoryResponse.json()
         if (inventoryResult.success && inventoryResult.data && inventoryResult.data.hasData) {
@@ -3223,7 +3223,7 @@ const updateQualityIndicatorsFromAPI = async () => {
 
     // 7. 获取应收账款数据 - 使用直接的accounts-receivable API
     try {
-      const receivablesResponse = await fetch(`http://127.0.0.1:3000/accounts-receivable/${selectedPeriod.value}`)
+      const receivablesResponse = await fetch(`http://47.111.95.19:3000/accounts-receivable/${selectedPeriod.value}`)
       if (receivablesResponse.ok) {
         const receivablesResult = await receivablesResponse.json()
         if (receivablesResult.success && receivablesResult.data) {
@@ -5034,7 +5034,7 @@ const loadBusinessIncomeStructureData = async () => {
     console.log(`正在加载营业收入结构数据，期间: ${selectedPeriod.value}，公司: ${selectedCompanyKey.value}`)
 
     // 1. 加载营业收入结构总表数据
-    const response = await fetch(`http://127.0.0.1:3000/business-income/${selectedPeriod.value}?company=${selectedCompanyKey.value}`)
+    const response = await fetch(`http://47.111.95.19:3000/business-income/${selectedPeriod.value}?company=${selectedCompanyKey.value}`)
     if (response.ok) {
       const result = await response.json()
       if (result.success && result.data && Array.isArray(result.data)) {
@@ -5106,7 +5106,7 @@ const loadAllMonthsBusinessIncomeData = async (currentPeriod) => {
     for (let month = 1; month < currentMonth; month++) {
       const monthPeriod = `${currentYear}-${month.toString().padStart(2, '0')}`
       try {
-        const response = await fetch(`http://127.0.0.1:3000/main-business-income/${monthPeriod}`)
+        const response = await fetch(`http://47.111.95.19:3000/main-business-income/${monthPeriod}`)
         if (response.ok) {
           const result = await response.json()
           if (result.success && result.data) {
@@ -5183,7 +5183,7 @@ const updateAccumulatedIncomeForMainBusiness = () => {
 // 加载主营业务收入分解数据
 const loadMainBusinessIncomeStructureData = async () => {
   try {
-    const response = await fetch(`http://127.0.0.1:3000/main-business-income/${selectedPeriod.value}?company=${selectedCompanyKey.value}`)
+    const response = await fetch(`http://47.111.95.19:3000/main-business-income/${selectedPeriod.value}?company=${selectedCompanyKey.value}`)
     if (response.ok) {
       const result = await response.json()
       if (result.success && result.data) {
@@ -5242,7 +5242,7 @@ const loadMainBusinessIncomeStructureData = async () => {
 // 加载非主营业务数据
 const loadNonMainBusinessStructureData = async () => {
   try {
-    const response = await fetch(`http://127.0.0.1:3000/non-main-business/${selectedPeriod.value}?company=${selectedCompanyKey.value}`)
+    const response = await fetch(`http://47.111.95.19:3000/non-main-business/${selectedPeriod.value}?company=${selectedCompanyKey.value}`)
     if (response.ok) {
       const result = await response.json()
       if (result.success && result.data && Array.isArray(result.data)) {
@@ -5295,7 +5295,7 @@ const loadNewOrdersCumulativeDataForOrderToIncome = async (currentPeriod) => {
     for (let month = 1; month <= currentMonth; month++) {
       const monthPeriod = `${currentYear}-${month.toString().padStart(2, '0')}`
       try {
-        const response = await fetch(`http://127.0.0.1:3000/new-orders/${monthPeriod}?company=${selectedCompanyKey.value}`)
+        const response = await fetch(`http://47.111.95.19:3000/new-orders/${monthPeriod}?company=${selectedCompanyKey.value}`)
         if (response.ok) {
           const result = await response.json()
           if (result.success && result.data) {
@@ -5364,7 +5364,7 @@ const loadAllMonthsOrderToIncomeData = async (currentPeriod) => {
     for (let month = 1; month < currentMonth; month++) {
       const monthPeriod = `${currentYear}-${month.toString().padStart(2, '0')}`
       try {
-        const response = await fetch(`http://127.0.0.1:3000/order-to-income/${monthPeriod}?company=${selectedCompanyKey.value}`)
+        const response = await fetch(`http://47.111.95.19:3000/order-to-income/${monthPeriod}?company=${selectedCompanyKey.value}`)
         if (response.ok) {
           const result = await response.json()
           if (result.success && result.data) {
@@ -5443,7 +5443,7 @@ const loadOrderToIncomeData = async () => {
   try {
     console.log(`正在加载订单转收入数据，期间: ${selectedPeriod.value}，公司: ${selectedCompanyKey.value}`)
 
-    const response = await fetch(`http://127.0.0.1:3000/order-to-income/${selectedPeriod.value}?company=${selectedCompanyKey.value}`)
+    const response = await fetch(`http://47.111.95.19:3000/order-to-income/${selectedPeriod.value}?company=${selectedCompanyKey.value}`)
     if (response.ok) {
       const result = await response.json()
       if (result.success && result.data) {
@@ -5506,7 +5506,7 @@ const loadAllMonthsStockOrderToIncomeData = async (currentPeriod) => {
     for (let month = 1; month < currentMonth; month++) {
       const monthPeriod = `${currentYear}-${month.toString().padStart(2, '0')}`
       try {
-        const response = await fetch(`http://127.0.0.1:3000/stock-order-to-income/${monthPeriod}`)
+        const response = await fetch(`http://47.111.95.19:3000/stock-order-to-income/${monthPeriod}`)
         if (response.ok) {
           const result = await response.json()
           if (result.success && result.data) {
@@ -5585,7 +5585,7 @@ const loadStockOrderToIncomeData = async () => {
   try {
     console.log(`正在加载存量订单转收入数据，期间: ${selectedPeriod.value}`)
 
-    const response = await fetch(`http://127.0.0.1:3000/stock-order-to-income/${selectedPeriod.value}`)
+    const response = await fetch(`http://47.111.95.19:3000/stock-order-to-income/${selectedPeriod.value}`)
     if (response.ok) {
       const result = await response.json()
       if (result.success && result.data) {
@@ -5721,7 +5721,7 @@ const loadBidFulfillmentData = async () => {
   try {
     console.log(`正在加载中标未履约情况数据，期间: ${selectedPeriod.value}`)
 
-    const response = await fetch(`http://127.0.0.1:3000/bid-fulfillment/${selectedPeriod.value}`)
+    const response = await fetch(`http://47.111.95.19:3000/bid-fulfillment/${selectedPeriod.value}`)
     if (!response.ok) {
       if (response.status === 404) {
         console.log('该期间暂无数据，使用预算数据初始化')
@@ -5838,7 +5838,7 @@ const loadInventoryInProgressData = async () => {
   try {
     console.log(`正在加载在产项目数据，期间: ${selectedPeriod.value}`)
 
-    const response = await fetch(`http://127.0.0.1:3000/inventory-in-progress/${selectedPeriod.value}`)
+    const response = await fetch(`http://47.111.95.19:3000/inventory-in-progress/${selectedPeriod.value}`)
     if (!response.ok) {
       if (response.status === 404) {
         console.log('该期间暂无数据，保持年度预算但清空当月收入')
@@ -5872,7 +5872,7 @@ const loadInventoryInProgressData = async () => {
 // 加载合同存量主营业务收入数据
 const loadContractMainBusinessIncomeData = async (targetPeriod) => {
   try {
-    const response = await fetch(`http://127.0.0.1:3000/main-business-income/${targetPeriod}`)
+    const response = await fetch(`http://47.111.95.19:3000/main-business-income/${targetPeriod}`)
     if (response.ok) {
       const result = await response.json()
       if (result.success && result.data) {
@@ -5896,7 +5896,7 @@ const loadAllMonthsContractInventoryData = async (currentPeriod) => {
     for (let month = 1; month < currentMonth; month++) {
       const monthPeriod = `${currentYear}-${month.toString().padStart(2, '0')}`
       try {
-        const response = await fetch(`http://127.0.0.1:3000/contract-inventory/${monthPeriod}`)
+        const response = await fetch(`http://47.111.95.19:3000/contract-inventory/${monthPeriod}`)
         if (response.ok) {
           const result = await response.json()
           if (result.success && result.data) {
@@ -6086,7 +6086,7 @@ const getContractInventoryInitialData = () => {
 const loadContractInventoryData = async () => {
   try {
     console.log(`正在加载合同存量数据，期间: ${selectedPeriod.value}`)
-    const response = await fetch(`http://127.0.0.1:3000/contract-inventory/${selectedPeriod.value}`)
+    const response = await fetch(`http://47.111.95.19:3000/contract-inventory/${selectedPeriod.value}`)
     if (!response.ok) {
       if (response.status !== 404) {
         throw new Error('加载数据失败')
@@ -6143,7 +6143,7 @@ const loadCostEstimationMainBusinessIncomeData = async (currentPeriod) => {
     for (let month = 1; month <= currentMonth; month++) {
       const monthPeriod = `${currentYear}-${month.toString().padStart(2, '0')}`
       try {
-        const response = await fetch(`http://127.0.0.1:3000/main-business-income/${monthPeriod}`)
+        const response = await fetch(`http://47.111.95.19:3000/main-business-income/${monthPeriod}`)
         if (response.ok) {
           const result = await response.json()
           if (result.success && result.data) {
@@ -6206,7 +6206,7 @@ const loadAllMonthsCostEstimationData = async (currentPeriod) => {
     for (let month = 1; month < currentMonth; month++) {
       const monthPeriod = `${currentYear}-${month.toString().padStart(2, '0')}`
       try {
-        const response = await fetch(`http://127.0.0.1:3000/cost-estimation/${monthPeriod}`)
+        const response = await fetch(`http://47.111.95.19:3000/cost-estimation/${monthPeriod}`)
         if (response.ok) {
           const result = await response.json()
           if (result.success && result.data) {
@@ -6423,7 +6423,7 @@ const getCostEstimationInitialData = () => {
 const loadCostEstimationData = async () => {
   try {
     console.log(`正在加载成本暂估数据，期间: ${selectedPeriod.value}`)
-    const response = await fetch(`http://127.0.0.1:3000/cost-estimation/${selectedPeriod.value}`)
+    const response = await fetch(`http://47.111.95.19:3000/cost-estimation/${selectedPeriod.value}`)
     if (!response.ok) {
       if (response.status !== 404) {
         throw new Error('加载数据失败')
@@ -6473,7 +6473,7 @@ const loadAllMonthsDepartmentCostCenterData = async (currentPeriod) => {
     for (let month = 1; month < currentMonth; month++) {
       const monthPeriod = `${currentYear}-${month.toString().padStart(2, '0')}`
       try {
-        const response = await fetch(`http://127.0.0.1:3000/department-cost-center/${monthPeriod}`)
+        const response = await fetch(`http://47.111.95.19:3000/department-cost-center/${monthPeriod}`)
         if (response.ok) {
           const result = await response.json()
           if (result.success && result.data) {
@@ -6605,7 +6605,7 @@ const loadDepartmentCostCenterData = async () => {
   try {
     console.log(`正在加载部门成本中心数据，期间: ${selectedPeriod.value}`)
 
-    const response = await fetch(`http://127.0.0.1:3000/department-cost-center/${selectedPeriod.value}`)
+    const response = await fetch(`http://47.111.95.19:3000/department-cost-center/${selectedPeriod.value}`)
     if (!response.ok) {
       if (response.status === 404) {
         console.log('该期间暂无数据，重置为初始模板')
@@ -6662,7 +6662,7 @@ const loadAllMonthsDepartmentCostInputData = async (currentPeriod) => {
     for (let i = 1; i <= currentMonth; i++) {
       const monthPeriod = `${year}-${i.toString().padStart(2, '0')}`
       try {
-        const response = await fetch(`http://127.0.0.1:3000/department-cost-input/${monthPeriod}`)
+        const response = await fetch(`http://47.111.95.19:3000/department-cost-input/${monthPeriod}`)
         if (response.ok) {
           const result = await response.json()
           if (result.data) {
@@ -6799,7 +6799,7 @@ const mergeDepartmentCostInputData = (initialData, loadedData) => {
 const loadDepartmentCostInputData = async () => {
   console.log(`正在加载部门成本中心计入损益数据，期间: ${selectedPeriod.value}`)
   try {
-    const response = await fetch(`http://127.0.0.1:3000/department-cost-input/${selectedPeriod.value}`)
+    const response = await fetch(`http://47.111.95.19:3000/department-cost-input/${selectedPeriod.value}`)
     if (!response.ok) {
       if (response.status !== 404) {
         throw new Error('加载数据失败')
@@ -6869,7 +6869,7 @@ const convertInventoryDataFormat = (rawData) => {
 const loadInventoryData = async () => {
   try {
     console.log(`正在加载存货数据，期间: ${selectedPeriod.value}`)
-    const response = await fetch(`http://127.0.0.1:3000/inventory-data/${selectedPeriod.value}`)
+    const response = await fetch(`http://47.111.95.19:3000/inventory-data/${selectedPeriod.value}`)
     if (!response.ok) {
       if (response.status === 404) {
         console.log('该期间暂无存货数据，使用默认数据')
@@ -6944,7 +6944,7 @@ const loadInventoryData = async () => {
 const loadInventoryStockData = async () => {
   try {
     console.log(`正在加载库存情况数据，期间: ${selectedPeriod.value}`)
-    const response = await fetch(`http://127.0.0.1:3000/inventory-stock/${selectedPeriod.value}`)
+    const response = await fetch(`http://47.111.95.19:3000/inventory-stock/${selectedPeriod.value}`)
     if (!response.ok) {
       if (response.status === 404) {
         console.log('该期间暂无库存情况数据，使用默认数据')
@@ -7018,7 +7018,7 @@ const loadInventoryStockData = async () => {
 // 获取净利润月度数据
 const fetchNetProfitMonthlyData = async (monthPeriod) => {
   try {
-    const response = await fetch(`http://127.0.0.1:3000/main-business-net-profit/monthly-data/${monthPeriod}`)
+    const response = await fetch(`http://47.111.95.19:3000/main-business-net-profit/monthly-data/${monthPeriod}`)
 
     if (response.ok) {
       const result = await response.json()
@@ -7050,7 +7050,7 @@ const loadNetProfitMainBusinessData = async (targetPeriod) => {
   try {
     console.log(`正在加载主营净利润贡献数据，期间: ${targetPeriod}`)
 
-    const response = await fetch(`http://127.0.0.1:3000/main-business-net-profit/${targetPeriod}`)
+    const response = await fetch(`http://47.111.95.19:3000/main-business-net-profit/${targetPeriod}`)
     let loadedData = []
 
     if (response.ok) {
@@ -7151,7 +7151,7 @@ const loadNetProfitAllMonthsData = async (currentPeriod) => {
     for (let i = 1; i <= currentMonth; i++) {
       const monthPeriod = `${year}-${i.toString().padStart(2, '0')}`
       try {
-        const response = await fetch(`http://127.0.0.1:3000/non-main-business-net-profit/${monthPeriod}`)
+        const response = await fetch(`http://47.111.95.19:3000/non-main-business-net-profit/${monthPeriod}`)
         if (response.ok) {
           const result = await response.json()
           if (result.data && Array.isArray(result.data)) {
@@ -7208,7 +7208,7 @@ const loadNetProfitNonMainBusinessData = async (targetPeriod) => {
   try {
     console.log(`正在加载非主营业务净利润数据，期间: ${targetPeriod}`)
 
-    const response = await fetch(`http://127.0.0.1:3000/non-main-business-net-profit/${targetPeriod}`)
+    const response = await fetch(`http://47.111.95.19:3000/non-main-business-net-profit/${targetPeriod}`)
     if (!response.ok) {
       if (response.status === 404) {
         console.log('该期间暂无数据，保持年度计划但清空当期值')

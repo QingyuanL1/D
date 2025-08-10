@@ -158,7 +158,7 @@ const resetDataToDefault = () => {
 const fetchROEData = async () => {
   try {
     console.log('Fetching ROE data for year:', selectedYear.value, 'company:', selectedCompany.value);
-    const response = await fetch(`http://127.0.0.1:3000/analytics/roe/${selectedYear.value}?company=${selectedCompany.value}`);
+    const response = await fetch(`http://47.111.95.19:3000/analytics/roe/${selectedYear.value}?company=${selectedCompany.value}`);
 
     if (response.ok) {
       const result = await response.json();

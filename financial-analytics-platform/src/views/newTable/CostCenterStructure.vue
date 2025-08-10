@@ -296,7 +296,7 @@ const loadAllMonthsData = async (currentPeriod: string) => {
         for (let i = 1; i <= currentMonth; i++) {
             const monthPeriod = `${year}-${i.toString().padStart(2, '0')}`
             try {
-                const response = await fetch(`http://127.0.0.1:3000/cost-center-structure/${monthPeriod}`)
+                const response = await fetch(`http://47.111.95.19:3000/cost-center-structure/${monthPeriod}`)
                 if (response.ok) {
                     const result = await response.json()
                     if (result.data) {
@@ -399,7 +399,7 @@ const loadData = async (targetPeriod: string) => {
     try {
         console.log(`正在加载成本中心数据，期间: ${targetPeriod}`)
         
-        const response = await fetch(`http://127.0.0.1:3000/cost-center-structure/${targetPeriod}`)
+        const response = await fetch(`http://47.111.95.19:3000/cost-center-structure/${targetPeriod}`)
         if (!response.ok) {
             if (response.status === 404) {
                 console.log('该期间暂无数据，保持现有数据但清空当期累计')
@@ -479,7 +479,7 @@ const handleSave = async () => {
         console.log('保存数据:', saveData)
 
         // 1. 保存到 cost_center_structure 表
-        const response = await fetch('http://127.0.0.1:3000/cost-center-structure', {
+        const response = await fetch('http://47.111.95.19:3000/cost-center-structure', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

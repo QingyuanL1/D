@@ -375,7 +375,7 @@ const loadHistoricalPeriodData = async () => {
       // 只加载当前期间之前的数据用于累计计算
       if (periodStr < period.value) {
         try {
-          const response = await fetch(`http://127.0.0.1:3000/forms/submission/${moduleId}/${periodStr}`)
+          const response = await fetch(`http://47.111.95.19:3000/forms/submission/${moduleId}/${periodStr}`)
           if (response.ok) {
             const result = await response.json()
             if (result.success && result.data && result.data.submission_data) {
@@ -417,7 +417,7 @@ const autoSetBeginBalanceFromPreviousMonth = async (currentPeriod: string) => {
 
     const prevPeriod = `${prevYear}-${prevMonth.toString().padStart(2, '0')}`
     
-    const response = await fetch(`http://127.0.0.1:3000/forms/submission/${moduleId}/${prevPeriod}`)
+    const response = await fetch(`http://47.111.95.19:3000/forms/submission/${moduleId}/${prevPeriod}`)
     
     if (!response.ok) {
       console.log(`前一个月(${prevPeriod})暂无数据，期初余额保持为0`)
@@ -582,7 +582,7 @@ const loadSavedData = async () => {
   clearCurrentData()
   
   try {
-    const response = await fetch(`http://127.0.0.1:3000/forms/submission/${moduleId}/${period.value}`)
+    const response = await fetch(`http://47.111.95.19:3000/forms/submission/${moduleId}/${period.value}`)
     if (response.ok) {
       const result = await response.json()
       if (result.success && result.data && result.data.submission_data) {

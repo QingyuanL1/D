@@ -281,7 +281,7 @@ const data = reactive(JSON.parse(JSON.stringify(initialData)))
 // 加载数据
 const loadData = async (targetPeriod: string) => {
     try {
-        const response = await fetch(`http://127.0.0.1:3000/inventory-data/${targetPeriod}`)
+        const response = await fetch(`http://47.111.95.19:3000/inventory-data/${targetPeriod}`)
         if (!response.ok) {
             if (response.status !== 404) {
                 throw new Error('加载数据失败')
@@ -300,7 +300,7 @@ const loadData = async (targetPeriod: string) => {
 // 加载备注数据
 const loadRemarks = async (targetPeriod: string) => {
     try {
-        const response = await fetch(`http://127.0.0.1:3000/forms/submission/${MODULE_IDS.INVENTORY_STOCK}/${targetPeriod}`)
+        const response = await fetch(`http://47.111.95.19:3000/forms/submission/${MODULE_IDS.INVENTORY_STOCK}/${targetPeriod}`)
         if (response.ok) {
             const result = await response.json()
             if (result.data) {
@@ -333,7 +333,7 @@ watch(period, (newPeriod, oldPeriod) => {
 
 const handleSave = async () => {
     try {
-        const response = await fetch('http://127.0.0.1:3000/inventory-data', {
+        const response = await fetch('http://47.111.95.19:3000/inventory-data', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

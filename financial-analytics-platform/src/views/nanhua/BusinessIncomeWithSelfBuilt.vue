@@ -185,7 +185,7 @@ const calculateContributionRates = async (targetPeriod: string) => {
     calculating.value = true
     try {
         console.log('尝试自动计算南华边际贡献率...')
-        const calculateResponse = await fetch(`http://127.0.0.1:3000/nanhua-business-contribution-with-self-built/calculate/${targetPeriod}`, {
+        const calculateResponse = await fetch(`http://47.111.95.19:3000/nanhua-business-contribution-with-self-built/calculate/${targetPeriod}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -220,7 +220,7 @@ const loadData = async (targetPeriod: string) => {
         let finalData = calculatedData
         
         if (!finalData) {
-            const response = await fetch(`http://127.0.0.1:3000/nanhua-business-contribution-with-self-built/${targetPeriod}`)
+            const response = await fetch(`http://47.111.95.19:3000/nanhua-business-contribution-with-self-built/${targetPeriod}`)
             if (response.ok) {
                 const result = await response.json()
                 finalData = result.data
@@ -250,7 +250,7 @@ const loadData = async (targetPeriod: string) => {
 // 加载已保存的备注和建议
 const loadRemarksAndSuggestions = async (targetPeriod: string) => {
     try {
-        const response = await fetch(`http://127.0.0.1:3000/forms/submission/${MODULE_IDS.NANHUA_BUSINESS_CONTRIBUTION_WITH_SELF_BUILT}/${targetPeriod}`)
+        const response = await fetch(`http://47.111.95.19:3000/forms/submission/${MODULE_IDS.NANHUA_BUSINESS_CONTRIBUTION_WITH_SELF_BUILT}/${targetPeriod}`)
         if (response.ok) {
             const result = await response.json()
             if (result.success && result.data) {
@@ -289,7 +289,7 @@ watch(period, (newPeriod, oldPeriod) => {
 
 const handleSave = async () => {
     try {
-        const response = await fetch('http://127.0.0.1:3000/nanhua-business-contribution-with-self-built', {
+        const response = await fetch('http://47.111.95.19:3000/nanhua-business-contribution-with-self-built', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

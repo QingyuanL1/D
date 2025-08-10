@@ -253,7 +253,7 @@ const averageAchievementRate = computed(() => {
 
 const updateData = async () => {
   try {
-    const response = await fetch(`http://127.0.0.1:3000/production-plan-execution/${selectedDate.value}`)
+    const response = await fetch(`http://47.111.95.19:3000/production-plan-execution/${selectedDate.value}`)
     if (!response.ok) {
       if (response.status !== 404) {
         throw new Error('加载数据失败')
@@ -325,7 +325,7 @@ const updateData = async () => {
 // 加载备注数据
 const loadRemarks = async () => {
   try {
-    const response = await fetch(`http://127.0.0.1:3000/forms/submission/${MODULE_IDS.PRODUCTION_VALUE}/${selectedDate.value}`)
+    const response = await fetch(`http://47.111.95.19:3000/forms/submission/${MODULE_IDS.PRODUCTION_VALUE}/${selectedDate.value}`)
     if (response.ok) {
       const result = await response.json()
       if (result.data) {
@@ -344,7 +344,7 @@ const saveData = async () => {
     const componentData = filteredData.value.filter(item => item.segment === '元件')
     const projectData = filteredData.value.filter(item => item.segment === '工程')
     
-    const response = await fetch('http://127.0.0.1:3000/production-plan-execution', {
+    const response = await fetch('http://47.111.95.19:3000/production-plan-execution', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'

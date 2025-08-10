@@ -415,7 +415,7 @@ const fetchNotifications = async (page = 1) => {
       params.append('priority', filterPriority.value)
     }
 
-    const response = await fetch(`http://127.0.0.1:3000/notifications?${params}`)
+    const response = await fetch(`http://47.111.95.19:3000/notifications?${params}`)
     
     if (!response.ok) {
       throw new Error('获取通知列表失败')
@@ -436,7 +436,7 @@ const fetchNotifications = async (page = 1) => {
 // 获取统计数据
 const fetchStats = async () => {
   try {
-    const response = await fetch('http://127.0.0.1:3000/notifications/stats/summary')
+    const response = await fetch('http://47.111.95.19:3000/notifications/stats/summary')
     
     if (!response.ok) {
       throw new Error('获取统计数据失败')
@@ -526,8 +526,8 @@ const saveNotification = async () => {
     }
 
     const url = isEditing.value 
-      ? `http://127.0.0.1:3000/notifications/${editingId.value}`
-      : 'http://127.0.0.1:3000/notifications'
+      ? `http://47.111.95.19:3000/notifications/${editingId.value}`
+      : 'http://47.111.95.19:3000/notifications'
     
     const method = isEditing.value ? 'PUT' : 'POST'
 
@@ -563,7 +563,7 @@ const deleteNotification = async (id: number) => {
   }
 
   try {
-    const response = await fetch(`http://127.0.0.1:3000/notifications/${id}`, {
+    const response = await fetch(`http://47.111.95.19:3000/notifications/${id}`, {
       method: 'DELETE'
     })
 

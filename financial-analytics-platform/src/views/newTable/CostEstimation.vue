@@ -305,7 +305,7 @@ const loadMainBusinessIncomeData = async (currentPeriod: string) => {
         for (let month = 1; month <= currentMonth; month++) {
             const monthPeriod = `${currentYear}-${month.toString().padStart(2, '0')}`
             try {
-                const response = await fetch(`http://127.0.0.1:3000/main-business-income/${monthPeriod}`)
+                const response = await fetch(`http://47.111.95.19:3000/main-business-income/${monthPeriod}`)
                 if (response.ok) {
                     const result = await response.json()
                     if (result.success && result.data) {
@@ -368,7 +368,7 @@ const loadAllMonthsData = async (currentPeriod: string) => {
         for (let month = 1; month < currentMonth; month++) {
             const monthPeriod = `${currentYear}-${month.toString().padStart(2, '0')}`
             try {
-                const response = await fetch(`http://127.0.0.1:3000/cost-estimation/${monthPeriod}`)
+                const response = await fetch(`http://47.111.95.19:3000/cost-estimation/${monthPeriod}`)
                 if (response.ok) {
                     const result = await response.json()
                     if (result.success && result.data) {
@@ -534,7 +534,7 @@ const totalData = computed(() => {
 const loadData = async (targetPeriod: string) => {
     try {
         console.log(`正在加载成本暂估数据，期间: ${targetPeriod}`)
-        const response = await fetch(`http://127.0.0.1:3000/cost-estimation/${targetPeriod}`)
+        const response = await fetch(`http://47.111.95.19:3000/cost-estimation/${targetPeriod}`)
         if (!response.ok) {
             if (response.status !== 404) {
                 throw new Error('加载数据失败')
@@ -648,7 +648,7 @@ const handleSave = async () => {
 
         // 第一步：保存到专用表
         console.log('步骤1：保存到专用表...')
-        const response = await fetch('http://127.0.0.1:3000/cost-estimation', {
+        const response = await fetch('http://47.111.95.19:3000/cost-estimation', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

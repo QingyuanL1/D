@@ -198,7 +198,7 @@ const calculateYearAmounts = async (targetPeriod: string) => {
             const monthPeriod = `${currentYear}-${month.toString().padStart(2, '0')}`
             
             try {
-                const response = await fetch(`http://127.0.0.1:3000/changzhou-tuoyuan-cash-flow/${monthPeriod}`)
+                const response = await fetch(`http://47.111.95.19:3000/changzhou-tuoyuan-cash-flow/${monthPeriod}`)
                 if (response.ok) {
                     const result = await response.json()
                     if (result.success && result.data) {
@@ -252,7 +252,7 @@ const loadData = async (targetPeriod: string): Promise<void> => {
     try {
         console.log(`正在加载常州拓源现金流量表数据，期间: ${targetPeriod}`)
         
-        const response = await fetch(`http://127.0.0.1:3000/changzhou-tuoyuan-cash-flow/${targetPeriod}`)
+        const response = await fetch(`http://47.111.95.19:3000/changzhou-tuoyuan-cash-flow/${targetPeriod}`)
         if (!response.ok) {
             if (response.status === 404) {
                 console.log('该期间暂无数据，清空表单')
@@ -338,7 +338,7 @@ const handleSave = async () => {
     try {
         const dataToSave = convertToStorageFormat(period.value)
 
-        const response = await fetch('http://127.0.0.1:3000/changzhou-tuoyuan-cash-flow', {
+        const response = await fetch('http://47.111.95.19:3000/changzhou-tuoyuan-cash-flow', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

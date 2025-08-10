@@ -143,7 +143,7 @@ router.get('/calculate/:period', async (req, res) => {
         }
 
         // 1. 获取主营业务收入数据
-        const incomeResponse = await fetch(`http://127.0.0.1:3000/tuoyuan-main-business-income-breakdown/${period}`);
+        const incomeResponse = await fetch(`http://47.111.95.19:3000/tuoyuan-main-business-income-breakdown/${period}`);
         let incomeData = null;
 
         if (incomeResponse.ok) {
@@ -158,7 +158,7 @@ router.get('/calculate/:period', async (req, res) => {
         }
 
         // 2. 获取主营业务成本数据
-        const costResponse = await fetch(`http://127.0.0.1:3000/tuoyuan-main-business-cost-structure-quality/${period}`);
+        const costResponse = await fetch(`http://47.111.95.19:3000/tuoyuan-main-business-cost-structure-quality/${period}`);
         let costData = null;
 
         if (costResponse.ok) {

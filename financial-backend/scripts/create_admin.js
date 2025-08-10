@@ -3,7 +3,7 @@ const bcrypt = require('bcrypt');
 
 // 数据库连接配置 (不指定数据库，先创建)
 const dbConfig = {
-  host: '127.0.0.1',
+  host: '47.111.95.19',
   port: 3306,
   user: 'root',
   password: '12345678'

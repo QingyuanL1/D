@@ -156,7 +156,7 @@ const handleRegister = async () => {
     
 
     loading.value = true
-    const response = await fetch('http://127.0.0.1:3000/auth/register', {
+    const response = await fetch('http://47.111.95.19:3000/auth/register', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'

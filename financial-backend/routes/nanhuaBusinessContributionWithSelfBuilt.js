@@ -69,7 +69,7 @@ router.post('/calculate/:period', async (req, res) => {
         console.log(`开始自动计算南华${period}期间的边际贡献率`);
 
         // 1. 获取南华主营业务收入数据
-        const incomeResponse = await fetch(`http://127.0.0.1:3000/nanhua-business-income/${period}`);
+        const incomeResponse = await fetch(`http://47.111.95.19:3000/nanhua-business-income/${period}`);
         
         if (!incomeResponse.ok) {
             return res.status(404).json({

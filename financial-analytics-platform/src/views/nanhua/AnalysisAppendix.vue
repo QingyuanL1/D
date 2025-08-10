@@ -213,7 +213,7 @@ const formatNumber = (value: number): string => {
 // 加载坏账准备数据
 const loadBadDebtProvisionData = async (targetPeriod: string) => {
     try {
-        const response = await fetch(`http://127.0.0.1:3000/nanhua-bad-debt-provision/${targetPeriod}`)
+        const response = await fetch(`http://47.111.95.19:3000/nanhua-bad-debt-provision/${targetPeriod}`)
         if (response.ok) {
             const result = await response.json()
             if (result.success && result.data) {
@@ -453,7 +453,7 @@ const loadAllMonthsData = async (currentPeriod: string) => {
         for (let i = 1; i <= currentMonth; i++) {
             const monthPeriod = `${year}-${i.toString().padStart(2, '0')}`
             try {
-                const response = await fetch(`http://127.0.0.1:3000/nanhua-analysis-appendix/${monthPeriod}`)
+                const response = await fetch(`http://47.111.95.19:3000/nanhua-analysis-appendix/${monthPeriod}`)
                 if (response.ok) {
                     const result = await response.json()
                     if (result.success && result.data && Array.isArray(result.data)) {
@@ -513,7 +513,7 @@ const loadData = async (targetPeriod: string) => {
     try {
         console.log(`正在加载南华分析附表数据，期间: ${targetPeriod}`)
         
-        const response = await fetch(`http://127.0.0.1:3000/nanhua-analysis-appendix/${targetPeriod}`)
+        const response = await fetch(`http://47.111.95.19:3000/nanhua-analysis-appendix/${targetPeriod}`)
         let loadedData: any[] = []
         
         if (response.ok) {
@@ -609,7 +609,7 @@ const handleSave = async () => {
         console.log('保存数据:', saveData)
 
         // 1. 保存到 nanhua_analysis_appendix 表
-        const response = await fetch('http://127.0.0.1:3000/nanhua-analysis-appendix', {
+        const response = await fetch('http://47.111.95.19:3000/nanhua-analysis-appendix', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

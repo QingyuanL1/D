@@ -141,7 +141,7 @@
                 </div>
                 <div class="ml-4">
                   <a 
-                    :href="`http://127.0.0.1:3000/files/download/${file.id}`" 
+                    :href="`http://47.111.95.19:3000/files/download/${file.id}`" 
                     target="_blank"
                     class="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
                   >
@@ -327,7 +327,7 @@ const fetchUserModules = async () => {
     console.log('🔍 [DEBUG] 用户ID:', userId, '选择的公司:', selectedCompany)
     
     // 统一使用通用API获取所有模块
-    const apiUrl = `http://127.0.0.1:3000/permissions/user/${userId}`
+    const apiUrl = `http://47.111.95.19:3000/permissions/user/${userId}`
     console.log('🔍 [DEBUG] 使用通用API:', apiUrl)
     const response = await fetch(apiUrl)
     
@@ -402,7 +402,7 @@ const loadSubmissionDetails = async () => {
   
   try {
     // 获取提交详情
-    const submissionResponse = await fetch(`http://127.0.0.1:3000/forms/submission/${selectedModule.value.id}/${selectedPeriod.value}`)
+    const submissionResponse = await fetch(`http://47.111.95.19:3000/forms/submission/${selectedModule.value.id}/${selectedPeriod.value}`)
     
     if (submissionResponse.ok) {
       const submissionResult = await submissionResponse.json()
@@ -418,7 +418,7 @@ const loadSubmissionDetails = async () => {
     }
     
     // 获取附件列表
-    const attachmentResponse = await fetch(`http://127.0.0.1:3000/files/attachments/${selectedModule.value.id}/${selectedPeriod.value}`)
+    const attachmentResponse = await fetch(`http://47.111.95.19:3000/files/attachments/${selectedModule.value.id}/${selectedPeriod.value}`)
     
     if (attachmentResponse.ok) {
       const attachmentResult = await attachmentResponse.json()

@@ -158,6 +158,6 @@ const handleExport = () => {
   const company = '南华';    // 可以从状态管理获取
 
   // 使用原生方式下载 PDF
-  window.open(`http://127.0.0.1:3000/export-monthly-report/${period}?company=${company}`, '_blank');
+  window.open(`http://47.111.95.19:3000/export-monthly-report/${period}?company=${company}`, '_blank');
 };
 </script>

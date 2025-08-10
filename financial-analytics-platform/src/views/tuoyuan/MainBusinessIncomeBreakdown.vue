@@ -391,7 +391,7 @@ const calculateEditStockIncomeCumulative = async (targetPeriod: string) => {
             for (let m = 1; m < currentMonth; m++) {
                 const monthPeriod = `${year}-${m.toString().padStart(2, '0')}`
                 try {
-                    const response = await fetch(`http://127.0.0.1:3000/tuoyuan-stock-order-to-income/${monthPeriod}`)
+                    const response = await fetch(`http://47.111.95.19:3000/tuoyuan-stock-order-to-income/${monthPeriod}`)
                     if (response.ok) {
                         const result = await response.json()
                         const projectData = result.data.items.find((p: any) => 
@@ -449,7 +449,7 @@ const editStockTotalData = computed(() => {
 // 加载数据
 const loadData = async (targetPeriod: string) => {
     try {
-        const response = await fetch(`http://127.0.0.1:3000/tuoyuan-main-business-income-breakdown/${targetPeriod}`)
+        const response = await fetch(`http://47.111.95.19:3000/tuoyuan-main-business-income-breakdown/${targetPeriod}`)
         if (!response.ok) {
             throw new Error('加载数据失败')
         }
@@ -484,7 +484,7 @@ const loadData = async (targetPeriod: string) => {
 // 加载可编辑存量订单转收入数据
 const loadEditableStockData = async (targetPeriod: string) => {
     try {
-        const response = await fetch(`http://127.0.0.1:3000/tuoyuan-stock-order-to-income/${targetPeriod}`)
+        const response = await fetch(`http://47.111.95.19:3000/tuoyuan-stock-order-to-income/${targetPeriod}`)
         if (response.ok) {
             const result = await response.json()
             if (result.data && result.data.items) {
@@ -528,7 +528,7 @@ const resetEditableData = () => {
 // 加载备注和建议
 const loadRemarksAndSuggestions = async (targetPeriod: string) => {
     try {
-        const response = await fetch(`http://127.0.0.1:3000/forms/submission/${MODULE_IDS.MAIN_BUSINESS_INCOME_BREAKDOWN}/${targetPeriod}`)
+        const response = await fetch(`http://47.111.95.19:3000/forms/submission/${MODULE_IDS.MAIN_BUSINESS_INCOME_BREAKDOWN}/${targetPeriod}`)
         if (response.ok) {
             const result = await response.json()
             if (result.success && result.data) {
@@ -559,7 +559,7 @@ watch(period, async (newPeriod, oldPeriod) => {
 
 const handleSave = async () => {
     try {
-        const response = await fetch('http://127.0.0.1:3000/tuoyuan-main-business-income-breakdown', {
+        const response = await fetch('http://47.111.95.19:3000/tuoyuan-main-business-income-breakdown', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -585,7 +585,7 @@ const handleSave = async () => {
 const handleSaveAll = async () => {
     try {
         // 1. 保存主业务收入分解数据
-        const mainResponse = await fetch('http://127.0.0.1:3000/tuoyuan-main-business-income-breakdown', {
+        const mainResponse = await fetch('http://47.111.95.19:3000/tuoyuan-main-business-income-breakdown', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -601,7 +601,7 @@ const handleSaveAll = async () => {
         }
 
         // 2. 保存存量订单转收入数据
-        const stockResponse = await fetch('http://127.0.0.1:3000/tuoyuan-stock-order-to-income', {
+        const stockResponse = await fetch('http://47.111.95.19:3000/tuoyuan-stock-order-to-income', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

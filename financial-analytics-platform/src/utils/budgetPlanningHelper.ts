@@ -42,7 +42,7 @@ export const TABLE_KEY_MAPPING = {
  */
 export async function getBudgetPlanningData(tableKey: string, period: string) {
   try {
-    const response = await fetch(`http://127.0.0.1:3000/budget-planning/${period}`);
+    const response = await fetch(`http://47.111.95.19:3000/budget-planning/${period}`);
     if (!response.ok) {
       if (response.status === 404) {
         console.log(`年度预算计划: ${period}年暂无数据`);

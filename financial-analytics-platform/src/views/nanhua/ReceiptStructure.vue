@@ -153,7 +153,7 @@ const calculateAccumulated = async (targetPeriod: string) => {
             for (let m = 1; m <= currentMonth; m++) {
                 const monthPeriod = `${year}-${m.toString().padStart(2, '0')}`
                 try {
-                    const response = await fetch(`http://127.0.0.1:3000/nanhua-receipt-structure/${monthPeriod}`)
+                    const response = await fetch(`http://47.111.95.19:3000/nanhua-receipt-structure/${monthPeriod}`)
                     if (response.ok) {
                         const result = await response.json()
                         const customerData = result.data.customers.find((c: any) => c.customerName === customer.customerName)
@@ -204,7 +204,7 @@ const totalData = computed(() => {
 // 加载数据
 const loadData = async (targetPeriod: string) => {
     try {
-        const response = await fetch(`http://127.0.0.1:3000/nanhua-receipt-structure/${targetPeriod}`)
+        const response = await fetch(`http://47.111.95.19:3000/nanhua-receipt-structure/${targetPeriod}`)
         if (!response.ok) {
             if (response.status !== 404) {
                 throw new Error('加载数据失败')
@@ -240,7 +240,7 @@ const resetToDefaultData = () => {
 // 加载已保存的备注和建议
 const loadRemarksAndSuggestions = async (targetPeriod: string) => {
     try {
-        const response = await fetch(`http://127.0.0.1:3000/forms/submission/${MODULE_IDS.NANHUA_RECEIPT_STRUCTURE}/${targetPeriod}`)
+        const response = await fetch(`http://47.111.95.19:3000/forms/submission/${MODULE_IDS.NANHUA_RECEIPT_STRUCTURE}/${targetPeriod}`)
         if (response.ok) {
             const result = await response.json()
             if (result.success && result.data) {
@@ -285,7 +285,7 @@ watch(period, async (newPeriod, oldPeriod) => {
 
 const handleSave = async () => {
     try {
-        const response = await fetch('http://127.0.0.1:3000/nanhua-receipt-structure', {
+        const response = await fetch('http://47.111.95.19:3000/nanhua-receipt-structure', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

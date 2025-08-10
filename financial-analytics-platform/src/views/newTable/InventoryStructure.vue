@@ -187,7 +187,7 @@ const totalCurrentAmount = computed(() => {
 // 加载备注和建议
 const loadRemarksAndSuggestions = async (targetPeriod: string) => {
     try {
-        const response = await fetch(`http://127.0.0.1:3000/forms/submission/${MODULE_IDS.INVENTORY_STRUCTURE}/${targetPeriod}`)
+        const response = await fetch(`http://47.111.95.19:3000/forms/submission/${MODULE_IDS.INVENTORY_STRUCTURE}/${targetPeriod}`)
         if (response.ok) {
             const result = await response.json()
             if (result.success && result.data) {
@@ -253,7 +253,7 @@ const mergeData = (initialData: any, loadedData: any) => {
 // 加载存量结构数据（直接从API获取计算好的数据）
 const loadInventoryStructureData = async (targetPeriod: string) => {
     try {
-        const response = await fetch(`http://127.0.0.1:3000/inventory-structure/${targetPeriod}`)
+        const response = await fetch(`http://47.111.95.19:3000/inventory-structure/${targetPeriod}`)
         if (response.ok) {
             const result = await response.json()
             if (result.success && result.data) {
@@ -361,7 +361,7 @@ watch(period, (newPeriod, oldPeriod) => {
 const handleSave = async () => {
     try {
         // 只保存年初金额到数据库，当期金额由API计算
-        const response = await fetch('http://127.0.0.1:3000/inventory-structure', {
+        const response = await fetch('http://47.111.95.19:3000/inventory-structure', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

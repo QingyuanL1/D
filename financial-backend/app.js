@@ -332,5 +332,5 @@ app.use('*', (req, res) => {
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`财务分析后端服务启动成功，端口: ${PORT}`);
-  console.log(`健康检查: http://127.0.0.1:${PORT}/health`);
+  console.log(`健康检查: http://47.111.95.19:${PORT}/health`);
 });

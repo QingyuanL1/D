@@ -51,7 +51,7 @@ export async function recordFormSubmission(
     
     console.log('发送到 /forms/submit 的数据:', requestBody)
 
-    const response = await fetch('http://127.0.0.1:3000/forms/submit', {
+    const response = await fetch('http://47.111.95.19:3000/forms/submit', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -91,7 +91,7 @@ export async function getFormSubmissionStatus(
 ): Promise<boolean> {
   try {
     const response = await fetch(
-      `http://127.0.0.1:3000/forms/submission/${moduleId}/${period}`
+      `http://47.111.95.19:3000/forms/submission/${moduleId}/${period}`
     )
 
     if (response.status === 404) {
@@ -123,7 +123,7 @@ export async function getUserSubmissionStatus(period: string): Promise<any> {
     
     // 系统级别API，但传递userId用于权限过滤
     const response = await fetch(
-      `http://127.0.0.1:3000/forms/status/${period}?userId=${userId}`
+      `http://47.111.95.19:3000/forms/status/${period}?userId=${userId}`
     )
 
     if (!response.ok) {
@@ -485,7 +485,7 @@ export async function uploadFile(
     }
 
     // 使用自定义fetch，但不设置Content-Type（让浏览器自动设置multipart/form-data）
-    const response = await fetch('http://127.0.0.1:3000/files/upload', {
+    const response = await fetch('http://47.111.95.19:3000/files/upload', {
       method: 'POST',
       body: formData,
       signal: AbortSignal.timeout(30000) // 30秒超时，文件上传需要更长时间
@@ -528,7 +528,7 @@ export async function getFormAttachments(
   period: string
 ): Promise<any[]> {
   try {
-    const response = await fetch(`http://127.0.0.1:3000/files/attachments/${moduleId}/${period}`)
+    const response = await fetch(`http://47.111.95.19:3000/files/attachments/${moduleId}/${period}`)
     
     if (!response.ok) {
       throw new Error('获取附件列表失败')
@@ -557,7 +557,7 @@ export async function deleteFile(fileId: number): Promise<boolean> {
       throw new Error('用户信息不存在')
     }
 
-    const response = await fetch(`http://127.0.0.1:3000/files/delete/${fileId}`, {
+    const response = await fetch(`http://47.111.95.19:3000/files/delete/${fileId}`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json'
@@ -607,7 +607,7 @@ export async function getFormRemarks(
     }
 
     const response = await fetch(
-      `http://127.0.0.1:3000/forms/submission/${moduleId}/${formattedPeriod}`,
+      `http://47.111.95.19:3000/forms/submission/${moduleId}/${formattedPeriod}`,
       {
         method: 'GET',
         headers: {

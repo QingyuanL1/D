@@ -143,7 +143,7 @@ router.get('/calculate/:period', async (req, res) => {
     console.log(`开始计算南华业务利润率，期间: ${period}`);
 
     // 1. 获取南华主营业务收入数据
-    const incomeResponse = await fetch(`http://127.0.0.1:3000/nanhua-business-income/${period}`);
+    const incomeResponse = await fetch(`http://47.111.95.19:3000/nanhua-business-income/${period}`);
     let incomeData = null;
 
     if (incomeResponse.ok) {
@@ -154,7 +154,7 @@ router.get('/calculate/:period', async (req, res) => {
     }
 
     // 2. 获取南华主营业务成本数据
-    const costResponse = await fetch(`http://127.0.0.1:3000/nanhua-main-business-cost/${period}`);
+    const costResponse = await fetch(`http://47.111.95.19:3000/nanhua-main-business-cost/${period}`);
     let costData = null;
 
     if (costResponse.ok) {

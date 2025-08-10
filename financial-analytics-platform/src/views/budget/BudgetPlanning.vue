@@ -869,7 +869,7 @@ const loadData = async (targetPeriod: string) => {
     try {
         console.log(`正在加载预算计划数据，期间: ${targetPeriod}`)
         
-        const response = await fetch(`http://127.0.0.1:3000/budget-planning/${targetPeriod}`)
+        const response = await fetch(`http://47.111.95.19:3000/budget-planning/${targetPeriod}`)
         if (!response.ok) {
             if (response.status === 404) {
                 console.log('该期间暂无数据')
@@ -969,7 +969,7 @@ const handleSave = async () => {
         console.log('保存预算计划数据:', saveData)
 
         // 保存到专用表
-        const response = await fetch('http://127.0.0.1:3000/budget-planning', {
+        const response = await fetch('http://47.111.95.19:3000/budget-planning', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

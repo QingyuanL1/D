@@ -154,7 +154,7 @@ const fetchBusinessIncomeData = async () => {
     
     for (let month = 1; month <= 12; month++) {
       const period = `${selectedYear.value}-${month.toString().padStart(2, '0')}`
-      const response = await fetch(`http://127.0.0.1:3000/nanhua-business-income/${period}`)
+      const response = await fetch(`http://47.111.95.19:3000/nanhua-business-income/${period}`)
       
       if (response.ok) {
         const result = await response.json()
@@ -203,7 +203,7 @@ const fetchNonMainBusinessData = async () => {
     
     for (let month = 1; month <= 12; month++) {
       const period = `${selectedYear.value}-${month.toString().padStart(2, '0')}`
-      const response = await fetch(`http://127.0.0.1:3000/nanhua-non-main-business/${period}`)
+      const response = await fetch(`http://47.111.95.19:3000/nanhua-non-main-business/${period}`)
       
       if (response.ok) {
         const result = await response.json()

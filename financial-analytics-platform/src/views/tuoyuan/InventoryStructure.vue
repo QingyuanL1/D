@@ -369,7 +369,7 @@ const calculateFluctuation = (initial: number, current: number): string => {
 // 加载主营业务收入数据
 const loadMainBusinessIncomeData = async (targetPeriod: string) => {
     try {
-        const response = await fetch(`http://127.0.0.1:3000/tuoyuan-main-business-income/${targetPeriod}`)
+        const response = await fetch(`http://47.111.95.19:3000/tuoyuan-main-business-income/${targetPeriod}`)
         if (response.ok) {
             const result = await response.json()
             if (result.success && result.data) {
@@ -403,7 +403,7 @@ const loadAllMonthsData = async (currentPeriod: string) => {
         for (let month = 1; month < currentMonth; month++) {
             const monthPeriod = `${currentYear}-${month.toString().padStart(2, '0')}`
                 try {
-                const response = await fetch(`http://127.0.0.1:3000/tuoyuan-inventory-status/${monthPeriod}`)
+                const response = await fetch(`http://47.111.95.19:3000/tuoyuan-inventory-status/${monthPeriod}`)
                     if (response.ok) {
                         const result = await response.json()
                     if (result.success && result.data) {
@@ -542,9 +542,9 @@ const loadData = async (targetPeriod: string) => {
         
         // 并行加载三张表的数据
         const [inProgressResponse, bidFulfillmentResponse, inventoryStatusResponse] = await Promise.all([
-            fetch(`http://127.0.0.1:3000/tuoyuan-inventory-in-progress/${targetPeriod}`).catch(() => ({ ok: false, status: 404 })),
-            fetch(`http://127.0.0.1:3000/tuoyuan-bid-fulfillment/${targetPeriod}`).catch(() => ({ ok: false, status: 404 })),
-            fetch(`http://127.0.0.1:3000/tuoyuan-inventory-status/${targetPeriod}`).catch(() => ({ ok: false, status: 404 }))
+            fetch(`http://47.111.95.19:3000/tuoyuan-inventory-in-progress/${targetPeriod}`).catch(() => ({ ok: false, status: 404 })),
+            fetch(`http://47.111.95.19:3000/tuoyuan-bid-fulfillment/${targetPeriod}`).catch(() => ({ ok: false, status: 404 })),
+            fetch(`http://47.111.95.19:3000/tuoyuan-inventory-status/${targetPeriod}`).catch(() => ({ ok: false, status: 404 }))
         ])
         
         // 处理在产数据
@@ -634,7 +634,7 @@ const resetToDefaultData = () => {
 // 加载备注和建议
 const loadRemarksAndSuggestions = async (targetPeriod: string) => {
     try {
-        const response = await fetch(`http://127.0.0.1:3000/forms/submission/${MODULE_IDS.TUOYUAN_INVENTORY_STRUCTURE}/${targetPeriod}`)
+        const response = await fetch(`http://47.111.95.19:3000/forms/submission/${MODULE_IDS.TUOYUAN_INVENTORY_STRUCTURE}/${targetPeriod}`)
         if (response.ok) {
             const result = await response.json()
             if (result.success && result.data) {
@@ -699,17 +699,17 @@ const handleSave = async () => {
         
         // 并行保存到三张表
         const savePromises = [
-            fetch('http://127.0.0.1:3000/tuoyuan-inventory-in-progress', {
+            fetch('http://47.111.95.19:3000/tuoyuan-inventory-in-progress', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ period: period.value, data: inProgressData })
             }),
-            fetch('http://127.0.0.1:3000/tuoyuan-bid-fulfillment', {
+            fetch('http://47.111.95.19:3000/tuoyuan-bid-fulfillment', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ period: period.value, data: bidFulfillmentData })
             }),
-            fetch('http://127.0.0.1:3000/tuoyuan-inventory-status', {
+            fetch('http://47.111.95.19:3000/tuoyuan-inventory-status', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ period: period.value, data: inventoryStatusData })

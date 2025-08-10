@@ -87,7 +87,7 @@ const fetchContributionRateData = async () => {
     
     for (let month = 1; month <= 12; month++) {
       const period = `${selectedYear.value}-${month.toString().padStart(2, '0')}`
-      const response = await fetch(`http://127.0.0.1:3000/tuoyuan-main-business-contribution-rate/${period}`)
+      const response = await fetch(`http://47.111.95.19:3000/tuoyuan-main-business-contribution-rate/${period}`)
       
       if (response.ok) {
         const result = await response.json()
@@ -109,7 +109,7 @@ const fetchContributionRateData = async () => {
         }
       } else {
         try {
-          const calculateResponse = await fetch(`http://127.0.0.1:3000/tuoyuan-main-business-contribution-rate/calculate/${period}`, {
+          const calculateResponse = await fetch(`http://47.111.95.19:3000/tuoyuan-main-business-contribution-rate/calculate/${period}`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json'

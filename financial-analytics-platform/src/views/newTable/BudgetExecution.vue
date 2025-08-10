@@ -217,7 +217,7 @@ const loadAllMonthsData = async (currentPeriod: string) => {
         for (let month = 1; month < currentMonth; month++) {
             const monthPeriod = `${currentYear}-${month.toString().padStart(2, '0')}`
             try {
-                const response = await fetch(`http://127.0.0.1:3000/budget-execution/${monthPeriod}`)
+                const response = await fetch(`http://47.111.95.19:3000/budget-execution/${monthPeriod}`)
                 if (response.ok) {
                     const result = await response.json()
                     if (result.data) {
@@ -348,7 +348,7 @@ const totalData = computed(() => {
 const loadData = async (targetPeriod: string) => {
     console.log(`正在加载预算执行数据，期间: ${targetPeriod}`)
     try {
-        const response = await fetch(`http://127.0.0.1:3000/budget-execution/${targetPeriod}`)
+        const response = await fetch(`http://47.111.95.19:3000/budget-execution/${targetPeriod}`)
         if (!response.ok) {
             if (response.status !== 404) {
                 throw new Error('加载数据失败')
@@ -443,7 +443,7 @@ const handleSave = async () => {
 
         // 第一步：保存到专用表
         console.log('步骤1：保存到专用表...')
-        const response = await fetch('http://127.0.0.1:3000/budget-execution', {
+        const response = await fetch('http://47.111.95.19:3000/budget-execution', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

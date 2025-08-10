@@ -4,7 +4,7 @@ const router = express.Router();
 
 // 数据库连接配置
 const dbConfig = {
-    host: '127.0.0.1',
+    host: '47.111.95.19',
     user: 'root',
     password: '12345678',
     database: 'finance'

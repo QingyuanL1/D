@@ -1,7 +1,7 @@
 // 测试主营业务成本API的脚本
 const testMainBusinessCostAPI = async () => {
   const period = '2025-01'
-  const API_BASE_URL = 'http://127.0.0.1:3000'
+  const API_BASE_URL = 'http://47.111.95.19:3000'
   
   try {
     console.log(`测试获取 ${period} 期间的主营业务成本数据...`)

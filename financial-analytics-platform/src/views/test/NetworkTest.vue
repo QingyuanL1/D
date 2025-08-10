@@ -72,23 +72,23 @@ const testResults = ref<TestResult[]>([])
 const testConfigs = [
   {
     name: '仪表板数据',
-    url: 'http://127.0.0.1:3000/dashboard/company/1/南华公司'
+    url: 'http://47.111.95.19:3000/dashboard/company/1/南华公司'
   },
   {
     name: '系统公告',
-    url: 'http://127.0.0.1:3000/notifications/unread/1?limit=5'
+    url: 'http://47.111.95.19:3000/notifications/unread/1?limit=5'
   },
   {
     name: 'ROE数据',
-    url: 'http://127.0.0.1:3000/analytics/roe/2025'
+    url: 'http://47.111.95.19:3000/analytics/roe/2025'
   },
   {
     name: '资产负债表数据',
-    url: 'http://127.0.0.1:3000/financial-reports/nanhua/balance-sheet/2025-08'
+    url: 'http://47.111.95.19:3000/financial-reports/nanhua/balance-sheet/2025-08'
   },
   {
     name: '表单提交记录',
-    url: 'http://127.0.0.1:3000/forms/submission/1/2025-08'
+    url: 'http://47.111.95.19:3000/forms/submission/1/2025-08'
   }
 ]
 

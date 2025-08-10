@@ -16,7 +16,7 @@ export interface BudgetTestResult {
  */
 export async function testNewOrdersBudget(period: string): Promise<BudgetTestResult> {
   try {
-    const response = await fetch(`http://127.0.0.1:3000/new-orders/${period}`);
+    const response = await fetch(`http://47.111.95.19:3000/new-orders/${period}`);
     const result = await response.json();
     
     if (!result.success) {
@@ -54,7 +54,7 @@ export async function testNewOrdersBudget(period: string): Promise<BudgetTestRes
  */
 export async function testProjectTrackingBudget(period: string): Promise<BudgetTestResult> {
   try {
-    const response = await fetch(`http://127.0.0.1:3000/project-tracking/${period}`);
+    const response = await fetch(`http://47.111.95.19:3000/project-tracking/${period}`);
     const result = await response.json();
     
     if (!result.success) {
@@ -92,7 +92,7 @@ export async function testProjectTrackingBudget(period: string): Promise<BudgetT
  */
 export async function testBusinessIncomeBudget(period: string): Promise<BudgetTestResult> {
   try {
-    const response = await fetch(`http://127.0.0.1:3000/business-income/${period}`);
+    const response = await fetch(`http://47.111.95.19:3000/business-income/${period}`);
     const result = await response.json();
     
     if (!result.success) {

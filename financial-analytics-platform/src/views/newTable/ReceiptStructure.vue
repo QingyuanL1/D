@@ -195,7 +195,7 @@ const loadAllMonthsData = async (currentPeriod: string) => {
         for (let month = 1; month < currentMonth; month++) {
             const monthPeriod = `${currentYear}-${month.toString().padStart(2, '0')}`
             try {
-                const response = await fetch(`http://127.0.0.1:3000/receipt-structure/${monthPeriod}`)
+                const response = await fetch(`http://47.111.95.19:3000/receipt-structure/${monthPeriod}`)
                 if (response.ok) {
                     const result = await response.json()
                     if (result.success && result.data) {
@@ -372,7 +372,7 @@ const loadData = async (targetPeriod: string) => {
     try {
         console.log(`正在加载收款结构数据，期间: ${targetPeriod}`)
         
-        const response = await fetch(`http://127.0.0.1:3000/receipt-structure/${targetPeriod}`)
+        const response = await fetch(`http://47.111.95.19:3000/receipt-structure/${targetPeriod}`)
         let loadedData: any[] = []
         
         if (response.ok) {
@@ -452,7 +452,7 @@ const handleSave = async () => {
         console.log('保存数据:', saveData)
 
         // 1. 保存到 receipt_structure 表
-        const response = await fetch('http://127.0.0.1:3000/receipt-structure', {
+        const response = await fetch('http://47.111.95.19:3000/receipt-structure', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

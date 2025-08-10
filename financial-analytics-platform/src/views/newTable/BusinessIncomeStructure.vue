@@ -496,7 +496,7 @@ const loadData = async (targetPeriod: string) => {
     try {
         console.log(`正在加载营业收入结构数据，期间: ${targetPeriod}`)
 
-        const response = await fetch(`http://127.0.0.1:3000/business-income/${targetPeriod}`)
+        const response = await fetch(`http://47.111.95.19:3000/business-income/${targetPeriod}`)
         if (!response.ok) {
             if (response.status === 404) {
                 console.log('该期间暂无数据，使用初始模板')
@@ -547,7 +547,7 @@ const loadAllMonthsData = async (currentPeriod: string) => {
         for (let month = 1; month < currentMonth; month++) {
             const monthPeriod = `${currentYear}-${month.toString().padStart(2, '0')}`
             try {
-                const response = await fetch(`http://127.0.0.1:3000/main-business-income/${monthPeriod}`)
+                const response = await fetch(`http://47.111.95.19:3000/main-business-income/${monthPeriod}`)
                 if (response.ok) {
                     const result = await response.json()
                     if (result.success && result.data) {
@@ -721,7 +721,7 @@ const loadMainBusinessIncomeData = async (targetPeriod: string) => {
     console.log('开始加载主营业务收入分解数据:', targetPeriod)
     try {
         // 先加载专用表数据
-        const response = await fetch(`http://127.0.0.1:3000/main-business-income/${targetPeriod}`)
+        const response = await fetch(`http://47.111.95.19:3000/main-business-income/${targetPeriod}`)
         let businessData = null
         if (response.ok) {
             const result = await response.json()
@@ -732,7 +732,7 @@ const loadMainBusinessIncomeData = async (targetPeriod: string) => {
         }
         
         // 再加载form_submissions表数据
-        const formResponse = await fetch(`http://127.0.0.1:3000/forms/submission/${MODULE_IDS.MAIN_BUSINESS_INCOME}/${targetPeriod}`)
+        const formResponse = await fetch(`http://47.111.95.19:3000/forms/submission/${MODULE_IDS.MAIN_BUSINESS_INCOME}/${targetPeriod}`)
         let formData = null
         if (formResponse.ok) {
             const formResult = await formResponse.json()
@@ -828,7 +828,7 @@ const loadNonMainBusinessData = async (targetPeriod: string) => {
     try {
         console.log(`正在加载非主营业务数据，期间: ${targetPeriod}`)
 
-        const response = await fetch(`http://127.0.0.1:3000/non-main-business/${targetPeriod}`)
+        const response = await fetch(`http://47.111.95.19:3000/non-main-business/${targetPeriod}`)
         if (!response.ok) {
             if (response.status === 404) {
                 console.log('该期间暂无非主营业务数据，使用初始模板')
@@ -920,7 +920,7 @@ const handleSave = async () => {
         console.log('保存数据:', { period: period.value, data: incomeData.value })
 
         // 1. 保存营业收入结构数据到专用表
-        const response = await fetch('http://127.0.0.1:3000/business-income', {
+        const response = await fetch('http://47.111.95.19:3000/business-income', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -969,7 +969,7 @@ const saveMainBusinessIncomeData = async () => {
 
         console.log('保存主营业务收入数据:', saveData)
 
-        const response = await fetch('http://127.0.0.1:3000/main-business-income', {
+        const response = await fetch('http://47.111.95.19:3000/main-business-income', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -1006,7 +1006,7 @@ const saveNonMainBusinessData = async () => {
 
         console.log('保存非主营业务数据:', saveData)
 
-        const response = await fetch('http://127.0.0.1:3000/non-main-business', {
+        const response = await fetch('http://47.111.95.19:3000/non-main-business', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

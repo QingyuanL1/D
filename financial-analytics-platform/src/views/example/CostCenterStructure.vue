@@ -194,7 +194,7 @@ const costData = ref<CostItem[]>(initialData)
 // 加载数据
 const loadData = async (targetPeriod: string) => {
     try {
-        const response = await fetch(`http://127.0.0.1:3000/cost-center-structure/${targetPeriod}`)
+        const response = await fetch(`http://47.111.95.19:3000/cost-center-structure/${targetPeriod}`)
         if (!response.ok) {
             if (response.status !== 404) {
                 throw new Error('加载数据失败')
@@ -220,7 +220,7 @@ watch(() => route.query.period, (newPeriod) => {
 
 const handleSave = async () => {
     try {
-        const response = await fetch('http://127.0.0.1:3000/cost-center-structure', {
+        const response = await fetch('http://47.111.95.19:3000/cost-center-structure', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

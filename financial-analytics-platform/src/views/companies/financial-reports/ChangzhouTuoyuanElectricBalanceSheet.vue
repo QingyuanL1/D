@@ -854,7 +854,7 @@ const loadHistoricalData = async () => {
             // 只加载当前期间之前的数据用于累计计算
             if (periodStr < period.value) {
                 try {
-                    const response = await fetch(`http://127.0.0.1:3000/forms/submission/${moduleId}/${periodStr}`)
+                    const response = await fetch(`http://47.111.95.19:3000/forms/submission/${moduleId}/${periodStr}`)
                     if (response.ok) {
                         const result = await response.json()
                         if (result.success && result.data && result.data.submission_data) {
@@ -1073,7 +1073,7 @@ const loadSavedData = async () => {
     clearCurrentData()
 
     try {
-        const response = await fetch(`http://127.0.0.1:3000/forms/submission/${moduleId}/${period.value}`)
+        const response = await fetch(`http://47.111.95.19:3000/forms/submission/${moduleId}/${period.value}`)
         if (response.ok) {
             const result = await response.json()
             if (result.success && result.data && result.data.submission_data) {

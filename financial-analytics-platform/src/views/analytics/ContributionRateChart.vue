@@ -146,7 +146,7 @@ const fetchData = async () => {
 // 获取边际贡献率数据
 const fetchContributionRateData = async () => {
   try {
-    const response = await fetch(`http://127.0.0.1:3000/analytics/contribution-rate/${selectedYear.value}`)
+    const response = await fetch(`http://47.111.95.19:3000/analytics/contribution-rate/${selectedYear.value}`)
 
     if (response.ok) {
       const result = await response.json()

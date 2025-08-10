@@ -419,7 +419,7 @@ const updateCharts = () => {
 
 const fetchData = async () => {
   try {
-    const response = await fetch(`http://127.0.0.1:3000/income-statement/annual/${selectedYear.value}`)
+    const response = await fetch(`http://47.111.95.19:3000/income-statement/annual/${selectedYear.value}`)
     if (!response.ok) {
       throw new Error('获取数据失败')
     }

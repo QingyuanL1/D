@@ -188,7 +188,7 @@ const loadAllMonthsData = async (currentPeriod: string) => {
         for (let i = 1; i <= currentMonth; i++) {
             const monthPeriod = `${year}-${i.toString().padStart(2, '0')}`
             try {
-                const response = await fetch(`http://127.0.0.1:3000/department-cost-input/${monthPeriod}`)
+                const response = await fetch(`http://47.111.95.19:3000/department-cost-input/${monthPeriod}`)
                 if (response.ok) {
                     const result = await response.json()
                     if (result.data) {
@@ -313,7 +313,7 @@ const updateAccumulatedIncome = () => {
 const loadData = async (targetPeriod: string) => {
     console.log(`正在加载部门成本中心数据，期间: ${targetPeriod}`)
     try {
-        const response = await fetch(`http://127.0.0.1:3000/department-cost-input/${targetPeriod}`)
+        const response = await fetch(`http://47.111.95.19:3000/department-cost-input/${targetPeriod}`)
         if (!response.ok) {
             if (response.status !== 404) {
                 throw new Error('加载数据失败')
@@ -384,7 +384,7 @@ const handleSave = async () => {
         
         // 第一步：保存到专用表
         console.log('步骤1：保存到专用表...')
-        const response = await fetch('http://127.0.0.1:3000/department-cost-input', {
+        const response = await fetch('http://47.111.95.19:3000/department-cost-input', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

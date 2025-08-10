@@ -180,8 +180,8 @@
                 </svg>
               </div>
               <div class="text-right">
-                <div class="text-sm font-semibold text-blue-600">{{ analysisModuleCompletionRates.costCenter }}%</div>
-                <div class="text-xs text-gray-500">完成度</div>
+                <div class="text-sm font-semibold text-blue-600">{{ costCenterData.completionRate }}%</div>
+                <div class="text-xs text-gray-500">年度完成率</div>
               </div>
             </div>
             <h4 class="text-lg font-medium text-gray-900 mb-2">成本中心分析</h4>
@@ -190,7 +190,7 @@
               <div style="width: 100%; height: 8px; background-color: #e5e7eb; border-radius: 4px;">
                 <div 
                   style="height: 8px; border-radius: 4px; background-color: #2563eb; transition: width 0.3s ease;"
-                  :style="`width: ${analysisModuleCompletionRates.costCenter}%;`"
+                  :style="`width: ${Math.min(Math.max(costCenterData.completionRate, 0), 100)}%;`"
                 ></div>
               </div>
             </div>
@@ -207,8 +207,8 @@
                 </svg>
               </div>
               <div class="text-right">
-                <div class="text-sm font-semibold text-blue-600">{{ analysisModuleCompletionRates.businessIncome }}%</div>
-                <div class="text-xs text-gray-500">完成度</div>
+                <div class="text-sm font-semibold text-blue-600">{{ businessIncomeData.completionRate }}%</div>
+                <div class="text-xs text-gray-500">年度完成率</div>
               </div>
             </div>
             <h4 class="text-lg font-medium text-gray-900 mb-2">营业收入分析</h4>
@@ -217,7 +217,7 @@
               <div style="width: 100%; height: 8px; background-color: #e5e7eb; border-radius: 4px;">
                 <div 
                   style="height: 8px; border-radius: 4px; background-color: #2563eb; transition: width 0.3s ease;"
-                  :style="`width: ${analysisModuleCompletionRates.businessIncome}%;`"
+                  :style="`width: ${Math.min(Math.max(businessIncomeData.completionRate, 0), 100)}%;`"
                 ></div>
               </div>
             </div>
@@ -283,10 +283,62 @@
           </div>
 
           <!-- 边际贡献率卡片 -->
-          <ContributionRateCard />
+          <div class="bg-white p-6 rounded-lg border border-gray-200 hover:border-blue-400 hover:shadow-sm transition-all relative">
+            <div class="flex items-center justify-between mb-4">
+              <div class="p-2 bg-blue-100 rounded-md">
+                <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                </svg>
+              </div>
+              <div class="text-right">
+                <div class="text-sm font-semibold text-blue-600">{{ contributionRateData.completionRate }}%</div>
+                <div class="text-xs text-gray-500">完成度</div>
+              </div>
+            </div>
+            <h4 class="text-lg font-medium text-gray-900 mb-2">边际贡献率分析</h4>
+            <p class="text-sm text-gray-600 mb-3 h-12">计划值: {{ contributionRateData.targetRate }}%</p>
+            <div class="mb-4">
+              <div style="width: 100%; height: 8px; background-color: #e5e7eb; border-radius: 4px;">
+                <div 
+                  style="height: 8px; border-radius: 4px; background-color: #2563eb; transition: width 0.3s ease;"
+                  :style="`width: ${Math.min(Math.max(contributionRateData.completionRate, 0), 100)}%;`"
+                ></div>
+              </div>
+            </div>
+            <router-link to="/analytics/contribution-rate-chart" class="block w-full text-center py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors" @click="handleNavigation">
+              质量情况
+            </router-link>
+          </div>
 
           <!-- 毛利率卡片 -->
-          <ProfitMarginCard />
+          <div class="bg-white p-6 rounded-lg border border-gray-200 hover:border-blue-400 hover:shadow-sm transition-all relative">
+            <div class="flex items-center justify-between mb-4">
+              <div class="p-2 bg-blue-100 rounded-md">
+                <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                </svg>
+              </div>
+              <div class="text-right">
+                <div class="text-sm font-semibold text-blue-600">
+                  {{ profitMarginData.currentRate > 0 ? profitMarginData.currentRate.toFixed(2) + '%' : '暂无' }}
+                </div>
+                <div class="text-xs text-gray-500">毛利率</div>
+              </div>
+            </div>
+            <h4 class="text-lg font-medium text-gray-900 mb-2">毛利率分析</h4>
+            <p class="text-sm text-gray-600 mb-3 h-12">分析主营业务毛利率结构与趋势</p>
+            <div class="mb-4">
+              <div style="width: 100%; height: 8px; background-color: #e5e7eb; border-radius: 4px;">
+                <div 
+                  style="height: 8px; border-radius: 4px; background-color: #2563eb; transition: width 0.3s ease;"
+                  :style="`width: ${profitMarginData.currentRate > 0 ? Math.min(profitMarginData.currentRate, 100) : 0}%;`"
+                ></div>
+              </div>
+            </div>
+            <router-link to="/analytics/profit-margin-chart" class="block w-full text-center py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors" @click="handleNavigation">
+              质量情况
+            </router-link>
+          </div>
 
           <!-- 净利率分析卡片 -->
           <div class="bg-white p-6 rounded-lg border border-gray-200 hover:border-blue-400 hover:shadow-sm transition-all relative">
@@ -479,8 +531,6 @@ import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import * as echarts from 'echarts'
 import storage from 'store'
-import ContributionRateCard from '@/views/analytics/ContributionRateCard.vue'
-import ProfitMarginCard from '@/views/analytics/ProfitMarginCard.vue'
 
 interface DashboardData {
   user: {
@@ -568,6 +618,33 @@ const netProfitMarginRate = ref(0)
 // 资产负债率数据
 const assetLiabilityRatio = ref(0)
 
+// 成本中心年度完成情况数据
+const costCenterData = ref({
+  yearlyPlan: 0,
+  totalCumulativeIncome: 0,
+  completionRate: 0
+})
+
+// 营业收入年度完成情况数据
+const businessIncomeData = ref({
+  totalYearlyPlan: 0,
+  totalCurrentTotal: 0,
+  completionRate: 0
+})
+
+// 边际贡献率年度完成情况数据
+const contributionRateData = ref({
+  targetRate: 21.98,
+  currentRate: 0,
+  completionRate: 0
+})
+
+// 毛利率年度完成情况数据
+const profitMarginData = ref({
+  targetRate: 24.00,
+  currentRate: 0,
+  completionRate: 0
+})
 
 // 公告详情相关
 const showAnnouncementDetail = ref(false)
@@ -619,7 +696,7 @@ const safeCompletionRates = computed(() => {
 const fetchDashboardData = async () => {
   try {
     const userId = userStore.userInfo?.id || 1
-    const response = await fetch(`http://127.0.0.1:3000/dashboard/user/${userId}`)
+    const response = await fetch(`http://47.111.95.19:3000/dashboard/user/${userId}`)
     
     if (!response.ok) {
       throw new Error('获取仪表板数据失败')
@@ -638,7 +715,7 @@ const fetchAnnouncements = async () => {
   try {
     loadingAnnouncements.value = true
     const userId = userStore.userInfo?.id || 1
-    const response = await fetch(`http://127.0.0.1:3000/notifications/unread/${userId}?limit=5`)
+    const response = await fetch(`http://47.111.95.19:3000/notifications/unread/${userId}?limit=5`)
     
     if (!response.ok) {
       throw new Error('获取公告失败')
@@ -659,7 +736,7 @@ const fetchAnnouncements = async () => {
     console.error('获取公告失败:', error)
     // 如果新API失败，回退到旧的API
     try {
-      const response = await fetch('http://127.0.0.1:3000/dashboard/announcements')
+      const response = await fetch('http://47.111.95.19:3000/dashboard/announcements')
       if (response.ok) {
         const result = await response.json()
         if (result.success) {
@@ -701,7 +778,7 @@ const markAsReadAndClose = async (notificationId: number) => {
 const markAsRead = async (notificationId: number) => {
   try {
     const userId = userStore.userInfo?.id || 1
-    const response = await fetch(`http://127.0.0.1:3000/notifications/${notificationId}/read`, {
+    const response = await fetch(`http://47.111.95.19:3000/notifications/${notificationId}/read`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -755,7 +832,7 @@ const getTypeText = (type: string) => {
 const fetchAnalysisCompletionRates = async () => {
   try {
     const currentYear = new Date().getFullYear()
-    const response = await fetch(`http://127.0.0.1:3000/analytics/completion-rates/${currentYear}`)
+    const response = await fetch(`http://47.111.95.19:3000/analytics/completion-rates/${currentYear}`)
     
     if (!response.ok) {
       throw new Error('获取分析模块完成率失败')
@@ -804,7 +881,7 @@ const formatNumber = (num: number) => {
 const fetchROEData = async () => {
   try {
     const currentYear = new Date().getFullYear()
-    const response = await fetch(`http://127.0.0.1:3000/analytics/roe/${currentYear}`)
+    const response = await fetch(`http://47.111.95.19:3000/analytics/roe/${currentYear}`)
     
     if (!response.ok) {
       throw new Error('获取净资产收益率数据失败')
@@ -849,7 +926,7 @@ const fetchROEData = async () => {
 const fetchNetProfitMarginData = async () => {
   try {
     const currentYear = new Date().getFullYear()
-    const response = await fetch(`http://127.0.0.1:3000/analytics/net-profit-margin/${currentYear}`)
+    const response = await fetch(`http://47.111.95.19:3000/analytics/net-profit-margin/${currentYear}`)
     
     if (!response.ok) {
       throw new Error('获取净利率数据失败')
@@ -872,7 +949,7 @@ const fetchNetProfitMarginData = async () => {
 const fetchAssetLiabilityRatioData = async () => {
   try {
     const currentYear = new Date().getFullYear()
-    const response = await fetch(`http://127.0.0.1:3000/analytics/asset-liability-ratio/${currentYear}`)
+    const response = await fetch(`http://47.111.95.19:3000/analytics/asset-liability-ratio/${currentYear}`)
     
     if (!response.ok) {
       throw new Error('获取资产负债率数据失败')
@@ -891,6 +968,238 @@ const fetchAssetLiabilityRatioData = async () => {
   }
 }
 
+// 获取成本中心年度完成情况数据
+const fetchCostCenterCompletionData = async () => {
+  try {
+    const currentYear = new Date().getFullYear()
+    const response = await fetch(`http://47.111.95.19:3000/analytics/cost-center/${currentYear}`)
+    
+    if (!response.ok) {
+      throw new Error('获取成本中心数据失败')
+    }
+    
+    const result = await response.json()
+    if (result.success && result.data) {
+      const summary = result.data.summary || {}
+      const yearlyPlan = result.data.yearlyPlan || 0
+      
+      // 计算总累计收入
+      const categories = ['equipment', 'component', 'engineering', 'nonMainBusiness']
+      const totalCumulativeIncome = categories.reduce((sum, key) => {
+        return sum + (summary[key]?.cumulativeIncome || 0)
+      }, 0)
+      
+      // 计算完成率
+      const completionRate = yearlyPlan > 0 ? 
+        Number(((totalCumulativeIncome / yearlyPlan) * 100).toFixed(2)) : 0
+      
+      costCenterData.value = {
+        yearlyPlan,
+        totalCumulativeIncome,
+        completionRate
+      }
+    } else {
+      console.warn('成本中心数据获取失败:', result.message)
+      costCenterData.value = {
+        yearlyPlan: 0,
+        totalCumulativeIncome: 0,
+        completionRate: 0
+      }
+    }
+  } catch (error) {
+    console.error('获取成本中心数据失败:', error)
+    costCenterData.value = {
+      yearlyPlan: 0,
+      totalCumulativeIncome: 0,
+      completionRate: 0
+    }
+  }
+}
+
+// 获取营业收入年度完成情况数据
+const fetchBusinessIncomeCompletionData = async () => {
+  try {
+    const currentYear = new Date().getFullYear()
+    const response = await fetch(`http://47.111.95.19:3000/analytics/business-income/${currentYear}`)
+    
+    if (!response.ok) {
+      throw new Error('获取营业收入数据失败')
+    }
+    
+    const result = await response.json()
+    if (result.success && result.data) {
+      // 使用与BusinessIncomeChart.vue相同的固定年度计划值
+      const hardcodedPlans = {
+        main: 59400,
+        nonMain: 600
+      }
+      
+      // 计算总年度计划和当期累计
+      const totalYearlyPlan = hardcodedPlans.main + hardcodedPlans.nonMain
+      const mainCurrentTotal = result.data.summary?.main?.currentTotal || 0
+      const nonMainCurrentTotal = result.data.summary?.nonMain?.currentTotal || 0
+      const totalCurrentTotal = mainCurrentTotal + nonMainCurrentTotal
+      
+      // 计算完成率
+      const completionRate = totalYearlyPlan > 0 ? 
+        Number(((totalCurrentTotal / totalYearlyPlan) * 100).toFixed(2)) : 0
+      
+      businessIncomeData.value = {
+        totalYearlyPlan,
+        totalCurrentTotal,
+        completionRate
+      }
+    } else {
+      console.warn('营业收入数据获取失败:', result.message)
+      businessIncomeData.value = {
+        totalYearlyPlan: 0,
+        totalCurrentTotal: 0,
+        completionRate: 0
+      }
+    }
+  } catch (error) {
+    console.error('获取营业收入数据失败:', error)
+    businessIncomeData.value = {
+      totalYearlyPlan: 0,
+      totalCurrentTotal: 0,
+      completionRate: 0
+    }
+  }
+}
+
+// 获取边际贡献率年度完成情况数据
+const fetchContributionRateCompletionData = async () => {
+  try {
+    const currentYear = new Date().getFullYear()
+    const response = await fetch(`http://47.111.95.19:3000/analytics/contribution-rate/${currentYear}`)
+    
+    if (!response.ok) {
+      throw new Error('获取边际贡献率数据失败')
+    }
+    
+    const result = await response.json()
+    if (result.success && result.data) {
+      if (result.data.hasData === false) {
+        // 没有数据的情况
+        contributionRateData.value = {
+          targetRate: 21.98,
+          currentRate: 0,
+          completionRate: 0
+        }
+      } else {
+        // 有数据的情况 - 使用各板块数据计算加权平均
+        const segmentData = result.data.segmentData || []
+        let weightedSum = 0
+        let totalWeight = 0
+        
+        // 根据各板块的计划值作为权重计算加权平均
+        segmentData.forEach(segment => {
+          if (segment.actual > 0 && segment.plan > 0) {
+            weightedSum += segment.actual * segment.plan
+            totalWeight += segment.plan
+          }
+        })
+        
+        // 如果没有有效的板块数据，尝试使用API返回的currentRate
+        let currentRate = 0
+        if (totalWeight > 0) {
+          currentRate = Number((weightedSum / totalWeight).toFixed(2))
+        } else {
+          currentRate = result.data.currentRate || 0
+        }
+        
+        const completionRate = Math.min(100, Math.round((currentRate / 21.98) * 100))
+        
+        contributionRateData.value = {
+          targetRate: 21.98,
+          currentRate,
+          completionRate
+        }
+      }
+    } else {
+      console.warn('边际贡献率数据获取失败:', result.message)
+      contributionRateData.value = {
+        targetRate: 21.98,
+        currentRate: 0,
+        completionRate: 0
+      }
+    }
+  } catch (error) {
+    console.error('获取边际贡献率数据失败:', error)
+    contributionRateData.value = {
+      targetRate: 21.98,
+      currentRate: 0,
+      completionRate: 0
+    }
+  }
+}
+
+// 获取毛利率年度完成情况数据
+const fetchProfitMarginCompletionData = async () => {
+  try {
+    const currentYear = new Date().getFullYear()
+    const response = await fetch(`http://47.111.95.19:3000/analytics/profit-margin/${currentYear}`)
+    
+    if (!response.ok) {
+      throw new Error('获取毛利率数据失败')
+    }
+    
+    const result = await response.json()
+    if (result.success && result.data) {
+      if (result.data.hasData === false) {
+        // 没有数据的情况
+        profitMarginData.value = {
+          targetRate: 24.00,
+          currentRate: 0,
+          completionRate: 0
+        }
+      } else {
+        // 有数据的情况 - 使用各板块数据计算加权平均
+        const segmentData = result.data.segmentData || []
+        let weightedSum = 0
+        let totalWeight = 0
+        
+        // 根据各板块的计划值作为权重计算加权平均
+        segmentData.forEach(segment => {
+          if (segment.actual > 0 && segment.plan > 0) {
+            weightedSum += segment.actual * segment.plan
+            totalWeight += segment.plan
+          }
+        })
+        
+        // 如果没有有效的板块数据，尝试使用API返回的currentRate
+        let currentRate = 0
+        if (totalWeight > 0) {
+          currentRate = Number((weightedSum / totalWeight).toFixed(2))
+        } else {
+          currentRate = result.data.currentRate || 0
+        }
+        
+        const completionRate = Math.min(100, Math.round((currentRate / 24.00) * 100))
+        
+        profitMarginData.value = {
+          targetRate: 24.00,
+          currentRate,
+          completionRate
+        }
+      }
+    } else {
+      console.warn('毛利率数据获取失败:', result.message)
+      profitMarginData.value = {
+        targetRate: 24.00,
+        currentRate: 0,
+        completionRate: 0
+      }
+    }
+  } catch (error) {
+    console.error('获取毛利率数据失败:', error)
+    profitMarginData.value = {
+      targetRate: 24.00,
+      currentRate: 0,
+      completionRate: 0
+    }
+  }
+}
 
 // 显示ROE详情
 const showROEDetail = () => {
@@ -1116,7 +1425,7 @@ const updateCharts = () => {
 
 const fetchChartData = async () => {
   try {
-    const response = await fetch(`http://127.0.0.1:3000/income-statement/annual/${selectedYear.value}`)
+    const response = await fetch(`http://47.111.95.19:3000/income-statement/annual/${selectedYear.value}`)
     if (!response.ok) {
       console.warn('获取图表数据失败')
       return
@@ -1187,7 +1496,11 @@ onMounted(async () => {
     fetchAnalysisCompletionRates(),
     fetchROEData(),
     fetchNetProfitMarginData(),
-    fetchAssetLiabilityRatioData()
+    fetchAssetLiabilityRatioData(),
+    fetchCostCenterCompletionData(),
+    fetchBusinessIncomeCompletionData(),
+    fetchContributionRateCompletionData(),
+    fetchProfitMarginCompletionData()
   ])
   
   // 先获取图表数据，再初始化图表

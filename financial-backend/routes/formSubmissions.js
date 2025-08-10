@@ -4,7 +4,7 @@ const router = express.Router();
 
 // 数据库连接池
 const pool = mysql.createPool({
-  host: '127.0.0.1',
+  host: '47.111.95.19',
   port: 3306,
   user: 'root',
   password: '12345678',

@@ -92,7 +92,7 @@ const loadData = async (targetPeriod: string) => {
     try {
         console.log(`正在加载现金流量表数据，期间: ${targetPeriod}`)
         
-        const response = await fetch(`http://127.0.0.1:3000/cash-flow/${targetPeriod}`)
+        const response = await fetch(`http://47.111.95.19:3000/cash-flow/${targetPeriod}`)
         if (!response.ok) {
             if (response.status === 404) {
                 console.log('该期间暂无数据，使用初始模板')
@@ -159,7 +159,7 @@ const handleSave = async () => {
             })
         })
 
-        const response = await fetch('http://127.0.0.1:3000/cash-flow', {
+        const response = await fetch('http://47.111.95.19:3000/cash-flow', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

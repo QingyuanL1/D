@@ -173,7 +173,7 @@ const calculateCumulativeCollected = async (targetPeriod: string) => {
             for (let m = 1; m <= currentMonth; m++) {
                 const monthPeriod = `${year}-${m.toString().padStart(2, '0')}`
                 try {
-                    const response = await fetch(`http://127.0.0.1:3000/tuoyuan-overdue-receivables/${monthPeriod}`)
+                    const response = await fetch(`http://47.111.95.19:3000/tuoyuan-overdue-receivables/${monthPeriod}`)
                     if (response.ok) {
                         const result = await response.json()
                         const itemData = result.data.items.find((i: any) =>
@@ -233,7 +233,7 @@ const totalData = computed(() => {
 // 加载数据
 const loadData = async (targetPeriod: string) => {
     try {
-        const response = await fetch(`http://127.0.0.1:3000/tuoyuan-overdue-receivables/${targetPeriod}`)
+        const response = await fetch(`http://47.111.95.19:3000/tuoyuan-overdue-receivables/${targetPeriod}`)
         if (!response.ok) {
             if (response.status !== 404) {
                 throw new Error('加载数据失败')
@@ -270,7 +270,7 @@ const resetToDefaultData = () => {
 // 加载备注和建议
 const loadRemarksAndSuggestions = async (targetPeriod: string) => {
     try {
-        const response = await fetch(`http://127.0.0.1:3000/forms/submission/${MODULE_IDS.TUOYUAN_OVERDUE_RECEIVABLES}/${targetPeriod}`)
+        const response = await fetch(`http://47.111.95.19:3000/forms/submission/${MODULE_IDS.TUOYUAN_OVERDUE_RECEIVABLES}/${targetPeriod}`)
         if (response.ok) {
             const result = await response.json()
             if (result.success && result.data) {
@@ -305,7 +305,7 @@ watch(period, async (newPeriod, oldPeriod) => {
 
 const handleSave = async () => {
     try {
-        const response = await fetch('http://127.0.0.1:3000/tuoyuan-overdue-receivables', {
+        const response = await fetch('http://47.111.95.19:3000/tuoyuan-overdue-receivables', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

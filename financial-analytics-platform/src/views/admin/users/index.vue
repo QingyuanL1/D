@@ -416,7 +416,7 @@ const paginatedUsers = computed(() => {
 // 方法
 const fetchUsers = async () => {
   try {
-    const response = await fetch('http://127.0.0.1:3000/users')
+    const response = await fetch('http://47.111.95.19:3000/users')
     const result = await response.json()
     if (result.success) {
       users.value = result.data.users
@@ -428,7 +428,7 @@ const fetchUsers = async () => {
 
 const fetchRoles = async () => {
   try {
-    const response = await fetch('http://127.0.0.1:3000/permissions/roles')
+    const response = await fetch('http://47.111.95.19:3000/permissions/roles')
     const result = await response.json()
     if (result.success) {
       roles.value = result.data
@@ -440,7 +440,7 @@ const fetchRoles = async () => {
 
 const createUser = async () => {
   try {
-    const response = await fetch('http://127.0.0.1:3000/users', {
+    const response = await fetch('http://47.111.95.19:3000/users', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -469,7 +469,7 @@ const createUser = async () => {
 
 const updateUser = async () => {
   try {
-    const response = await fetch(`http://127.0.0.1:3000/users/${userForm.value.id}`, {
+    const response = await fetch(`http://47.111.95.19:3000/users/${userForm.value.id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json'
@@ -501,7 +501,7 @@ const deleteUser = async (user: User) => {
   }
   
   try {
-    const response = await fetch(`http://127.0.0.1:3000/users/${user.id}`, {
+    const response = await fetch(`http://47.111.95.19:3000/users/${user.id}`, {
       method: 'DELETE'
     })
     
@@ -534,7 +534,7 @@ const viewPermissions = async (user: User) => {
   showPermissionModal.value = true
   
   try {
-    const response = await fetch(`http://127.0.0.1:3000/permissions/user/${user.id}`)
+    const response = await fetch(`http://47.111.95.19:3000/permissions/user/${user.id}`)
     const result = await response.json()
     if (result.success) {
       userPermissions.value = result.data

@@ -52,7 +52,7 @@ async function makeRequest(url) {
 async function validateEndpoint(tableKey, routeInfo, testPeriod) {
     console.log(`\n测试 ${routeInfo.name} (${tableKey})...`);
     
-    const url = `http://127.0.0.1:3000/${routeInfo.route}/${testPeriod}`;
+    const url = `http://47.111.95.19:3000/${routeInfo.route}/${testPeriod}`;
     const result = await makeRequest(url);
     
     if (!result.success) {

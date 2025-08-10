@@ -88,7 +88,7 @@ async function testShanghaiNanhuaLanlingCumulative() {
 
         // 调用计算API
         const fetch = (await import('node-fetch')).default;
-        const response = await fetch('http://127.0.0.1:3000/shanghai-nanhua-lanling-cash-flow/calculate-cumulative', {
+        const response = await fetch('http://47.111.95.19:3000/shanghai-nanhua-lanling-cash-flow/calculate-cumulative', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -136,7 +136,7 @@ async function testShanghaiNanhuaLanlingCumulative() {
 
         // 5. 测试自动计算保存
         console.log('\n5. 测试自动计算保存功能...');
-        const saveResponse = await fetch('http://127.0.0.1:3000/shanghai-nanhua-lanling-cash-flow', {
+        const saveResponse = await fetch('http://47.111.95.19:3000/shanghai-nanhua-lanling-cash-flow', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

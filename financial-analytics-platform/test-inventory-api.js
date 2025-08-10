@@ -1,7 +1,7 @@
 // 测试存量结构API的脚本
 const testInventoryAPI = async () => {
   const period = '2025-01'
-  const API_BASE_URL = 'http://127.0.0.1:3000'
+  const API_BASE_URL = 'http://47.111.95.19:3000'
   
   try {
     console.log(`测试获取 ${period} 期间的存量结构数据...`)

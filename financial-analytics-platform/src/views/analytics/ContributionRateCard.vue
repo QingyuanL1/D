@@ -39,7 +39,7 @@ const completionRate = ref(0)
 const fetchContributionRateData = async () => {
   try {
     const currentYear = new Date().getFullYear()
-    const response = await fetch(`http://127.0.0.1:3000/analytics/contribution-rate/${currentYear}`)
+    const response = await fetch(`http://47.111.95.19:3000/analytics/contribution-rate/${currentYear}`)
 
     if (response.ok) {
       const result = await response.json()

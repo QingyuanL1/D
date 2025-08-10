@@ -134,7 +134,7 @@ export const frameIn: Array<RouteRecordRaw> = [
       {
         path: 'changzhou-tuoyuan-balance-sheet-2025',
         name: 'ChangzhouTuoyuanBalanceSheet2025',
-        component: () => import('@/views/companies/financial-reports/ChangzhouTuoyuanBalanceSheet2025.vue'),
+        component: () => import('@/views/companies/financial-reports/ChangzhouTuoyuanElectricBalanceSheet.vue'),
         meta: {
           title: '常州拓源资产负债表2025',
         },

@@ -5,8 +5,8 @@
 ### ✅ **预算数据正常工作的API接口（22个）**
 
 #### 1. 新签订单结构与质量
-- **接口**: `GET http://127.0.0.1:3000/new-orders/{period}`
-- **示例**: http://127.0.0.1:3000/new-orders/2025-06
+- **接口**: `GET http://47.111.95.19:3000/new-orders/{period}`
+- **示例**: http://47.111.95.19:3000/new-orders/2025-06
 - **状态**: ✅ 预算数据正常
 - **返回数据**: equipment, components, engineering 各类别的年度计划
 ```json
@@ -26,8 +26,8 @@
 ```
 
 #### 2. 主营业务收入分解情况
-- **接口**: `GET http://127.0.0.1:3000/main-business-income/{period}`
-- **示例**: http://127.0.0.1:3000/main-business-income/2025-07
+- **接口**: `GET http://47.111.95.19:3000/main-business-income/{period}`
+- **示例**: http://47.111.95.19:3000/main-business-income/2025-07
 - **状态**: ✅ 预算数据正常
 - **返回数据**: 设备、元件、工程的年度计划和执行进度
 ```json
@@ -47,8 +47,8 @@
 ```
 
 #### 3. 项目跟踪情况
-- **接口**: `GET http://127.0.0.1:3000/project-tracking/{period}`
-- **示例**: http://127.0.0.1:3000/project-tracking/2025-06
+- **接口**: `GET http://47.111.95.19:3000/project-tracking/{period}`
+- **示例**: http://47.111.95.19:3000/project-tracking/2025-06
 - **状态**: ✅ 预算数据正常
 - **返回数据**: 各客户的项目跟踪预算数据
 ```json
@@ -68,8 +68,8 @@
 ```
 
 #### 4. 当年订单转收入
-- **接口**: `GET http://127.0.0.1:3000/order-to-income/{period}`
-- **示例**: http://127.0.0.1:3000/order-to-income/2025-06
+- **接口**: `GET http://47.111.95.19:3000/order-to-income/{period}`
+- **示例**: http://47.111.95.19:3000/order-to-income/2025-06
 - **状态**: ✅ 预算数据正常
 - **返回数据**: signedOrder 和 yearlyPlan 数据
 ```json
@@ -90,8 +90,8 @@
 ```
 
 #### 5. 存量订单转收入
-- **接口**: `GET http://127.0.0.1:3000/stock-order-to-income/{period}`
-- **示例**: http://127.0.0.1:3000/stock-order-to-income/2025-06
+- **接口**: `GET http://47.111.95.19:3000/stock-order-to-income/{period}`
+- **示例**: http://47.111.95.19:3000/stock-order-to-income/2025-06
 - **状态**: ✅ 预算数据正常
 - **返回数据**: 存量订单的预算数据
 ```json
@@ -112,8 +112,8 @@
 ```
 
 #### 6. 营业收入结构与质量
-- **接口**: `GET http://127.0.0.1:3000/business-income/{period}`
-- **示例**: http://127.0.0.1:3000/business-income/2025-06
+- **接口**: `GET http://47.111.95.19:3000/business-income/{period}`
+- **示例**: http://47.111.95.19:3000/business-income/2025-06
 - **状态**: ✅ 预算数据正常
 - **返回数据**: 主营业务的年度预算
 ```json
@@ -130,8 +130,8 @@
 ```
 
 #### 7. 非主营业务情况
-- **接口**: `GET http://127.0.0.1:3000/non-main-business/{period}`
-- **示例**: http://127.0.0.1:3000/non-main-business/2025-06
+- **接口**: `GET http://47.111.95.19:3000/non-main-business/{period}`
+- **示例**: http://47.111.95.19:3000/non-main-business/2025-06
 - **状态**: ✅ 预算数据部分正常
 - **返回数据**: 各类非主营业务的预算数据
 ```json
@@ -149,16 +149,16 @@
 ```
 
 #### 8. 主营业务成本结构
-- **接口**: `GET http://127.0.0.1:3000/main-business-cost/{period}`
-- **示例**: http://127.0.0.1:3000/main-business-cost/2025-06
+- **接口**: `GET http://47.111.95.19:3000/main-business-cost/{period}`
+- **示例**: http://47.111.95.19:3000/main-business-cost/2025-06
 - **状态**: ✅ 预算数据基本正常
 - **返回数据**: 成本结构的预算数据
 
 ---
 
 #### 21. 主营业务贡献率结构
-- **接口**: `GET http://127.0.0.1:3000/business-contribution/{period}`
-- **示例**: http://127.0.0.1:3000/business-contribution/2025-06
+- **接口**: `GET http://47.111.95.19:3000/business-contribution/{period}`
+- **示例**: http://47.111.95.19:3000/business-contribution/2025-06
 - **状态**: ✅ 预算数据正常
 - **返回数据**: 各板块各客户类型的主营业务贡献率预算数据
 ```json
@@ -187,8 +187,8 @@
 ---
 
 #### 22. 部门成本中心盈亏
-- **接口**: `GET http://127.0.0.1:3000/department-cost-input/{period}`
-- **示例**: http://127.0.0.1:3000/department-cost-input/2025-06
+- **接口**: `GET http://47.111.95.19:3000/department-cost-input/{period}`
+- **示例**: http://47.111.95.19:3000/department-cost-input/2025-06
 - **状态**: ✅ 预算数据正常
 - **返回数据**: 各部门的年度预算数据
 ```json
@@ -230,13 +230,13 @@
 ### ⚠️ **需要修复的API接口（1个）**
 
 #### 23. 成本估算人员提取
-- **接口**: `GET http://127.0.0.1:3000/cost-estimation/{period}`
-- **示例**: http://127.0.0.1:3000/cost-estimation/2025-06
+- **接口**: `GET http://47.111.95.19:3000/cost-estimation/{period}`
+- **示例**: http://47.111.95.19:3000/cost-estimation/2025-06
 - **状态**: ⚠️ 预算数据未显示
 
 #### 9. 主营业务毛利率结构
-- **接口**: `GET http://127.0.0.1:3000/business-profit-margin/{period}`
-- **示例**: http://127.0.0.1:3000/business-profit-margin/2025-06
+- **接口**: `GET http://47.111.95.19:3000/business-profit-margin/{period}`
+- **示例**: http://47.111.95.19:3000/business-profit-margin/2025-06
 - **状态**: ✅ 预算数据正常
 - **返回数据**: 毛利率结构的预算百分比数据
 ```json
@@ -252,8 +252,8 @@
 ```
 
 #### 10. 净利润结构质量
-- **接口**: `GET http://127.0.0.1:3000/net-profit-structure/{period}`
-- **示例**: http://127.0.0.1:3000/net-profit-structure/2025-06
+- **接口**: `GET http://47.111.95.19:3000/net-profit-structure/{period}`
+- **示例**: http://47.111.95.19:3000/net-profit-structure/2025-06
 - **状态**: ✅ 预算数据正常
 - **返回数据**: 净利润的预算数据
 ```json
@@ -267,8 +267,8 @@
 ```
 
 #### 11. 主营业务净利润贡献
-- **接口**: `GET http://127.0.0.1:3000/main-business-net-profit/{period}`
-- **示例**: http://127.0.0.1:3000/main-business-net-profit/2025-06
+- **接口**: `GET http://47.111.95.19:3000/main-business-net-profit/{period}`
+- **示例**: http://47.111.95.19:3000/main-business-net-profit/2025-06
 - **状态**: ✅ 预算数据正常
 - **返回数据**: 各板块的净利润贡献预算
 ```json
@@ -283,8 +283,8 @@
 ```
 
 #### 12. 回款结构质量
-- **接口**: `GET http://127.0.0.1:3000/receipt-structure/{period}`
-- **示例**: http://127.0.0.1:3000/receipt-structure/2025-06
+- **接口**: `GET http://47.111.95.19:3000/receipt-structure/{period}`
+- **示例**: http://47.111.95.19:3000/receipt-structure/2025-06
 - **状态**: ✅ 预算数据正常
 - **返回数据**: 回款结构的预算数据（总计61000万元）
 ```json
@@ -299,26 +299,26 @@
 ```
 
 #### 13. 应收账款情况
-- **接口**: `GET http://127.0.0.1:3000/accounts-receivable/{period}`
-- **示例**: http://127.0.0.1:3000/accounts-receivable/2025-06
+- **接口**: `GET http://47.111.95.19:3000/accounts-receivable/{period}`
+- **示例**: http://47.111.95.19:3000/accounts-receivable/2025-06
 - **状态**: ✅ 预算数据正常
 - **返回数据**: 应收账款的预算数据
 
 #### 14. 逾期应收账款情况
-- **接口**: `GET http://127.0.0.1:3000/overdue-receivables/{period}`
-- **示例**: http://127.0.0.1:3000/overdue-receivables/2025-06
+- **接口**: `GET http://47.111.95.19:3000/overdue-receivables/{period}`
+- **示例**: http://47.111.95.19:3000/overdue-receivables/2025-06
 - **状态**: ✅ 预算数据正常
 - **返回数据**: 逾期应收账款的预算数据
 
 #### 15. 坏账准备情况
-- **接口**: `GET http://127.0.0.1:3000/bad-debt-provision/{period}`
-- **示例**: http://127.0.0.1:3000/bad-debt-provision/2025-06
+- **接口**: `GET http://47.111.95.19:3000/bad-debt-provision/{period}`
+- **示例**: http://47.111.95.19:3000/bad-debt-provision/2025-06
 - **状态**: ✅ 预算数据正常
 - **返回数据**: 坏账准备的预算数据
 
 #### 16. 非主营业务净利润贡献
-- **接口**: `GET http://127.0.0.1:3000/non-main-business-net-profit/{period}`
-- **示例**: http://127.0.0.1:3000/non-main-business-net-profit/2025-06
+- **接口**: `GET http://47.111.95.19:3000/non-main-business-net-profit/{period}`
+- **示例**: http://47.111.95.19:3000/non-main-business-net-profit/2025-06
 - **状态**: ✅ 预算数据正常
 - **返回数据**: 各项非主营业务净利润贡献的预算数据
 ```json
@@ -346,8 +346,8 @@
 ```
 
 #### 17. 库存结构质量
-- **接口**: `GET http://127.0.0.1:3000/inventory-structure/{period}`
-- **示例**: http://127.0.0.1:3000/inventory-structure/2025-06
+- **接口**: `GET http://47.111.95.19:3000/inventory-structure/{period}`
+- **示例**: http://47.111.95.19:3000/inventory-structure/2025-06
 - **状态**: ✅ 预算数据正常
 - **返回数据**: 设备、元件、工程各类别的库存结构预算数据
 ```json
@@ -377,8 +377,8 @@
 ```
 
 #### 18. 标书履约状况
-- **接口**: `GET http://127.0.0.1:3000/bid-fulfillment/{period}`
-- **示例**: http://127.0.0.1:3000/bid-fulfillment/2025-06
+- **接口**: `GET http://47.111.95.19:3000/bid-fulfillment/{period}`
+- **示例**: http://47.111.95.19:3000/bid-fulfillment/2025-06
 - **状态**: ✅ 预算数据正常
 - **返回数据**: 设备、元件、工程各类别的标书履约预算数据
 ```json
@@ -408,8 +408,8 @@
 ```
 
 #### 19. 在制品
-- **接口**: `GET http://127.0.0.1:3000/inventory-in-progress/{period}`
-- **示例**: http://127.0.0.1:3000/inventory-in-progress/2025-06
+- **接口**: `GET http://47.111.95.19:3000/inventory-in-progress/{period}`
+- **示例**: http://47.111.95.19:3000/inventory-in-progress/2025-06
 - **状态**: ✅ 预算数据正常
 - **返回数据**: 设备、元件、工程各类别的在制品预算数据
 ```json
@@ -459,20 +459,20 @@
 
 ```bash
 # 测试正常工作的API
-curl "http://127.0.0.1:3000/main-business-income/2025-07" | jq '.data.equipment[0]'
-curl "http://127.0.0.1:3000/new-orders/2025-06" | jq '.data.equipment[0]'
-curl "http://127.0.0.1:3000/project-tracking/2025-06" | jq '.data.equipment[0]'
+curl "http://47.111.95.19:3000/main-business-income/2025-07" | jq '.data.equipment[0]'
+curl "http://47.111.95.19:3000/new-orders/2025-06" | jq '.data.equipment[0]'
+curl "http://47.111.95.19:3000/project-tracking/2025-06" | jq '.data.equipment[0]'
 
 # 测试有问题的API
-curl "http://127.0.0.1:3000/non-main-business-net-profit/2025-06" | jq '.data[0]'
+curl "http://47.111.95.19:3000/non-main-business-net-profit/2025-06" | jq '.data[0]'
 ```
 
 ### 浏览器测试
 
 直接在浏览器中访问以下URL：
-- http://127.0.0.1:3000/main-business-income/2025-07
-- http://127.0.0.1:3000/new-orders/2025-06
-- http://127.0.0.1:3000/project-tracking/2025-06
+- http://47.111.95.19:3000/main-business-income/2025-07
+- http://47.111.95.19:3000/new-orders/2025-06
+- http://47.111.95.19:3000/project-tracking/2025-06
 
 ---
 

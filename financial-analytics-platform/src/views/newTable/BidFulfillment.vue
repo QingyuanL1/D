@@ -283,7 +283,7 @@ const totalData = computed(() => {
 // 加载备注和建议
 const loadRemarksAndSuggestions = async (targetPeriod: string) => {
     try {
-        const response = await fetch(`http://127.0.0.1:3000/forms/submission/${MODULE_IDS.BID_FULFILLMENT}/${targetPeriod}`)
+        const response = await fetch(`http://47.111.95.19:3000/forms/submission/${MODULE_IDS.BID_FULFILLMENT}/${targetPeriod}`)
         if (response.ok) {
             const result = await response.json()
             if (result.success && result.data) {
@@ -300,7 +300,7 @@ const loadRemarksAndSuggestions = async (targetPeriod: string) => {
 const loadData = async (targetPeriod: string) => {
     try {
         console.log(`正在加载标书履约状况数据，期间: ${targetPeriod}`)
-        const response = await fetch(`http://127.0.0.1:3000/bid-fulfillment/${targetPeriod}`)
+        const response = await fetch(`http://47.111.95.19:3000/bid-fulfillment/${targetPeriod}`)
         if (!response.ok) {
             if (response.status === 404) {
                 console.log('该期间暂无数据，使用预算数据初始化')
@@ -352,7 +352,7 @@ watch(period, (newPeriod, oldPeriod) => {
 
 const handleSave = async () => {
     try {
-        const response = await fetch('http://127.0.0.1:3000/bid-fulfillment', {
+        const response = await fetch('http://47.111.95.19:3000/bid-fulfillment', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

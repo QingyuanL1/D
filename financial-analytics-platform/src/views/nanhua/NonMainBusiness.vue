@@ -161,7 +161,7 @@ const totalData = computed(() => {
 // 加载数据
 const loadData = async (targetPeriod: string) => {
     try {
-        const response = await fetch(`http://127.0.0.1:3000/nanhua-non-main-business/${targetPeriod}`)
+        const response = await fetch(`http://47.111.95.19:3000/nanhua-non-main-business/${targetPeriod}`)
         if (!response.ok) {
             if (response.status !== 404) {
                 throw new Error('加载数据失败')
@@ -187,7 +187,7 @@ const loadData = async (targetPeriod: string) => {
 // 加载已保存的备注和建议
 const loadRemarksAndSuggestions = async (targetPeriod: string) => {
     try {
-        const response = await fetch(`http://127.0.0.1:3000/forms/submission/${MODULE_IDS.NANHUA_NON_MAIN_BUSINESS}/${targetPeriod}`)
+        const response = await fetch(`http://47.111.95.19:3000/forms/submission/${MODULE_IDS.NANHUA_NON_MAIN_BUSINESS}/${targetPeriod}`)
         if (response.ok) {
             const result = await response.json()
             if (result.success && result.data) {
@@ -226,7 +226,7 @@ const handleSave = async () => {
             item.executionProgress = parseFloat(calculateProgress(item.annualPlan, item.accumulated))
         })
 
-        const response = await fetch('http://127.0.0.1:3000/nanhua-non-main-business', {
+        const response = await fetch('http://47.111.95.19:3000/nanhua-non-main-business', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

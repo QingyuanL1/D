@@ -185,7 +185,7 @@ const formatNumber = (value: number): string => {
 // 获取月度数据
 const fetchMonthlyData = async (monthPeriod: string) => {
     try {
-        const response = await fetch(`http://127.0.0.1:3000/main-business-net-profit/monthly-data/${monthPeriod}`)
+        const response = await fetch(`http://47.111.95.19:3000/main-business-net-profit/monthly-data/${monthPeriod}`)
 
         if (response.ok) {
             const result = await response.json()
@@ -301,7 +301,7 @@ const loadData = async (targetPeriod: string) => {
     try {
         console.log(`正在加载主营净利润贡献数据，期间: ${targetPeriod}`)
         
-        const response = await fetch(`http://127.0.0.1:3000/main-business-net-profit/${targetPeriod}`)
+        const response = await fetch(`http://47.111.95.19:3000/main-business-net-profit/${targetPeriod}`)
         let loadedData: any[] = []
         
         if (response.ok) {
@@ -410,7 +410,7 @@ const handleSave = async () => {
         console.log('保存数据:', saveData)
 
         // 1. 保存到 main_business_net_profit 表
-        const response = await fetch('http://127.0.0.1:3000/main-business-net-profit', {
+        const response = await fetch('http://47.111.95.19:3000/main-business-net-profit', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

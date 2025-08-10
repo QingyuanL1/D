@@ -427,7 +427,7 @@ const autoSetBeginBalanceFromPreviousMonth = async () => {
     console.log(`尝试从上个月 ${previousPeriod} 设置期初余额`)
 
     // 获取上个月的数据
-    const response = await fetch(`http://127.0.0.1:3000/nanhua-balance-sheet/${previousPeriod}`)
+    const response = await fetch(`http://47.111.95.19:3000/nanhua-balance-sheet/${previousPeriod}`)
     if (response.ok) {
       const result = await response.json()
       if (result.success && result.data) {
@@ -512,7 +512,7 @@ const loadSavedData = async () => {
   clearCurrentData()
 
   try {
-    const response = await fetch(`http://127.0.0.1:3000/nanhua-balance-sheet/${period.value}`)
+    const response = await fetch(`http://47.111.95.19:3000/nanhua-balance-sheet/${period.value}`)
     if (response.ok) {
       const result = await response.json()
       if (result.success && result.data) {
@@ -596,7 +596,7 @@ const save = async () => {
       suggestions: suggestions.value
     }
 
-    const response = await fetch('http://127.0.0.1:3000/nanhua-balance-sheet', {
+    const response = await fetch('http://47.111.95.19:3000/nanhua-balance-sheet', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
