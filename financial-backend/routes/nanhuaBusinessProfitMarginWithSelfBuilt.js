@@ -130,6 +130,52 @@ router.get('/', async (req, res) => {
   }
 });
 
+// 计算累计成本的辅助函数
+const calculateCumulativeCosts = async (period, customerName, customerMapping) => {
+  try {
+    const [year, month] = period.split('-');
+    const mappedName = customerMapping[customerName] || customerName;
+    let totalMaterialCost = 0;
+    let totalLaborCost = 0;
+
+    // 累加从1月到当前月份的所有当期成本
+    for (let m = 1; m <= parseInt(month); m++) {
+      const monthPeriod = `${year}-${m.toString().padStart(2, '0')}`;
+      
+      try {
+        const monthCostResponse = await fetch(`http://47.111.95.19:3000/nanhua-main-business-cost/${monthPeriod}`);
+        if (monthCostResponse.ok) {
+          const monthCostResult = await monthCostResponse.json();
+          if (monthCostResult.success && monthCostResult.data) {
+            // 根据客户类型确定在哪个类别中查找
+            let costCategory = [];
+            if (['一包项目', '二包项目', '域内合作项目', '域外合作项目'].includes(customerName)) {
+              costCategory = monthCostResult.data.equipment || [];
+            } else if (['新能源项目', '苏州项目'].includes(customerName)) {
+              costCategory = monthCostResult.data.component || [];
+            } else if (['自接项目', '其他'].includes(customerName)) {
+              costCategory = monthCostResult.data.project || [];
+            }
+            
+            const costCustomer = costCategory.find(item => item.customerType === mappedName);
+            if (costCustomer) {
+              totalMaterialCost += parseFloat(costCustomer.currentMaterialCost || 0);
+              totalLaborCost += parseFloat(costCustomer.currentLaborCost || 0);
+            }
+          }
+        }
+      } catch (error) {
+        console.error(`获取${monthPeriod}成本数据失败:`, error);
+      }
+    }
+
+    return totalMaterialCost + totalLaborCost;
+  } catch (error) {
+    console.error(`计算${customerName}累计成本失败:`, error);
+    return 0;
+  }
+};
+
 // 计算指定期间的南华业务利润率数据
 router.get('/calculate/:period', async (req, res) => {
   const { period } = req.params;
@@ -153,23 +199,11 @@ router.get('/calculate/:period', async (req, res) => {
       }
     }
 
-    // 2. 获取南华主营业务成本数据
-    const costResponse = await fetch(`http://47.111.95.19:3000/nanhua-main-business-cost/${period}`);
-    let costData = null;
-
-    if (costResponse.ok) {
-      const costResult = await costResponse.json();
-      if (costResult.success) {
-        costData = costResult.data;
-      }
-    }
-
-    if (!incomeData || !costData) {
-      return res.status(404).json({ error: `未找到${period}期间的收入或成本数据` });
+    if (!incomeData) {
+      return res.status(404).json({ error: `未找到${period}期间的收入数据` });
     }
 
     console.log('收入数据:', incomeData);
-    console.log('成本数据:', costData);
 
     // 3. 计算各客户的利润率
     const result = {
@@ -180,9 +214,8 @@ router.get('/calculate/:period', async (req, res) => {
         { customerName: '域外合作项目', yearlyPlan: 5.48, current: 0 },
         { customerName: '新能源项目', yearlyPlan: 17.25, current: 0 },
         { customerName: '苏州项目', yearlyPlan: 6.00, current: 0 },
-        { customerName: '抢修', yearlyPlan: 33.52, current: 0 },
-        { customerName: '运检项目', yearlyPlan: 13.60, current: 0 },
-        { customerName: '自建项目', yearlyPlan: 0, current: 0 }
+        { customerName: '自接项目', yearlyPlan: 47.12, current: 0 },
+        { customerName: '其他', yearlyPlan: 0.00, current: 0 }
       ]
     };
 
@@ -194,25 +227,17 @@ router.get('/calculate/:period', async (req, res) => {
         '域外合作项目': '域外合作项目', // 收入表 -> 成本表
         '新能源项目': '新能源项目',   // 收入表 -> 成本表
         '苏州项目': '苏州项目',      // 收入表 -> 成本表
-        '抢修': '抢修项目',          // 收入表 -> 成本表
-        '运检项目': '运检项目',      // 收入表 -> 成本表
-        '自建项目': '自建项目'       // 收入表 -> 成本表
+        '自接项目': '自接项目',      // 收入表 -> 成本表
+        '其他': '其他'              // 收入表 -> 成本表
     };
 
     // 计算每个客户的利润率
-    result.customers.forEach(customer => {
-        const mappedName = customerMapping[customer.customerName] || customer.customerName;
-        
+    for (const customer of result.customers) {
         // 从收入数据中查找对应客户的收入
         let totalIncome = 0;
         if (incomeData.customers) {
             // 收入表和成本表客户名称映射
             let incomeCustomerName = customer.customerName;
-            if (customer.customerName === '运检项目') {
-                incomeCustomerName = '运检'; // 收入表中是"运检"
-            } else if (customer.customerName === '抢修') {
-                incomeCustomerName = '抢修'; // 收入表中也是"抢修"
-            }
             
             const incomeCustomer = incomeData.customers.find(item => item.customerName === incomeCustomerName);
             if (incomeCustomer) {
@@ -220,25 +245,8 @@ router.get('/calculate/:period', async (req, res) => {
             }
         }
 
-        // 从成本数据中查找对应客户的成本
-        let totalCost = 0;
-        
-        // 根据客户类型确定在哪个类别中查找
-        let costCategory = [];
-        if (['一包项目', '二包项目', '域内合作项目', '域外合作项目'].includes(customer.customerName)) {
-            costCategory = costData.equipment || [];
-        } else if (['新能源项目', '苏州项目'].includes(customer.customerName)) {
-            costCategory = costData.component || [];
-        } else if (['抢修', '运检项目', '自建项目'].includes(customer.customerName)) {
-            costCategory = costData.project || [];
-        }
-        
-        const costCustomer = costCategory.find(item => item.customerType === mappedName);
-        if (costCustomer) {
-            const materialCost = parseFloat(costCustomer.cumulativeMaterialCost || 0) || parseFloat(costCustomer.currentMaterialCost || 0);
-            const laborCost = parseFloat(costCustomer.cumulativeLaborCost || 0) || parseFloat(costCustomer.currentLaborCost || 0);
-            totalCost = materialCost + laborCost;
-        }
+        // 使用累计成本计算函数获取正确的累计成本（从1月到当前月份的当期成本总和）
+        const totalCost = await calculateCumulativeCosts(period, customer.customerName, customerMapping);
 
         // 计算利润率：(收入-成本)/收入 * 100%
         let profitMargin = 0;
@@ -247,7 +255,8 @@ router.get('/calculate/:period', async (req, res) => {
         }
 
         customer.current = parseFloat(profitMargin.toFixed(2));
-    });
+        console.log(`${customer.customerName}: 收入=${totalIncome}, 成本=${totalCost}, 利润率=${profitMargin.toFixed(2)}%`);
+    }
 
     console.log('计算结果:', result);
 

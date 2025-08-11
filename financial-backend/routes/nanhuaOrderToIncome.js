@@ -16,9 +16,8 @@ router.get('/:period', async (req, res) => {
         { customerName: '域外合作项目', newContractTotal: 62.00 },
         { customerName: '新能源项目', newContractTotal: 482.00 },
         { customerName: '苏州项目', newContractTotal: 218.00 },
-        { customerName: '投标项目', newContractTotal: 0.00 },
-        { customerName: '运检项目', newContractTotal: 0.00 },
-        { customerName: '自建项目', newContractTotal: 0.00 }
+        { customerName: '自接项目', newContractTotal: 0.00 },
+        { customerName: '其他', newContractTotal: 0.00 }
       ]
     };
     
@@ -90,7 +89,7 @@ router.post('/', async (req, res) => {
 
     // 插入新数据
     for (const item of data.customers) {
-      if (item.current > 0) {
+      if (item.current !== null && item.current !== undefined && item.current !== 0) {
         await connection.execute(
           `INSERT INTO nanhua_order_to_income 
            (period, customer_name, new_contract_total, current_amount, category) 

@@ -21,17 +21,18 @@ router.get('/:period', createBudgetMiddleware('在建工程'), async (req, res) 
             // 如果没有数据，返回固定结构
             const fixedData = {
                 yunJianProjects: [
-                    { projectName: '一包项目', beginningRollingData: 1900.00, currentAmount: 0, accumulatedAmount: 1900.00, fluctuationRate: 0 },
-                    { projectName: '二包项目', beginningRollingData: 500.00, currentAmount: 0, accumulatedAmount: 500.00, fluctuationRate: 0 },
-                    { projectName: '自建项目', beginningRollingData: 0.00, currentAmount: 0, accumulatedAmount: 0.00, fluctuationRate: 0 }
+                    { projectName: '一包项目', beginningRollingData: 1900.00, currentAmount: 0, accumulatedAmount: 0, fluctuationRate: 0 },
+                    { projectName: '二包项目', beginningRollingData: 500.00, currentAmount: 0, accumulatedAmount: 0, fluctuationRate: 0 },
+                    { projectName: '域内合作项目', beginningRollingData: 500.00, currentAmount: 0, accumulatedAmount: 0, fluctuationRate: 0 },
+                    { projectName: '域外合作项目', beginningRollingData: 180.00, currentAmount: 0, accumulatedAmount: 0, fluctuationRate: 0 },
+                    { projectName: '新能源项目', beginningRollingData: 280.00, currentAmount: 0, accumulatedAmount: 0, fluctuationRate: 0 },
+                    { projectName: '苏州项目', beginningRollingData: 460.00, currentAmount: 0, accumulatedAmount: 0, fluctuationRate: 0 },
+                    { projectName: '自接项目', beginningRollingData: 3180.00, currentAmount: 0, accumulatedAmount: 0, fluctuationRate: 0 },
+                    { projectName: '其他', beginningRollingData: 0.00, currentAmount: 0, accumulatedAmount: 0, fluctuationRate: 0 }
                 ],
-                yunJianHeLiProject: { projectName: '运检合力项目', beginningRollingData: 180.00, currentAmount: 0, accumulatedAmount: 180.00, fluctuationRate: 0 },
+                yunJianHeLiProject: { projectName: '运检合力项目', beginningRollingData: 0.00, currentAmount: 0, accumulatedAmount: 0, fluctuationRate: 0 },
                 engineeringProjects: [
-                    { projectName: '建筑工程项目', beginningRollingData: 280.00, currentAmount: 0, accumulatedAmount: 280.00, fluctuationRate: 0 },
-                    { projectName: '新能源项目', beginningRollingData: 0.00, currentAmount: 0, accumulatedAmount: 0.00, fluctuationRate: 0 },
-                    { projectName: '苏州项目', beginningRollingData: 0.00, currentAmount: 0, accumulatedAmount: 0.00, fluctuationRate: 0 },
-                    { projectName: '烟囱项目', beginningRollingData: 0.00, currentAmount: 0, accumulatedAmount: 0.00, fluctuationRate: 0 },
-                    { projectName: '运检项目', beginningRollingData: 3000.00, currentAmount: 0, accumulatedAmount: 3000.00, fluctuationRate: 0 }
+                    { projectName: '建筑工程项目', beginningRollingData: 0.00, currentAmount: 0, accumulatedAmount: 0, fluctuationRate: 0 }
                 ]
             };
             
@@ -64,11 +65,11 @@ router.get('/:period', createBudgetMiddleware('在建工程'), async (req, res) 
             };
             
             // 根据类别分组
-            if (row.category === '运检项目') {
+            if (row.category === '工程项目') {
                 contractData.yunJianProjects.push(projectData);
             } else if (row.category === '运检合力项目') {
                 contractData.yunJianHeLiProject = projectData;
-            } else if (row.category === '工程项目') {
+            } else if (row.category === '旧工程项目') {
                 contractData.engineeringProjects.push(projectData);
             }
         });
@@ -115,7 +116,7 @@ router.post('/', async (req, res) => {
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             `;
             
-            // 插入运检项目数据
+            // 插入工程项目数据
             if (data.yunJianProjects && Array.isArray(data.yunJianProjects)) {
                 for (const project of data.yunJianProjects) {
                     await connection.execute(insertQuery, [
@@ -128,7 +129,7 @@ router.post('/', async (req, res) => {
                         0,                                  // monthly_transfer
                         0,                                  // yearly_transfer
                         project.fluctuationRate || 0,
-                        '运检项目',                          // category
+                        '工程项目',                          // category
                         project.currentAmount || 0          // monthly_increase
                     ]);
                 }

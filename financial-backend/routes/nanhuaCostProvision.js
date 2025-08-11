@@ -16,10 +16,8 @@ router.get('/:period', async (req, res) => {
         { customerName: '域外合作项目', yearBeginBalance: 661.56, monthlyIncrease: 0, monthlyWriteOff: 0, yearlyAccumulated: 0, provisionRate: 0 },
         { customerName: '新能源项目', yearBeginBalance: 730.12, monthlyIncrease: 0, monthlyWriteOff: 0, yearlyAccumulated: 0, provisionRate: 0 },
         { customerName: '苏州项目', yearBeginBalance: 93.99, monthlyIncrease: 0, monthlyWriteOff: 0, yearlyAccumulated: 0, provisionRate: 0 },
-        { customerName: '抢修项目', yearBeginBalance: 0.00, monthlyIncrease: 0, monthlyWriteOff: 0, yearlyAccumulated: 0, provisionRate: 0 },
-        { customerName: '运检项目', yearBeginBalance: 242.66, monthlyIncrease: 0, monthlyWriteOff: 0, yearlyAccumulated: 0, provisionRate: 0 },
-        { customerName: '派遣', yearBeginBalance: 19.50, monthlyIncrease: 0, monthlyWriteOff: 0, yearlyAccumulated: 0, provisionRate: 0 },
-        { customerName: '自建', yearBeginBalance: 0.00, monthlyIncrease: 0, monthlyWriteOff: 0, yearlyAccumulated: 0, provisionRate: 0 }
+        { customerName: '自接项目', yearBeginBalance: 242.66, monthlyIncrease: 0, monthlyWriteOff: 0, yearlyAccumulated: 0, provisionRate: 0 },
+        { customerName: '其他', yearBeginBalance: 19.50, monthlyIncrease: 0, monthlyWriteOff: 0, yearlyAccumulated: 0, provisionRate: 0 }
       ]
     };
     
@@ -51,6 +49,83 @@ router.get('/:period', async (req, res) => {
     });
   } catch (error) {
     console.error('获取南华成本计提情况数据失败:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: '服务器内部错误' 
+    });
+  }
+});
+
+// 获取全年累计数据的优化接口
+router.get('/accumulated/:period', async (req, res) => {
+  const { period } = req.params;
+  
+  try {
+    const [year, month] = period.split('-');
+    const currentMonth = parseInt(month);
+    
+    // 固定的客户列表
+    const fixedData = {
+      customers: [
+        { customerName: '一包项目', yearBeginBalance: 1164.76, monthlyIncrease: 0, monthlyWriteOff: 0, yearlyAccumulated: 0, provisionRate: 0 },
+        { customerName: '二包项目', yearBeginBalance: 426.90, monthlyIncrease: 0, monthlyWriteOff: 0, yearlyAccumulated: 0, provisionRate: 0 },
+        { customerName: '域内合作项目', yearBeginBalance: 474.41, monthlyIncrease: 0, monthlyWriteOff: 0, yearlyAccumulated: 0, provisionRate: 0 },
+        { customerName: '域外合作项目', yearBeginBalance: 661.56, monthlyIncrease: 0, monthlyWriteOff: 0, yearlyAccumulated: 0, provisionRate: 0 },
+        { customerName: '新能源项目', yearBeginBalance: 730.12, monthlyIncrease: 0, monthlyWriteOff: 0, yearlyAccumulated: 0, provisionRate: 0 },
+        { customerName: '苏州项目', yearBeginBalance: 93.99, monthlyIncrease: 0, monthlyWriteOff: 0, yearlyAccumulated: 0, provisionRate: 0 },
+        { customerName: '自接项目', yearBeginBalance: 242.66, monthlyIncrease: 0, monthlyWriteOff: 0, yearlyAccumulated: 0, provisionRate: 0 },
+        { customerName: '其他', yearBeginBalance: 19.50, monthlyIncrease: 0, monthlyWriteOff: 0, yearlyAccumulated: 0, provisionRate: 0 }
+      ]
+    };
+
+    // 查询从年初到当前月份的所有月份累计数据（正确的累计逻辑）
+    const [accumulatedRows] = await pool.execute(
+      `SELECT customer_name, 
+              SUM(monthly_increase) as cumulative_increase, 
+              SUM(monthly_write_off) as cumulative_write_off 
+       FROM nanhua_cost_provision 
+       WHERE period LIKE ? AND period <= ?
+       GROUP BY customer_name`,
+      [`${year}-%`, period]
+    );
+
+    // 获取当期数据
+    const [currentRows] = await pool.execute(
+      'SELECT customer_name, monthly_increase, monthly_write_off FROM nanhua_cost_provision WHERE period = ?',
+      [period]
+    );
+
+    // 合并数据
+    const result = {
+      customers: fixedData.customers.map(item => {
+        const accumulatedItem = accumulatedRows.find(row => row.customer_name === item.customerName);
+        const currentItem = currentRows.find(row => row.customer_name === item.customerName);
+        
+        // 累计新增 = 从年初到当前月份所有月份的新增之和
+        const cumulativeIncrease = accumulatedItem ? parseFloat(accumulatedItem.cumulative_increase) : 0;
+        // 累计冲销 = 从年初到当前月份所有月份的冲销之和
+        const cumulativeWriteOff = accumulatedItem ? parseFloat(accumulatedItem.cumulative_write_off) : 0;
+        // 本年累计 = 年初余额 + 累计新增 - 累计冲销
+        const yearlyAccumulated = item.yearBeginBalance + cumulativeIncrease - cumulativeWriteOff;
+        
+        return {
+          customerName: item.customerName,
+          yearBeginBalance: item.yearBeginBalance,
+          monthlyIncrease: currentItem ? parseFloat(currentItem.monthly_increase) : 0,
+          monthlyWriteOff: currentItem ? parseFloat(currentItem.monthly_write_off) : 0,
+          yearlyAccumulated: yearlyAccumulated,
+          provisionRate: item.yearBeginBalance > 0 ? (yearlyAccumulated / item.yearBeginBalance) * 100 : 0
+        };
+      })
+    };
+
+    res.json({
+      success: true,
+      data: result,
+      period: period
+    });
+  } catch (error) {
+    console.error('获取南华成本计提累计数据失败:', error);
     res.status(500).json({ 
       success: false, 
       message: '服务器内部错误' 

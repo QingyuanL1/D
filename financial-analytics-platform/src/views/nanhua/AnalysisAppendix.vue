@@ -173,11 +173,9 @@ interface AccountsReceivableItem {
 
 // 南华公司的初始数据模板（根据原有数据调整）
 const getInitialEquipmentData = (): AccountsReceivableItem[] => [
-    { customerType: '设备外服', initialBalance: '0.00', newInvoice: '0', totalNewInvoice: '0', currentReceipt: '0', totalReceipt: '0', currentBalance: '0.00' }
 ]
 
 const getInitialComponentData = (): AccountsReceivableItem[] => [
-    { customerType: '元件销售', initialBalance: '0.00', newInvoice: '0', totalNewInvoice: '0', currentReceipt: '0', totalReceipt: '0', currentBalance: '0.00' }
 ]
 
 const getInitialProjectData = (): AccountsReceivableItem[] => [
@@ -187,8 +185,8 @@ const getInitialProjectData = (): AccountsReceivableItem[] => [
     { customerType: '域外合作项目', initialBalance: '2009.38', newInvoice: '0', totalNewInvoice: '0', currentReceipt: '0', totalReceipt: '0', currentBalance: '2009.38' },
     { customerType: '新能源项目', initialBalance: '297.69', newInvoice: '0', totalNewInvoice: '0', currentReceipt: '0', totalReceipt: '0', currentBalance: '297.69' },
     { customerType: '苏州项目', initialBalance: '295.75', newInvoice: '0', totalNewInvoice: '0', currentReceipt: '0', totalReceipt: '0', currentBalance: '295.75' },
-    { customerType: '抢修项目', initialBalance: '22.96', newInvoice: '0', totalNewInvoice: '0', currentReceipt: '0', totalReceipt: '0', currentBalance: '22.96' },
-    { customerType: '运检项目', initialBalance: '101.12', newInvoice: '0', totalNewInvoice: '0', currentReceipt: '0', totalReceipt: '0', currentBalance: '101.12' }
+    { customerType: '自接项目', initialBalance: '124.08', newInvoice: '0', totalNewInvoice: '0', currentReceipt: '0', totalReceipt: '0', currentBalance: '124.08' },
+    { customerType: '其他', initialBalance: '0.00', newInvoice: '0', totalNewInvoice: '0', currentReceipt: '0', totalReceipt: '0', currentBalance: '0.00' }
 ]
 
 const equipmentData = ref<AccountsReceivableItem[]>(getInitialEquipmentData())
@@ -391,10 +389,8 @@ const totalData = computed(() => {
 // 年初应收余额数据映射（静态数据）
 const budgetDataMap = {
     '设备': {
-        '设备外服': 0.00
     },
     '元件': {
-        '元件销售': 0.00
     },
     '工程': {
         '一包项目': 1.08,
@@ -403,8 +399,8 @@ const budgetDataMap = {
         '域外合作项目': 2009.38,
         '新能源项目': 297.69,
         '苏州项目': 295.75,
-        '抢修项目': 22.96,
-        '运检项目': 101.12
+        '自接项目': 124.08,
+        '其他': 0.00
     }
 }
 

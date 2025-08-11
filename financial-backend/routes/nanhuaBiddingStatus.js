@@ -15,7 +15,9 @@ router.get('/:period', async (req, res) => {
         { projectName: '域内合作项目' },
         { projectName: '域外合作项目' },
         { projectName: '新能源项目' },
-        { projectName: '苏州项目' }
+        { projectName: '苏州项目' },
+        { projectName: '自接项目' },
+        { projectName: '其他' }
       ]
     };
     

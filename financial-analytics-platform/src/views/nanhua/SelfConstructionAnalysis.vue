@@ -121,8 +121,8 @@ const fixedPlanData: AnalysisData = {
         { customerAttribute: '域外合作项目', companyDesignCapacity: 0, annualCapacityPlan: 0, currentPeriodCapacityAccumulated: 0, planExecutionProgress: 0, capacityUtilizationRate: 0 },
         { customerAttribute: '新能源项目', companyDesignCapacity: 0, annualCapacityPlan: 0, currentPeriodCapacityAccumulated: 48.62, planExecutionProgress: 0, capacityUtilizationRate: 0 },
         { customerAttribute: '苏州项目', companyDesignCapacity: 0, annualCapacityPlan: 0, currentPeriodCapacityAccumulated: 0, planExecutionProgress: 0, capacityUtilizationRate: 0 },
-        { customerAttribute: '抢修项目', companyDesignCapacity: 0, annualCapacityPlan: 0, currentPeriodCapacityAccumulated: 7.80, planExecutionProgress: 0, capacityUtilizationRate: 0 },
-        { customerAttribute: '运检项目', companyDesignCapacity: 0, annualCapacityPlan: 0, currentPeriodCapacityAccumulated: 44.61, planExecutionProgress: 0, capacityUtilizationRate: 0 }
+        { customerAttribute: '自接项目', companyDesignCapacity: 0, annualCapacityPlan: 0, currentPeriodCapacityAccumulated: 52.41, planExecutionProgress: 0, capacityUtilizationRate: 0 },
+        { customerAttribute: '其他', companyDesignCapacity: 0, annualCapacityPlan: 0, currentPeriodCapacityAccumulated: 0, planExecutionProgress: 0, capacityUtilizationRate: 0 }
     ]
 }
 

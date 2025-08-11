@@ -31,7 +31,7 @@ router.get('/:period', createBudgetMiddleware('部门成本中心'), async (req,
                     { departmentName: '营销部-设备', yearlyBudget: 1048.86, currentAmount: 0, accumulatedAmount: 0, executionProgress: 0, actualRatio: 0 }
                 ],
                 selfBuiltData: {
-                    departmentName: '自建项目',
+                    departmentName: '自接项目',
                     yearlyBudget: 0,
                     currentAmount: 0,
                     accumulatedAmount: 0,
@@ -54,7 +54,7 @@ router.get('/:period', createBudgetMiddleware('部门成本中心'), async (req,
         };
         
         rows.forEach(row => {
-            if (row.department_name === '自建项目') {
+            if (row.department_name === '自接项目') {
                 departmentData.selfBuiltData = {
                     departmentName: row.department_name,
                     yearlyBudget: parseFloat(row.yearly_budget) || 0,
@@ -75,10 +75,10 @@ router.get('/:period', createBudgetMiddleware('部门成本中心'), async (req,
             }
         });
         
-        // 如果没有自建项目数据，创建默认的
+        // 如果没有自接项目数据，创建默认的
         if (!departmentData.selfBuiltData) {
             departmentData.selfBuiltData = {
-                departmentName: '自建项目',
+                departmentName: '自接项目',
                 yearlyBudget: 0,
                 currentAmount: 0,
                 accumulatedAmount: 0,
@@ -144,7 +144,7 @@ router.post('/', async (req, res) => {
                 }
             }
             
-            // 插入自建项目数据
+            // 插入自接项目数据
             if (data.selfBuiltData) {
                 await connection.execute(insertQuery, [
                     period,

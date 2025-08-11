@@ -129,9 +129,8 @@ const fixedPlanData: OverdueData = {
         { customerAttribute: '域外合作项目', yearBeginningBalance: 12.28, currentPeriodNewAddition: 0, currentPeriodAccumulatedCollection: 0, yearNewAddition: 0, collectionProgress: 0, cumulativeNewOverdue: 0 },
         { customerAttribute: '新能源项目', yearBeginningBalance: 1.42, currentPeriodNewAddition: 0, currentPeriodAccumulatedCollection: 0, yearNewAddition: 0, collectionProgress: 0, cumulativeNewOverdue: 0 },
         { customerAttribute: '苏州项目', yearBeginningBalance: 0.00, currentPeriodNewAddition: 0, currentPeriodAccumulatedCollection: 0, yearNewAddition: 0, collectionProgress: 0, cumulativeNewOverdue: 0 },
-        { customerAttribute: '抢修项目', yearBeginningBalance: 0.00, currentPeriodNewAddition: 0, currentPeriodAccumulatedCollection: 0, yearNewAddition: 0, collectionProgress: 0, cumulativeNewOverdue: 0 },
-        { customerAttribute: '运检项目', yearBeginningBalance: 0.00, currentPeriodNewAddition: 0, currentPeriodAccumulatedCollection: 0, yearNewAddition: 0, collectionProgress: 0, cumulativeNewOverdue: 0 },
-        { customerAttribute: '自接项目', yearBeginningBalance: 0.00, currentPeriodNewAddition: 0, currentPeriodAccumulatedCollection: 0, yearNewAddition: 0, collectionProgress: 0, cumulativeNewOverdue: 0 }
+        { customerAttribute: '自接项目', yearBeginningBalance: 0.00, currentPeriodNewAddition: 0, currentPeriodAccumulatedCollection: 0, yearNewAddition: 0, collectionProgress: 0, cumulativeNewOverdue: 0 },
+        { customerAttribute: '其他', yearBeginningBalance: 0.00, currentPeriodNewAddition: 0, currentPeriodAccumulatedCollection: 0, yearNewAddition: 0, collectionProgress: 0, cumulativeNewOverdue: 0 }
     ]
 }
 

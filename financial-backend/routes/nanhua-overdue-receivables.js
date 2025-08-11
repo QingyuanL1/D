@@ -7,7 +7,7 @@ router.get('/:period', async (req, res) => {
     try {
         const { period } = req.params;
         
-        // 查询数据库中的数据（包括自建项目）
+        // 查询数据库中的数据（包括自接项目）
         const [rows] = await pool.execute(`
             SELECT customer_attribute, year_beginning_balance, current_period_new_addition, 
                    current_period_accumulated_collection, year_new_addition, collection_progress,
@@ -17,7 +17,7 @@ router.get('/:period', async (req, res) => {
             ORDER BY id ASC
         `, [period]);
 
-        // 查询自建项目数据
+        // 查询自接项目数据
         const [selfBuiltRows] = await pool.execute(`
             SELECT year_beginning_balance, current_period_new_addition, 
                    current_period_accumulated_collection, year_new_addition, collection_progress,
@@ -26,7 +26,7 @@ router.get('/:period', async (req, res) => {
             WHERE period = ?
         `, [period]);
 
-        // 定义默认数据结构（工程板块包含所有项目，包括自建项目）
+        // 定义默认数据结构（工程板块包含所有项目，包括自接项目）
         const defaultData = {
             items: [
                 { customerAttribute: '一包项目', yearBeginningBalance: 0.00, currentPeriodNewAddition: 0, currentPeriodAccumulatedCollection: 0, yearNewAddition: 0, collectionProgress: 0, cumulativeNewOverdue: 0 },
@@ -35,9 +35,8 @@ router.get('/:period', async (req, res) => {
                 { customerAttribute: '域外合作项目', yearBeginningBalance: 12.28, currentPeriodNewAddition: 0, currentPeriodAccumulatedCollection: 0, yearNewAddition: 0, collectionProgress: 0, cumulativeNewOverdue: 0 },
                 { customerAttribute: '新能源项目', yearBeginningBalance: 1.42, currentPeriodNewAddition: 0, currentPeriodAccumulatedCollection: 0, yearNewAddition: 0, collectionProgress: 0, cumulativeNewOverdue: 0 },
                 { customerAttribute: '苏州项目', yearBeginningBalance: 0.00, currentPeriodNewAddition: 0, currentPeriodAccumulatedCollection: 0, yearNewAddition: 0, collectionProgress: 0, cumulativeNewOverdue: 0 },
-                { customerAttribute: '抢修项目', yearBeginningBalance: 0.00, currentPeriodNewAddition: 0, currentPeriodAccumulatedCollection: 0, yearNewAddition: 0, collectionProgress: 0, cumulativeNewOverdue: 0 },
-                { customerAttribute: '运检项目', yearBeginningBalance: 0.00, currentPeriodNewAddition: 0, currentPeriodAccumulatedCollection: 0, yearNewAddition: 0, collectionProgress: 0, cumulativeNewOverdue: 0 },
-                { customerAttribute: '自建项目', yearBeginningBalance: 0.00, currentPeriodNewAddition: 0, currentPeriodAccumulatedCollection: 0, yearNewAddition: 0, collectionProgress: 0, cumulativeNewOverdue: 0 }
+                                { customerAttribute: '自接项目', yearBeginningBalance: 0.00, currentPeriodNewAddition: 0, currentPeriodAccumulatedCollection: 0, yearNewAddition: 0, collectionProgress: 0, cumulativeNewOverdue: 0 },
+        { customerAttribute: '其他', yearBeginningBalance: 0.00, currentPeriodNewAddition: 0, currentPeriodAccumulatedCollection: 0, yearNewAddition: 0, collectionProgress: 0, cumulativeNewOverdue: 0 }
             ]
         };
 
@@ -70,9 +69,9 @@ router.get('/:period', async (req, res) => {
             }
         });
 
-        // 处理自建项目数据（如果有的话，合并到items中）
+        // 处理自接项目数据（如果有的话，合并到items中）
         if (selfBuiltRows.length > 0) {
-            const selfBuiltItem = items.find(item => item.customerAttribute === '自建项目');
+            const selfBuiltItem = items.find(item => item.customerAttribute === '自接项目');
             if (selfBuiltItem) {
                 selfBuiltItem.yearBeginningBalance = parseFloat(selfBuiltRows[0].year_beginning_balance) || 0;
                 selfBuiltItem.currentPeriodNewAddition = parseFloat(selfBuiltRows[0].current_period_new_addition) || 0;
@@ -120,8 +119,8 @@ router.post('/', async (req, res) => {
             
             // 插入新数据
             for (const item of data.items) {
-                if (item.customerAttribute === '自建项目') {
-                    // 自建项目单独保存到自建项目表
+                if (item.customerAttribute === '自接项目') {
+                    // 自接项目单独保存到自接项目表
                     await connection.execute(`
                         INSERT INTO nanhua_overdue_receivables_self_built 
                         (period, year_beginning_balance, current_period_new_addition, 

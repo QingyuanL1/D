@@ -16,9 +16,8 @@ router.get('/:period', async (req, res) => {
         { customerName: '域外合作项目', yearlyPlan: 2550.46 },
         { customerName: '新能源项目', yearlyPlan: 3744.54 },
         { customerName: '苏州项目', yearlyPlan: 752.29 },
-        { customerName: '抢修', yearlyPlan: 137.61 },
-        { customerName: '运检', yearlyPlan: 1238.54 },
-        { customerName: '自建项目', yearlyPlan: 0 }
+        { customerName: '自接项目', yearlyPlan: 1376.15 },
+        { customerName: '其他', yearlyPlan: 0 }
       ]
     };
     

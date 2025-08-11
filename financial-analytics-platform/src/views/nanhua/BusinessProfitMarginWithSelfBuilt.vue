@@ -121,9 +121,8 @@ const fixedPlanData: ProfitMarginData = {
         { customerName: '域外合作项目', yearlyPlan: 5.48, current: 0 },
         { customerName: '新能源项目', yearlyPlan: 17.25, current: 0 },
         { customerName: '苏州项目', yearlyPlan: 6.00, current: 0 },
-        { customerName: '抢修', yearlyPlan: 33.52, current: 0 },
-        { customerName: '运检项目', yearlyPlan: 13.60, current: 0 },
-        { customerName: '自接项目', yearlyPlan: 0, current: 0 }
+        { customerName: '自接项目', yearlyPlan: 47.12, current: 0 },
+        { customerName: '其他', yearlyPlan: 0.00, current: 0 }
     ]
 }
 

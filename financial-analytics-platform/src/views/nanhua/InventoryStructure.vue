@@ -112,9 +112,8 @@ const fixedPlanData: InventoryData = {
         { customerName: '域外合作项目', initialAmount: 4900.00, current: 0, fluctuationRate: 0 },
         { customerName: '新能源项目', initialAmount: 1900.00, current: 0, fluctuationRate: 0 },
         { customerName: '苏州项目', initialAmount: 4200.00, current: 0, fluctuationRate: 0 },
-        { customerName: '抢修项目', initialAmount: 0.00, current: 0, fluctuationRate: 0 },
-        { customerName: '运检项目', initialAmount: 0.00, current: 0, fluctuationRate: 0 },
-        { customerName: '自接项目', initialAmount: 0.00, current: 0, fluctuationRate: 0 }
+        { customerName: '自接项目', initialAmount: 0.00, current: 0, fluctuationRate: 0 },
+        { customerName: '其他', initialAmount: 0.00, current: 0, fluctuationRate: 0 }
     ]
 }
 

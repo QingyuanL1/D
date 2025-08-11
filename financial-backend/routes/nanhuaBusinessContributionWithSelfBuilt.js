@@ -3,7 +3,7 @@ const router = express.Router();
 const { pool } = require('../config/database');
 const fetch = require('node-fetch');
 
-// 获取南华主营业务边际贡献率结构与质量数据（含自建项目）
+// 获取南华主营业务边际贡献率结构与质量数据（含自接项目）
 router.get('/:period', async (req, res) => {
   const { period } = req.params;
   
@@ -17,9 +17,8 @@ router.get('/:period', async (req, res) => {
         { customerName: '域外合作项目', yearlyPlan: 5.48 },
         { customerName: '新能源项目', yearlyPlan: 25.00 },
         { customerName: '苏州项目', yearlyPlan: 6.00 },
-        { customerName: '抢修', yearlyPlan: 100.00 },
-        { customerName: '运检', yearlyPlan: 30.00 },
-        { customerName: '自建项目', yearlyPlan: 0 }
+        { customerName: '自接项目', yearlyPlan: 130.00 },
+        { customerName: '其他', yearlyPlan: 0 }
       ]
     };
     
@@ -176,9 +175,8 @@ function calculateNanhuaContributionRates(incomeData, costData, period) {
         '域外合作项目': ['域外合作'],
         '新能源项目': ['新能源'],
         '苏州项目': ['苏州'],
-        '抢修': ['抢修'],
-        '运检': ['运检'],
-        '自建项目': ['自建']
+        '自接项目': ['自建', '抢修', '运检'],
+        '其他': ['其他']
     };
 
     // 收入数据映射
@@ -216,9 +214,8 @@ function calculateNanhuaContributionRates(incomeData, costData, period) {
         { customerName: '域外合作项目', yearlyPlan: 5.48 },
         { customerName: '新能源项目', yearlyPlan: 25.00 },
         { customerName: '苏州项目', yearlyPlan: 6.00 },
-        { customerName: '抢修', yearlyPlan: 100.00 },
-        { customerName: '运检', yearlyPlan: 30.00 },
-        { customerName: '自建项目', yearlyPlan: 0 }
+        { customerName: '自接项目', yearlyPlan: 130.00 },
+        { customerName: '其他', yearlyPlan: 0 }
     ];
 
     fixedCustomers.forEach(customer => {
@@ -256,7 +253,7 @@ function calculateNanhuaContributionRates(incomeData, costData, period) {
     return result;
 }
 
-// 保存南华主营业务边际贡献率结构与质量数据（含自建项目）
+// 保存南华主营业务边际贡献率结构与质量数据（含自接项目）
 router.post('/', async (req, res) => {
   const { period, data } = req.body;
   

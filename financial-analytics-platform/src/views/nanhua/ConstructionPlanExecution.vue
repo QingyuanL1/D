@@ -113,8 +113,8 @@ const fixedPlanData: ConstructionPlanData = {
         { customerAttribute: '域外合作项目', annualTarget: 0, onTimeCompletionRate: 0, acceptanceQualificationRate: 0, planAchievementRate: 0 },
         { customerAttribute: '新能源项目', annualTarget: 0, onTimeCompletionRate: 0, acceptanceQualificationRate: 0, planAchievementRate: 0 },
         { customerAttribute: '苏州项目', annualTarget: 0, onTimeCompletionRate: 0, acceptanceQualificationRate: 0, planAchievementRate: 0 },
-        { customerAttribute: '抢修项目', annualTarget: 0, onTimeCompletionRate: 0, acceptanceQualificationRate: 0, planAchievementRate: 0 },
-        { customerAttribute: '运检项目', annualTarget: 0, onTimeCompletionRate: 0, acceptanceQualificationRate: 0, planAchievementRate: 0 }
+        { customerAttribute: '自接项目', annualTarget: 0, onTimeCompletionRate: 0, acceptanceQualificationRate: 0, planAchievementRate: 0 },
+        { customerAttribute: '其他', annualTarget: 0, onTimeCompletionRate: 0, acceptanceQualificationRate: 0, planAchievementRate: 0 }
     ]
 }
 

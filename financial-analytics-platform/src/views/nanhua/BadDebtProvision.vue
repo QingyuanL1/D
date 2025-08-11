@@ -51,26 +51,7 @@
                         </tr>
                     </template>
 
-                    <!-- 自接项目行 -->
-                    <tr>
-                        <td class="border border-gray-300 px-4 py-2 font-medium text-center">自接项目</td>
-                        <td class="border border-gray-300 px-4 py-2">自接项目</td>
-                        <td class="border border-gray-300 px-4 py-2 text-right">{{ formatNumber(selfBuiltProject.yearBeginningBalance) }}</td>
-                        <td class="border border-gray-300 px-4 py-2">
-                            <input v-model="selfBuiltProject.currentPeriodNewAddition" type="number" class="w-full px-2 py-1 border rounded text-right" step="0.01" />
-                        </td>
-                        <td class="border border-gray-300 px-4 py-2">
-                            <input
-                              v-model.number="selfBuiltProject.yearNewAddition"
-                              type="number"
-                              class="w-full px-2 py-1 border rounded text-right"
-                              step="0.01"
-                            />
-                        </td>
-                        <td class="border border-gray-300 px-4 py-2 text-right">
-                            <span class="text-sm font-medium">{{ formatNumber(selfBuiltProject.endBalance) }}</span>
-                        </td>
-                    </tr>
+
 
                     <!-- 合计行 -->
                     <tr class="bg-gray-50 font-bold">
@@ -147,18 +128,13 @@ const fixedPlanData: BadDebtData = {
         { customerAttribute: '域外合作项目', yearBeginningBalance: 0.00, currentPeriodNewAddition: 0, yearNewAddition: 0, endBalance: 0 },
         { customerAttribute: '新能源项目', yearBeginningBalance: 0.00, currentPeriodNewAddition: 0, yearNewAddition: 0, endBalance: 0 },
         { customerAttribute: '苏州项目', yearBeginningBalance: 0.00, currentPeriodNewAddition: 0, yearNewAddition: 0, endBalance: 0 },
-        { customerAttribute: '抢修项目', yearBeginningBalance: 0.00, currentPeriodNewAddition: 0, yearNewAddition: 0, endBalance: 0 },
-        { customerAttribute: '运检项目', yearBeginningBalance: 0.00, currentPeriodNewAddition: 0, yearNewAddition: 0, endBalance: 0 }
+        { customerAttribute: '自接项目', yearBeginningBalance: 0.00, currentPeriodNewAddition: 0, yearNewAddition: 0, endBalance: 0 },
+        { customerAttribute: '其他', yearBeginningBalance: 0.00, currentPeriodNewAddition: 0, yearNewAddition: 0, endBalance: 0 }
     ]
 }
 
 const badDebtData = ref<BadDebtData>(JSON.parse(JSON.stringify(fixedPlanData)))
-const selfBuiltProject = ref({
-    yearBeginningBalance: 0.00,
-    currentPeriodNewAddition: 0,
-    yearNewAddition: 0,
-    endBalance: 0
-})
+
 const remarks = ref('')
 const suggestions = ref('')
 
@@ -203,28 +179,7 @@ const calculateYearNewAddition = async (targetPeriod: string) => {
         }
         
         // 计算自接项目的本年新增
-        let selfBuiltYearNewAddition = 0
-        for (let m = 1; m < currentMonth; m++) {
-            const monthPeriod = `${year}-${m.toString().padStart(2, '0')}`
-            try {
-                const response = await fetch(`http://47.111.95.19:3000/nanhua-bad-debt-provision/${monthPeriod}`)
-                if (response.ok) {
-                    const result = await response.json()
-                    if (result.data.selfBuiltProject) {
-                        selfBuiltYearNewAddition += result.data.selfBuiltProject.currentPeriodNewAddition || 0
-                    }
-                }
-            } catch (error) {
-                console.warn(`无法加载${monthPeriod}的自接项目数据:`, error)
-            }
-        }
-        
-        // 加上当前月份的本期新增
-        selfBuiltYearNewAddition += selfBuiltProject.value.currentPeriodNewAddition || 0
-        
-        selfBuiltProject.value.yearNewAddition = selfBuiltYearNewAddition
-        // 计算自接项目坏账准备余额 = 年初余额 + 本年新增（已包含当前月份）
-        selfBuiltProject.value.endBalance = selfBuiltProject.value.yearBeginningBalance + selfBuiltProject.value.yearNewAddition
+
         
     } catch (error) {
         console.error('计算本年新增失败:', error)
@@ -238,10 +193,7 @@ watch(() => badDebtData.value.items, async (newItems) => {
 }, { deep: true })
 
 // 监听自接项目数据变化
-watch(() => selfBuiltProject.value, async (newProject) => {
-    // 当本期新增发生变化时，重新计算本年新增
-    await calculateYearNewAddition(period.value)
-}, { deep: true })
+
 
 // 计算合计数据
 const totalData = computed(() => {
@@ -259,11 +211,7 @@ const totalData = computed(() => {
         total.endBalance += item.endBalance || 0
     })
     
-    // 加上自接项目
-    total.yearBeginningBalance += selfBuiltProject.value.yearBeginningBalance || 0
-    total.currentPeriodNewAddition += selfBuiltProject.value.currentPeriodNewAddition || 0
-    total.yearNewAddition += selfBuiltProject.value.yearNewAddition || 0
-    total.endBalance += selfBuiltProject.value.endBalance || 0
+
     
     return total
 })
@@ -291,14 +239,7 @@ const loadData = async (targetPeriod: string) => {
                     endBalance: Number(item.endBalance) || 0
                 }))
             }
-            if (result.data.selfBuiltProject) {
-                selfBuiltProject.value = {
-                    yearBeginningBalance: Number(result.data.selfBuiltProject.yearBeginningBalance) || 0,
-                    currentPeriodNewAddition: Number(result.data.selfBuiltProject.currentPeriodNewAddition) || 0,
-                    yearNewAddition: Number(result.data.selfBuiltProject.yearNewAddition) || 0,
-                    endBalance: Number(result.data.selfBuiltProject.endBalance) || 0
-                }
-            }
+
         }
         
         // 加载完数据后重新计算本年新增
@@ -311,12 +252,7 @@ const loadData = async (targetPeriod: string) => {
 
 const resetToDefaultData = () => {
     badDebtData.value = JSON.parse(JSON.stringify(fixedPlanData))
-    selfBuiltProject.value = {
-        yearBeginningBalance: 0.00,
-        currentPeriodNewAddition: 0,
-        yearNewAddition: 0,
-        endBalance: 0
-    }
+
 }
 
 // 加载备注和建议
@@ -366,7 +302,7 @@ const handleSave = async () => {
                 period: period.value,
                 data: {
                     items: badDebtData.value.items,
-                    selfBuiltProject: selfBuiltProject.value
+        
                 }
             })
         })
@@ -375,7 +311,7 @@ const handleSave = async () => {
             throw new Error('保存失败')
         }
 
-        await recordFormSubmission(MODULE_IDS.NANHUA_BAD_DEBT_PROVISION, period.value, { items: badDebtData.value.items, selfBuiltProject: selfBuiltProject.value }, remarks.value, suggestions.value)
+        await recordFormSubmission(MODULE_IDS.NANHUA_BAD_DEBT_PROVISION, period.value, { items: badDebtData.value.items }, remarks.value, suggestions.value)
         alert('保存成功')
     } catch (error) {
         console.error('保存失败:', error)

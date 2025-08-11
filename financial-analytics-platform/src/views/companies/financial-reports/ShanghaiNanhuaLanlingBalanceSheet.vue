@@ -3,7 +3,7 @@
     <div class="max-w-[1600px] mx-auto bg-white rounded-lg shadow-lg p-6">
       <h1 class="text-2xl font-bold text-center mb-6">{{ data.companyInfo.name }} - 资产负债表</h1>
       <div class="text-center mb-4">
-        <p class="text-sm text-gray-600">金额单位：{{ data.companyInfo.unit }}</p>
+        <p class="text-sm text-gray-600">金额单位：万元</p>
       </div>
       
       <!-- 添加期间输入 -->

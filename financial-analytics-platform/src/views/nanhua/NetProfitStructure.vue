@@ -245,22 +245,21 @@ interface NonMainBusinessItem {
 
 // 初始化数据模板
 const getInitialData = () => ({
-    mainBusiness: { plan: '0', current: '0', cumulative: '0', progress: '0.00%' },
+    mainBusiness: { plan: '482.98', current: '0', cumulative: '0', progress: '0.00%' },
     nonMainBusiness: { plan: '0', current: '0', cumulative: '0', progress: '0.00%' },
-    total: { plan: '0', current: '0', cumulative: '0', progress: '0.00%' }
+    total: { plan: '482.98', current: '0', cumulative: '0', progress: '0.00%' }
 })
 
 // 主营业务数据
 const getInitialMainBusinessData = (): MainBusinessItem[] => [
-    { customerName: '一包项目', yearlyPlan: 0, currentPeriod: 0, cumulative: 0, annualRatio: 0 },
-    { customerName: '二包项目', yearlyPlan: 0, currentPeriod: 0, cumulative: 0, annualRatio: 0 },
-    { customerName: '域内合作项目', yearlyPlan: 0, currentPeriod: 0, cumulative: 0, annualRatio: 0 },
-    { customerName: '域外合作项目', yearlyPlan: 0, currentPeriod: 0, cumulative: 0, annualRatio: 0 },
-    { customerName: '新能源项目', yearlyPlan: 0, currentPeriod: 0, cumulative: 0, annualRatio: 0 },
-    { customerName: '苏州项目', yearlyPlan: 0, currentPeriod: 0, cumulative: 0, annualRatio: 0 },
-    { customerName: '抢修项目', yearlyPlan: 0, currentPeriod: 0, cumulative: 0, annualRatio: 0 },
-    { customerName: '运检项目', yearlyPlan: 0, currentPeriod: 0, cumulative: 0, annualRatio: 0 },
-    { customerName: '自接项目', yearlyPlan: 0, currentPeriod: 0, cumulative: 0, annualRatio: 0 }
+    { customerName: '一包项目', yearlyPlan: 156.95, currentPeriod: 0, cumulative: 0, annualRatio: 0 },
+    { customerName: '二包项目', yearlyPlan: 30.25, currentPeriod: 0, cumulative: 0, annualRatio: 0 },
+    { customerName: '域内合作项目', yearlyPlan: 103.14, currentPeriod: 0, cumulative: 0, annualRatio: 0 },
+    { customerName: '域外合作项目', yearlyPlan: 12.21, currentPeriod: 0, cumulative: 0, annualRatio: 0 },
+    { customerName: '新能源项目', yearlyPlan: 235.15, currentPeriod: 0, cumulative: 0, annualRatio: 0 },
+    { customerName: '苏州项目', yearlyPlan: -54.77, currentPeriod: 0, cumulative: 0, annualRatio: 0 },
+    { customerName: '自接项目', yearlyPlan: -61.08, currentPeriod: 0, cumulative: 0, annualRatio: 0 },
+    { customerName: '其他', yearlyPlan: 0, currentPeriod: 0, cumulative: 0, annualRatio: 0 }
 ]
 
 // 非主营业务数据
@@ -433,13 +432,17 @@ const loadData = async (targetPeriod: string) => {
 const updateSummaryData = () => {
     // 更新主营业务汇总
     const mainTotal = mainBusinessTotalData.value
+    data.mainBusiness.plan = mainTotal.yearlyPlan.toFixed(2)
     data.mainBusiness.current = mainTotal.currentPeriod.toFixed(2)
     data.mainBusiness.cumulative = mainTotal.cumulative.toFixed(2)
+    data.mainBusiness.progress = mainTotal.yearlyPlan > 0 ? ((mainTotal.cumulative / mainTotal.yearlyPlan) * 100).toFixed(2) + '%' : '0.00%'
     
     // 更新非主营业务汇总
     const nonMainTotal = nonMainBusinessTotalData.value
+    data.nonMainBusiness.plan = nonMainTotal.annualPlan.toFixed(2)
     data.nonMainBusiness.current = nonMainTotal.current.toFixed(2)
     data.nonMainBusiness.cumulative = nonMainTotal.accumulated.toFixed(2)
+    data.nonMainBusiness.progress = nonMainTotal.annualPlan > 0 ? ((nonMainTotal.accumulated / nonMainTotal.annualPlan) * 100).toFixed(2) + '%' : '0.00%'
     
     // 更新总计
     const totalPlan = parseFloat(data.mainBusiness.plan) + parseFloat(data.nonMainBusiness.plan)

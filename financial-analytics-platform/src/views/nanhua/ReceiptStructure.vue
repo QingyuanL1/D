@@ -112,12 +112,10 @@ const fixedPlanData: ReceiptData = {
         { customerName: '二包项目', yearlyPlan: 2500.00, current: 0, accumulated: 0, executionProgress: 0 },
         { customerName: '域内合作项目', yearlyPlan: 3500.00, current: 0, accumulated: 0, executionProgress: 0 },
         { customerName: '域外合作项目', yearlyPlan: 3000.00, current: 0, accumulated: 0, executionProgress: 0 },
-        { customerName: '设备外服', yearlyPlan: 270.00, current: 0, accumulated: 0, executionProgress: 0 },
         { customerName: '新能源项目', yearlyPlan: 3000.00, current: 0, accumulated: 0, executionProgress: 0 },
         { customerName: '苏州项目', yearlyPlan: 1000.00, current: 0, accumulated: 0, executionProgress: 0 },
-        { customerName: '抢修项目', yearlyPlan: 110.00, current: 0, accumulated: 0, executionProgress: 0 },
-        { customerName: '运检项目', yearlyPlan: 900.00, current: 0, accumulated: 0, executionProgress: 0 },
-        { customerName: '自接项目', yearlyPlan: 0.00, current: 0, accumulated: 0, executionProgress: 0 }
+        { customerName: '自接项目', yearlyPlan: 1010.00, current: 0, accumulated: 0, executionProgress: 0 },
+        { customerName: '其他', yearlyPlan: 0.00, current: 0, accumulated: 0, executionProgress: 0 }
     ]
 }
 

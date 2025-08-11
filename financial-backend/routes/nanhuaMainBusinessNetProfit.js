@@ -11,16 +11,14 @@ router.get('/:period', createBudgetMiddleware('南华主营业务净利润贡献
     // 固定的客户列表
     const fixedData = {
       customers: [
-        { customerName: '一包项目', yearlyPlan: 0, currentPeriod: 0, cumulative: 0, decompositionRatio: 0, annualRatio: 0 },
-        { customerName: '二包项目', yearlyPlan: 0, currentPeriod: 0, cumulative: 0, decompositionRatio: 0, annualRatio: 0 },
-        { customerName: '域内合作项目', yearlyPlan: 0, currentPeriod: 0, cumulative: 0, decompositionRatio: 0, annualRatio: 0 },
-        { customerName: '域外合作项目', yearlyPlan: 0, currentPeriod: 0, cumulative: 0, decompositionRatio: 0, annualRatio: 0 },
-        { customerName: '新能源项目', yearlyPlan: 0, currentPeriod: 0, cumulative: 0, decompositionRatio: 0, annualRatio: 0 },
-        { customerName: '苏州项目', yearlyPlan: 0, currentPeriod: 0, cumulative: 0, decompositionRatio: 0, annualRatio: 0 },
-        { customerName: '抢修项目', yearlyPlan: 0, currentPeriod: 0, cumulative: 0, decompositionRatio: 0, annualRatio: 0 },
-        { customerName: '运检项目', yearlyPlan: 0, currentPeriod: 0, cumulative: 0, decompositionRatio: 0, annualRatio: 0 },
-        { customerName: '派遣', yearlyPlan: 0, currentPeriod: 0, cumulative: 0, decompositionRatio: 0, annualRatio: 0 },
-        { customerName: '自建', yearlyPlan: 0, currentPeriod: 0, cumulative: 0, decompositionRatio: 0, annualRatio: 0 }
+        { customerName: '一包项目', yearlyPlan: 156.95, currentPeriod: 0, cumulative: 0, decompositionRatio: 0, annualRatio: 0 },
+        { customerName: '二包项目', yearlyPlan: 30.25, currentPeriod: 0, cumulative: 0, decompositionRatio: 0, annualRatio: 0 },
+        { customerName: '域内合作项目', yearlyPlan: 103.14, currentPeriod: 0, cumulative: 0, decompositionRatio: 0, annualRatio: 0 },
+        { customerName: '域外合作项目', yearlyPlan: 12.21, currentPeriod: 0, cumulative: 0, decompositionRatio: 0, annualRatio: 0 },
+        { customerName: '新能源项目', yearlyPlan: 235.15, currentPeriod: 0, cumulative: 0, decompositionRatio: 0, annualRatio: 0 },
+        { customerName: '苏州项目', yearlyPlan: -54.77, currentPeriod: 0, cumulative: 0, decompositionRatio: 0, annualRatio: 0 },
+        { customerName: '自接项目', yearlyPlan: -61.08, currentPeriod: 0, cumulative: 0, decompositionRatio: 0, annualRatio: 0 },
+        { customerName: '其他', yearlyPlan: 0, currentPeriod: 0, cumulative: 0, decompositionRatio: 0, annualRatio: 0 }
       ]
     };
     
@@ -30,13 +28,13 @@ router.get('/:period', createBudgetMiddleware('南华主营业务净利润贡献
       [period]
     );
 
-    // 合并数据
+    // 合并数据，年度目标使用固定值
     const result = {
       customers: fixedData.customers.map(item => {
         const dbItem = rows.find(row => row.customer_name === item.customerName);
         return {
           customerName: item.customerName,
-          yearlyPlan: dbItem ? parseFloat(dbItem.yearly_plan) : item.yearlyPlan,
+          yearlyPlan: item.yearlyPlan, // 直接使用固定的年度目标，不从数据库读取
           currentPeriod: dbItem ? parseFloat(dbItem.current_period) : 0,
           cumulative: dbItem ? parseFloat(dbItem.cumulative) : 0,
           decompositionRatio: dbItem ? parseFloat(dbItem.decomposition_ratio) : 0,
@@ -173,6 +171,18 @@ router.get('/calculate/:period', async (req, res) => {
             centerMap[key] = parseFloat(row.current_income) || 0;
         });
 
+        // 固定的年度目标数据
+        const yearlyPlanData = {
+            '一包项目': 156.95,
+            '二包项目': 30.25,
+            '域内合作项目': 103.14,
+            '域外合作项目': 12.21,
+            '新能源项目': 235.15,
+            '苏州项目': -54.77,
+            '自接项目': -61.08,
+            '其他': 0
+        };
+
         // 计算净利润数据
         const result = {
             customers: []
@@ -202,9 +212,12 @@ router.get('/calculate/:period', async (req, res) => {
             // 计算净利润：当期收入 - 材料成本 - 人工成本 - 成本中心收入
             const netProfit = currentAmount - materialCost - laborCost - centerIncome;
 
+            // 获取年度目标
+            const yearlyPlan = yearlyPlanData[customerName] || 0;
+
             result.customers.push({
                 customerName: customerName,
-                yearlyPlan: 0, // 暂时设为0，可以后续从预算数据获取
+                yearlyPlan: yearlyPlan,
                 currentPeriod: netProfit,
                 cumulative: 0, // 将在前端或后续计算
                 decompositionRatio: 0,

@@ -1,5 +1,5 @@
 <template>
-    <div class="max-w-[1200px] mx-auto bg-white rounded-lg shadow-lg p-6">
+    <div class="max-w-[1600px] mx-auto bg-white rounded-lg shadow-lg p-6">
         <div class="flex justify-between items-center mb-6">
             <h1 class="text-2xl font-bold">上海南华兰陵实业有限公司 - 利润表(主表)（单位：万元）</h1>
             <div class="flex items-center space-x-4">

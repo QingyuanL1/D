@@ -107,7 +107,8 @@ const fixedPlanData: ProjectData = {
         { projectName: '域外合作项目', yearlyPlan: 2000.00, current: 0, accumulated: 0 },
         { projectName: '新能源项目', yearlyPlan: 4000.00, current: 0, accumulated: 0 },
         { projectName: '苏州项目', yearlyPlan: 1000.00, current: 0, accumulated: 0 },
-        { projectName: '自接项目', yearlyPlan: 0.00, current: 0, accumulated: 0 }
+        { projectName: '自接项目', yearlyPlan: 0.00, current: 0, accumulated: 0 },
+        { projectName: '其他', yearlyPlan: 0.00, current: 0, accumulated: 0 }
     ]
 }
 

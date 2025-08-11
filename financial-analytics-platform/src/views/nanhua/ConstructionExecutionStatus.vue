@@ -113,8 +113,8 @@ const fixedExecutionData: ExecutionStatusData = {
         { customerAttribute: '域外合作项目', annualPlannedOutput: 0, selfConstruction: 0, semiSelfSubcontract: 0, outsourcedSubcontract: 0 },
         { customerAttribute: '新能源项目', annualPlannedOutput: 0, selfConstruction: 0, semiSelfSubcontract: 0, outsourcedSubcontract: 0 },
         { customerAttribute: '苏州项目', annualPlannedOutput: 0, selfConstruction: 0, semiSelfSubcontract: 0, outsourcedSubcontract: 0 },
-        { customerAttribute: '抢修项目', annualPlannedOutput: 0, selfConstruction: 0, semiSelfSubcontract: 0, outsourcedSubcontract: 0 },
-        { customerAttribute: '运检项目', annualPlannedOutput: 0, selfConstruction: 0, semiSelfSubcontract: 0, outsourcedSubcontract: 0 }
+        { customerAttribute: '自接项目', annualPlannedOutput: 0, selfConstruction: 0, semiSelfSubcontract: 0, outsourcedSubcontract: 0 },
+        { customerAttribute: '其他', annualPlannedOutput: 0, selfConstruction: 0, semiSelfSubcontract: 0, outsourcedSubcontract: 0 }
     ]
 }
 

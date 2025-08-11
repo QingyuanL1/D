@@ -16,7 +16,8 @@ router.get('/:period', async (req, res) => {
         { projectName: '域外合作项目', yearlyPlan: 2000.00 },
         { projectName: '新能源项目', yearlyPlan: 4000.00 },
         { projectName: '苏州项目', yearlyPlan: 1000.00 },
-        { projectName: '自建项目', yearlyPlan: 0.00 }
+        { projectName: '自接项目', yearlyPlan: 0.00 },
+        { projectName: '其他', yearlyPlan: 0.00 }
       ]
     };
 

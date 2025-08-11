@@ -105,7 +105,9 @@ const fixedPlanData: BiddingData = {
         { projectName: '域内合作项目', bidCount: 0, winCount: 0, winRate: 0 },
         { projectName: '域外合作项目', bidCount: 0, winCount: 0, winRate: 0 },
         { projectName: '新能源项目', bidCount: 0, winCount: 0, winRate: 0 },
-        { projectName: '苏州项目', bidCount: 0, winCount: 0, winRate: 0 }
+        { projectName: '苏州项目', bidCount: 0, winCount: 0, winRate: 0 },
+        { projectName: '自接项目', bidCount: 0, winCount: 0, winRate: 0 },
+        { projectName: '其他', bidCount: 0, winCount: 0, winRate: 0 }
     ]
 }
 

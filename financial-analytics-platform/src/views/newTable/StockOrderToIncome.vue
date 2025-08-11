@@ -37,7 +37,7 @@
                                 {{ formatNumber(((item.yearlyPlan || 0) / 2) / 2) }}
                             </td>
                             <td class="border border-gray-300 px-4 py-2">
-                                <input v-model.number="item.currentMonthIncome" type="number" class="w-full px-2 py-1 border rounded" step="0.01" @input="calculateIncomeRate(item)" />
+                                <input v-model.number="item.currentMonthIncome" type="number" class="w-full px-2 py-1 border rounded" step="0.01" min="-999999999" @input="calculateIncomeRate(item)" />
                             </td>
                             <td class="border border-gray-300 px-4 py-2">
                                 <span class="font-medium">{{ formatNumber(item.incomeTotal || 0) }}</span>
@@ -64,7 +64,7 @@
                                 {{ formatNumber(((item.yearlyPlan || 0) / 2) / 2) }}
                             </td>
                             <td class="border border-gray-300 px-4 py-2">
-                                <input v-model.number="item.currentMonthIncome" type="number" class="w-full px-2 py-1 border rounded" step="0.01" @input="calculateIncomeRate(item)" />
+                                <input v-model.number="item.currentMonthIncome" type="number" class="w-full px-2 py-1 border rounded" step="0.01" min="-999999999" @input="calculateIncomeRate(item)" />
                             </td>
                             <td class="border border-gray-300 px-4 py-2">
                                 <span class="font-medium">{{ formatNumber(item.incomeTotal || 0) }}</span>
@@ -91,7 +91,7 @@
                                 {{ formatNumber(((item.yearlyPlan || 0) / 2) / 2) }}
                             </td>
                             <td class="border border-gray-300 px-4 py-2">
-                                <input v-model.number="item.currentMonthIncome" type="number" class="w-full px-2 py-1 border rounded" step="0.01" @input="calculateIncomeRate(item)" />
+                                <input v-model.number="item.currentMonthIncome" type="number" class="w-full px-2 py-1 border rounded" step="0.01" min="-999999999" @input="calculateIncomeRate(item)" />
                             </td>
                             <td class="border border-gray-300 px-4 py-2">
                                 <span class="font-medium">{{ formatNumber(item.incomeTotal || 0) }}</span>
@@ -242,7 +242,7 @@ const calculateIncomeTotal = (category: 'equipment' | 'components' | 'engineerin
         const categoryData = monthData.data[category]
         if (categoryData) {
             const item = categoryData.find(d => d.customer === customer)
-            if (item && item.currentMonthIncome) {
+            if (item && item.currentMonthIncome !== null && item.currentMonthIncome !== undefined) {
                 total += item.currentMonthIncome
             }
         }
@@ -251,7 +251,7 @@ const calculateIncomeTotal = (category: 'equipment' | 'components' | 'engineerin
     // 加上当前月份的输入值
     const currentCategoryData = orderData.value[category]
     const currentItem = currentCategoryData.find(d => d.customer === customer)
-    if (currentItem && currentItem.currentMonthIncome) {
+    if (currentItem && currentItem.currentMonthIncome !== null && currentItem.currentMonthIncome !== undefined) {
         total += currentItem.currentMonthIncome
     }
 

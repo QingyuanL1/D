@@ -13,7 +13,7 @@ router.get('/:period', async (req, res) => {
         { financialSubject: '处置固废收入', annualPlan: 5.00 },
         { financialSubject: '车辆租金收入', annualPlan: 30.00 },
         { financialSubject: '利息收入', annualPlan: 5.00 },
-        { financialSubject: '设备外服收入', annualPlan: 255.00 },
+
         { financialSubject: '政府补贴收入', annualPlan: 50.00 },
         { financialSubject: '派遣补贴收入', annualPlan: 227.78 }
       ]
@@ -88,7 +88,7 @@ router.post('/', async (req, res) => {
 
     // 插入新数据
     for (const item of data.items) {
-      if (item.current > 0) {
+      if (item.current !== 0 && item.current !== null && item.current !== undefined) {
         const executionProgress = item.annualPlan > 0 ? (item.accumulated / item.annualPlan * 100) : 0;
 
         await connection.execute(

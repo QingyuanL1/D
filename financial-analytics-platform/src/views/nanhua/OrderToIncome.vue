@@ -34,7 +34,7 @@
                                 {{ formatNumber(item.newContractTotal) }}
                             </td>
                             <td class="border border-gray-300 px-4 py-2">
-                                <input v-model="item.current" type="number" class="w-full px-2 py-1 border rounded text-right" step="0.01" />
+                                <input v-model="item.current" type="number" class="w-full px-2 py-1 border rounded text-right" step="0.01" min="-999999999" />
                             </td>
                             <td class="border border-gray-300 px-4 py-2 text-right">
                                 {{ formatNumber(item.accumulated) }}
@@ -114,9 +114,8 @@ const fixedPlanData: OrderData = {
         { customerName: '域外合作项目', newContractTotal: 62.00, current: 0, accumulated: 0, completionRate: 0 },
         { customerName: '新能源项目', newContractTotal: 482.00, current: 0, accumulated: 0, completionRate: 0 },
         { customerName: '苏州项目', newContractTotal: 218.00, current: 0, accumulated: 0, completionRate: 0 },
-        { customerName: '投标项目', newContractTotal: 0.00, current: 0, accumulated: 0, completionRate: 0 },
-        { customerName: '运检项目', newContractTotal: 0.00, current: 0, accumulated: 0, completionRate: 0 },
-        { customerName: '自接项目', newContractTotal: 0.00, current: 0, accumulated: 0, completionRate: 0 }
+        { customerName: '自接项目', newContractTotal: 0.00, current: 0, accumulated: 0, completionRate: 0 },
+        { customerName: '其他', newContractTotal: 0.00, current: 0, accumulated: 0, completionRate: 0 }
     ]
 }
 
@@ -149,9 +148,9 @@ const totalData = computed(() => {
     }
     
     orderData.value.customers.forEach(item => {
-        total.newContractTotal += item.newContractTotal || 0
-        total.current += item.current || 0
-        total.accumulated += item.accumulated || 0
+        total.newContractTotal += Number(item.newContractTotal) || 0
+        total.current += Number(item.current) || 0
+        total.accumulated += Number(item.accumulated) || 0
     })
     
     // 计算总完成率

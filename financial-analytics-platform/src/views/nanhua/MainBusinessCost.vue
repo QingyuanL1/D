@@ -23,62 +23,6 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <!-- 设备板块 -->
-                    <template v-for="(item, index) in equipmentData" :key="`equipment-${index}`">
-                        <tr>
-                            <td v-if="index === 0" class="border border-gray-300 px-4 py-2 text-center" :rowspan="equipmentData.length">
-                                设备
-                            </td>
-                            <td class="border border-gray-300 px-4 py-2">{{ item.customerType }}</td>
-                            <td class="border border-gray-300 px-4 py-2 bg-gray-50 text-right">
-                                <span class="px-2 py-1 text-gray-700">{{ formatNumber(item.yearlyPlan) }}</span>
-                            </td>
-                            <td class="border border-gray-300 px-4 py-2 bg-gray-50 text-right">
-                                <span class="px-2 py-1 text-gray-700">{{ calculateExecutionRate(item.cumulativeMaterialCost + item.cumulativeLaborCost, item.yearlyPlan) }}%</span>
-                            </td>
-                            <td class="border border-gray-300 px-4 py-2">
-                                <input v-model.number="item.currentMaterialCost" type="number" class="w-full px-2 py-1 border rounded" step="0.01" />
-                            </td>
-                            <td class="border border-gray-300 px-4 py-2 bg-gray-50">
-                                <span class="px-2 py-1 text-gray-700">{{ formatNumber(item.cumulativeMaterialCost) }}</span>
-                            </td>
-                            <td class="border border-gray-300 px-4 py-2">
-                                <input v-model.number="item.currentLaborCost" type="number" class="w-full px-2 py-1 border rounded" step="0.01" />
-                            </td>
-                            <td class="border border-gray-300 px-4 py-2 bg-gray-50">
-                                <span class="px-2 py-1 text-gray-700">{{ formatNumber(item.cumulativeLaborCost) }}</span>
-                            </td>
-                        </tr>
-                    </template>
-
-                    <!-- 元件板块 -->
-                    <template v-for="(item, index) in componentData" :key="`component-${index}`">
-                        <tr>
-                            <td v-if="index === 0" class="border border-gray-300 px-4 py-2 text-center" :rowspan="componentData.length">
-                                元件
-                            </td>
-                            <td class="border border-gray-300 px-4 py-2">{{ item.customerType }}</td>
-                            <td class="border border-gray-300 px-4 py-2 bg-gray-50 text-right">
-                                <span class="px-2 py-1 text-gray-700">{{ formatNumber(item.yearlyPlan) }}</span>
-                            </td>
-                            <td class="border border-gray-300 px-4 py-2 bg-gray-50 text-right">
-                                <span class="px-2 py-1 text-gray-700">{{ calculateExecutionRate(item.cumulativeMaterialCost + item.cumulativeLaborCost, item.yearlyPlan) }}%</span>
-                            </td>
-                            <td class="border border-gray-300 px-4 py-2">
-                                <input v-model.number="item.currentMaterialCost" type="number" class="w-full px-2 py-1 border rounded" step="0.01" />
-                            </td>
-                            <td class="border border-gray-300 px-4 py-2 bg-gray-50">
-                                <span class="px-2 py-1 text-gray-700">{{ formatNumber(item.cumulativeMaterialCost) }}</span>
-                            </td>
-                            <td class="border border-gray-300 px-4 py-2">
-                                <input v-model.number="item.currentLaborCost" type="number" class="w-full px-2 py-1 border rounded" step="0.01" />
-                            </td>
-                            <td class="border border-gray-300 px-4 py-2 bg-gray-50">
-                                <span class="px-2 py-1 text-gray-700">{{ formatNumber(item.cumulativeLaborCost) }}</span>
-                            </td>
-                        </tr>
-                    </template>
-
                     <!-- 工程板块 -->
                     <template v-for="(item, index) in projectData" :key="`project-${index}`">
                         <tr>
@@ -173,44 +117,30 @@ interface CostItem {
 
 // 南华公司的静态年度计划数据
 const staticYearlyPlans = {
-    equipment: {
+    project: {
         '一包项目': 4576.40,
         '二包项目': 2441.97,
         '域内合作项目': 3831.93,
-        '域外合作项目': 2410.82
-    },
-    component: {
+        '域外合作项目': 2410.82,
         '新能源项目': 3098.65,
-        '苏州项目': 707.15
-    },
-    project: {
-        '抢修项目': 183.74,
-        '运检项目': 1070.12,
-        '设备外服': 242.25,
-        '派遣': 207.07,
-        '自接项目': 0.00
+        '苏州项目': 707.15,
+        '自接项目': 1703.18,
+        '其他': 0.00
     }
 }
 
 // 获取初始数据模板
 const getInitialData = () => {
     return {
-        equipment: [
-            { customerType: '一包项目', yearlyPlan: staticYearlyPlans.equipment['一包项目'], planExecutionRate: 0, currentMaterialCost: 0, cumulativeMaterialCost: 0, currentLaborCost: 0, cumulativeLaborCost: 0 },
-            { customerType: '二包项目', yearlyPlan: staticYearlyPlans.equipment['二包项目'], planExecutionRate: 0, currentMaterialCost: 0, cumulativeMaterialCost: 0, currentLaborCost: 0, cumulativeLaborCost: 0 },
-            { customerType: '域内合作项目', yearlyPlan: staticYearlyPlans.equipment['域内合作项目'], planExecutionRate: 0, currentMaterialCost: 0, cumulativeMaterialCost: 0, currentLaborCost: 0, cumulativeLaborCost: 0 },
-            { customerType: '域外合作项目', yearlyPlan: staticYearlyPlans.equipment['域外合作项目'], planExecutionRate: 0, currentMaterialCost: 0, cumulativeMaterialCost: 0, currentLaborCost: 0, cumulativeLaborCost: 0 }
-        ],
-        component: [
-            { customerType: '新能源项目', yearlyPlan: staticYearlyPlans.component['新能源项目'], planExecutionRate: 0, currentMaterialCost: 0, cumulativeMaterialCost: 0, currentLaborCost: 0, cumulativeLaborCost: 0 },
-            { customerType: '苏州项目', yearlyPlan: staticYearlyPlans.component['苏州项目'], planExecutionRate: 0, currentMaterialCost: 0, cumulativeMaterialCost: 0, currentLaborCost: 0, cumulativeLaborCost: 0 }
-        ],
         project: [
-            { customerType: '抢修项目', yearlyPlan: staticYearlyPlans.project['抢修项目'], planExecutionRate: 0, currentMaterialCost: 0, cumulativeMaterialCost: 0, currentLaborCost: 0, cumulativeLaborCost: 0 },
-            { customerType: '运检项目', yearlyPlan: staticYearlyPlans.project['运检项目'], planExecutionRate: 0, currentMaterialCost: 0, cumulativeMaterialCost: 0, currentLaborCost: 0, cumulativeLaborCost: 0 },
-            { customerType: '设备外服', yearlyPlan: staticYearlyPlans.project['设备外服'], planExecutionRate: 0, currentMaterialCost: 0, cumulativeMaterialCost: 0, currentLaborCost: 0, cumulativeLaborCost: 0 },
-            { customerType: '派遣', yearlyPlan: staticYearlyPlans.project['派遣'], planExecutionRate: 0, currentMaterialCost: 0, cumulativeMaterialCost: 0, currentLaborCost: 0, cumulativeLaborCost: 0 },
-            { customerType: '自接项目', yearlyPlan: staticYearlyPlans.project['自接项目'], planExecutionRate: 0, currentMaterialCost: 0, cumulativeMaterialCost: 0, currentLaborCost: 0, cumulativeLaborCost: 0 }
+            { customerType: '一包项目', yearlyPlan: staticYearlyPlans.project['一包项目'], planExecutionRate: 0, currentMaterialCost: 0, cumulativeMaterialCost: 0, currentLaborCost: 0, cumulativeLaborCost: 0 },
+            { customerType: '二包项目', yearlyPlan: staticYearlyPlans.project['二包项目'], planExecutionRate: 0, currentMaterialCost: 0, cumulativeMaterialCost: 0, currentLaborCost: 0, cumulativeLaborCost: 0 },
+            { customerType: '域内合作项目', yearlyPlan: staticYearlyPlans.project['域内合作项目'], planExecutionRate: 0, currentMaterialCost: 0, cumulativeMaterialCost: 0, currentLaborCost: 0, cumulativeLaborCost: 0 },
+            { customerType: '域外合作项目', yearlyPlan: staticYearlyPlans.project['域外合作项目'], planExecutionRate: 0, currentMaterialCost: 0, cumulativeMaterialCost: 0, currentLaborCost: 0, cumulativeLaborCost: 0 },
+            { customerType: '新能源项目', yearlyPlan: staticYearlyPlans.project['新能源项目'], planExecutionRate: 0, currentMaterialCost: 0, cumulativeMaterialCost: 0, currentLaborCost: 0, cumulativeLaborCost: 0 },
+            { customerType: '苏州项目', yearlyPlan: staticYearlyPlans.project['苏州项目'], planExecutionRate: 0, currentMaterialCost: 0, cumulativeMaterialCost: 0, currentLaborCost: 0, cumulativeLaborCost: 0 },
+            { customerType: '自接项目', yearlyPlan: staticYearlyPlans.project['自接项目'], planExecutionRate: 0, currentMaterialCost: 0, cumulativeMaterialCost: 0, currentLaborCost: 0, cumulativeLaborCost: 0 },
+            { customerType: '其他', yearlyPlan: staticYearlyPlans.project['其他'], planExecutionRate: 0, currentMaterialCost: 0, cumulativeMaterialCost: 0, currentLaborCost: 0, cumulativeLaborCost: 0 }
         ]
     }
 }
@@ -219,44 +149,6 @@ const getInitialData = () => {
 const mergeData = (initialData: any, loadedData: any) => {
     if (!loadedData || typeof loadedData !== 'object') {
         return initialData
-    }
-    
-    // 合并设备数据
-    if (loadedData.equipment && Array.isArray(loadedData.equipment)) {
-        initialData.equipment = initialData.equipment.map((templateItem: CostItem) => {
-            const loadedItem = loadedData.equipment.find((item: any) => item.customerType === templateItem.customerType)
-            if (loadedItem) {
-                return {
-                    ...templateItem,
-                    yearlyPlan: templateItem.yearlyPlan,
-                    planExecutionRate: 0,
-                    currentMaterialCost: Number(loadedItem.currentMaterialCost) || 0,
-                    cumulativeMaterialCost: Number(loadedItem.cumulativeMaterialCost) || 0,
-                    currentLaborCost: Number(loadedItem.currentLaborCost) || 0,
-                    cumulativeLaborCost: Number(loadedItem.cumulativeLaborCost) || 0
-                }
-            }
-            return templateItem
-        })
-    }
-    
-    // 合并元件数据
-    if (loadedData.component && Array.isArray(loadedData.component)) {
-        initialData.component = initialData.component.map((templateItem: CostItem) => {
-            const loadedItem = loadedData.component.find((item: any) => item.customerType === templateItem.customerType)
-            if (loadedItem) {
-                return {
-                    ...templateItem,
-                    yearlyPlan: templateItem.yearlyPlan,
-                    planExecutionRate: 0,
-                    currentMaterialCost: Number(loadedItem.currentMaterialCost) || 0,
-                    cumulativeMaterialCost: Number(loadedItem.cumulativeMaterialCost) || 0,
-                    currentLaborCost: Number(loadedItem.currentLaborCost) || 0,
-                    cumulativeLaborCost: Number(loadedItem.cumulativeLaborCost) || 0
-                }
-            }
-            return templateItem
-        })
     }
     
     // 合并工程数据
@@ -284,13 +176,9 @@ const mergeData = (initialData: any, loadedData: any) => {
 // 初始化数据
 const initializeData = () => {
     const initialData = getInitialData()
-    equipmentData.value = initialData.equipment
-    componentData.value = initialData.component
     projectData.value = initialData.project
 }
 
-const equipmentData = ref<CostItem[]>([])
-const componentData = ref<CostItem[]>([])
 const projectData = ref<CostItem[]>([])
 
 // 备注和建议
@@ -318,24 +206,6 @@ const totalData = computed(() => {
         currentLaborCost: 0,
         cumulativeLaborCost: 0
     }
-
-    // 汇总设备板块数据
-    equipmentData.value.forEach(item => {
-        total.yearlyPlan += item.yearlyPlan || 0
-        total.currentMaterialCost += item.currentMaterialCost || 0
-        total.cumulativeMaterialCost += item.cumulativeMaterialCost || 0
-        total.currentLaborCost += item.currentLaborCost || 0
-        total.cumulativeLaborCost += item.cumulativeLaborCost || 0
-    })
-
-    // 汇总元件板块数据
-    componentData.value.forEach(item => {
-        total.yearlyPlan += item.yearlyPlan || 0
-        total.currentMaterialCost += item.currentMaterialCost || 0
-        total.cumulativeMaterialCost += item.cumulativeMaterialCost || 0
-        total.currentLaborCost += item.currentLaborCost || 0
-        total.cumulativeLaborCost += item.cumulativeLaborCost || 0
-    })
 
     // 汇总工程板块数据
     projectData.value.forEach(item => {
@@ -374,34 +244,12 @@ const calculateCumulativeCosts = async (targetPeriod: string) => {
 
         // 计算累计数据
         const cumulativeData = {
-            equipment: {},
-            component: {},
             project: {}
         }
 
         results.forEach((result, index) => {
             if (result.success && result.data) {
                 console.log(`处理第 ${index + 1} 个月的数据`)
-                // 累计设备数据
-                result.data.equipment?.forEach(item => {
-                    const key = item.customerType
-                    if (!cumulativeData.equipment[key]) {
-                        cumulativeData.equipment[key] = { materialCost: 0, laborCost: 0 }
-                    }
-                    cumulativeData.equipment[key].materialCost += Number(item.currentMaterialCost) || 0
-                    cumulativeData.equipment[key].laborCost += Number(item.currentLaborCost) || 0
-                })
-
-                // 累计元件数据
-                result.data.component?.forEach(item => {
-                    const key = item.customerType
-                    if (!cumulativeData.component[key]) {
-                        cumulativeData.component[key] = { materialCost: 0, laborCost: 0 }
-                    }
-                    cumulativeData.component[key].materialCost += Number(item.currentMaterialCost) || 0
-                    cumulativeData.component[key].laborCost += Number(item.currentLaborCost) || 0
-                })
-
                 // 累计工程数据
                 result.data.project?.forEach(item => {
                     const key = item.customerType
@@ -420,30 +268,6 @@ const calculateCumulativeCosts = async (targetPeriod: string) => {
 
         // 更新累计数据到当前数据中
         console.log('开始更新累计数据到界面')
-        equipmentData.value.forEach(item => {
-            const cumulative = cumulativeData.equipment[item.customerType]
-            if (cumulative) {
-                item.cumulativeMaterialCost = cumulative.materialCost
-                item.cumulativeLaborCost = cumulative.laborCost
-                console.log(`设备-${item.customerType}: 材料累计=${cumulative.materialCost}, 人工累计=${cumulative.laborCost}`)
-            } else {
-                item.cumulativeMaterialCost = 0
-                item.cumulativeLaborCost = 0
-            }
-        })
-
-        componentData.value.forEach(item => {
-            const cumulative = cumulativeData.component[item.customerType]
-            if (cumulative) {
-                item.cumulativeMaterialCost = cumulative.materialCost
-                item.cumulativeLaborCost = cumulative.laborCost
-                console.log(`元件-${item.customerType}: 材料累计=${cumulative.materialCost}, 人工累计=${cumulative.laborCost}`)
-            } else {
-                item.cumulativeMaterialCost = 0
-                item.cumulativeLaborCost = 0
-            }
-        })
-
         projectData.value.forEach(item => {
             const cumulative = cumulativeData.project[item.customerType]
             if (cumulative) {
@@ -483,11 +307,9 @@ const loadData = async (targetPeriod: string) => {
             const initialData = getInitialData()
             const mergedData = mergeData(initialData, result.data)
             
-            equipmentData.value = mergedData.equipment
-            componentData.value = mergedData.component
             projectData.value = mergedData.project
             
-            console.log('合并后的数据:', { equipmentData: equipmentData.value, componentData: componentData.value, projectData: projectData.value })
+            console.log('合并后的数据:', { projectData: projectData.value })
 
             // 计算累计费用（包含当前期间的数据）
             await calculateCumulativeCosts(targetPeriod)
@@ -538,7 +360,7 @@ watch(period, async (newPeriod, oldPeriod) => {
 })
 
 // 监听当期费用变化，自动重新计算累计费用
-watch([equipmentData, componentData, projectData], () => {
+watch([projectData], () => {
     clearTimeout(cumulativeCalculationTimer.value)
     cumulativeCalculationTimer.value = setTimeout(() => {
         calculateCumulativeCosts(period.value)
@@ -556,24 +378,6 @@ const handleSave = async () => {
         
         // 准备表单数据
         const formData = {
-            equipment: equipmentData.value.map(item => ({
-                customerType: item.customerType,
-                yearlyPlan: item.yearlyPlan,
-                planExecutionRate: item.planExecutionRate,
-                currentMaterialCost: item.currentMaterialCost,
-                cumulativeMaterialCost: item.cumulativeMaterialCost,
-                currentLaborCost: item.currentLaborCost,
-                cumulativeLaborCost: item.cumulativeLaborCost
-            })),
-            component: componentData.value.map(item => ({
-                customerType: item.customerType,
-                yearlyPlan: item.yearlyPlan,
-                planExecutionRate: item.planExecutionRate,
-                currentMaterialCost: item.currentMaterialCost,
-                cumulativeMaterialCost: item.cumulativeMaterialCost,
-                currentLaborCost: item.currentLaborCost,
-                cumulativeLaborCost: item.cumulativeLaborCost
-            })),
             project: projectData.value.map(item => ({
                 customerType: item.customerType,
                 yearlyPlan: item.yearlyPlan,

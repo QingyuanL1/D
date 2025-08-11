@@ -190,15 +190,16 @@ const fixedPlanData: ContractData = {
     yunJianProjects: [
         { projectName: '一包项目', beginningRollingData: 1900.00, currentAmount: 0, accumulatedAmount: 0, fluctuationRate: 0 },
         { projectName: '二包项目', beginningRollingData: 500.00, currentAmount: 0, accumulatedAmount: 0, fluctuationRate: 0 },
-        { projectName: '自接项目', beginningRollingData: 0.00, currentAmount: 0, accumulatedAmount: 0, fluctuationRate: 0 }
+        { projectName: '域内合作项目', beginningRollingData: 500.00, currentAmount: 0, accumulatedAmount: 0, fluctuationRate: 0 },
+        { projectName: '域外合作项目', beginningRollingData: 180.00, currentAmount: 0, accumulatedAmount: 0, fluctuationRate: 0 },
+        { projectName: '新能源项目', beginningRollingData: 280.00, currentAmount: 0, accumulatedAmount: 0, fluctuationRate: 0 },
+        { projectName: '苏州项目', beginningRollingData: 460.00, currentAmount: 0, accumulatedAmount: 0, fluctuationRate: 0 },
+        { projectName: '自接项目', beginningRollingData: 3180.00, currentAmount: 0, accumulatedAmount: 0, fluctuationRate: 0 },
+        { projectName: '其他', beginningRollingData: 0.00, currentAmount: 0, accumulatedAmount: 0, fluctuationRate: 0 }
     ],
-    yunJianHeLiProject: { projectName: '运检合力项目', beginningRollingData: 180.00, currentAmount: 0, accumulatedAmount: 0, fluctuationRate: 0 },
+    yunJianHeLiProject: { projectName: '运检合力项目', beginningRollingData: 0.00, currentAmount: 0, accumulatedAmount: 0, fluctuationRate: 0 },
     engineeringProjects: [
-        { projectName: '建筑工程项目', beginningRollingData: 280.00, currentAmount: 0, accumulatedAmount: 0, fluctuationRate: 0 },
-        { projectName: '新能源项目', beginningRollingData: 0.00, currentAmount: 0, accumulatedAmount: 0, fluctuationRate: 0 },
-        { projectName: '苏州项目', beginningRollingData: 0.00, currentAmount: 0, accumulatedAmount: 0, fluctuationRate: 0 },
-        { projectName: '烟囱项目', beginningRollingData: 0.00, currentAmount: 0, accumulatedAmount: 0, fluctuationRate: 0 },
-        { projectName: '运检项目', beginningRollingData: 3000.00, currentAmount: 0, accumulatedAmount: 0, fluctuationRate: 0 }
+        { projectName: '建筑工程项目', beginningRollingData: 0.00, currentAmount: 0, accumulatedAmount: 0, fluctuationRate: 0 }
     ]
 }
 

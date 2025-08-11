@@ -138,9 +138,8 @@ const fixedPlanData: IncomeData = {
         { customerName: '域外合作项目', yearlyPlan: 5.48, current: 0, deviation: 0 },
         { customerName: '新能源项目', yearlyPlan: 25.00, current: 0, deviation: 0 },
         { customerName: '苏州项目', yearlyPlan: 6.00, current: 0, deviation: 0 },
-        { customerName: '抢修', yearlyPlan: 100.00, current: 0, deviation: 0 },
-        { customerName: '运检', yearlyPlan: 30.00, current: 0, deviation: 0 },
-        { customerName: '自接项目', yearlyPlan: 0, current: 0, deviation: 0 }
+        { customerName: '自接项目', yearlyPlan: 130.00, current: 0, deviation: 0 },
+        { customerName: '其他', yearlyPlan: 0.00, current: 0, deviation: 0 }
     ]
 }
 

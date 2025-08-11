@@ -12,14 +12,8 @@ router.get('/:period', createBudgetMiddleware('nanhua_main_business_cost_structu
             SELECT category, customer_type, yearly_plan, plan_execution_rate, current_material_cost,
                    cumulative_material_cost, current_labor_cost, cumulative_labor_cost
             FROM nanhua_main_business_cost
-            WHERE period = ?
-            ORDER BY
-                CASE category
-                    WHEN '设备' THEN 1
-                    WHEN '元件' THEN 2
-                    WHEN '工程' THEN 3
-                END,
-                id
+            WHERE period = ? AND category = '工程'
+            ORDER BY id
         `;
         
         const [rows] = await pool.execute(query, [period]);
@@ -31,27 +25,9 @@ router.get('/:period', createBudgetMiddleware('nanhua_main_business_cost_structu
             });
         }
         
-        // 按类别分组数据
+        // 只返回工程数据
         const data = {
-            equipment: rows.filter(row => row.category === '设备').map(row => ({
-                customerType: row.customer_type,
-                yearlyPlan: row.yearly_plan,
-                planExecutionRate: row.plan_execution_rate,
-                currentMaterialCost: parseFloat(row.current_material_cost),
-                cumulativeMaterialCost: parseFloat(row.cumulative_material_cost),
-                currentLaborCost: parseFloat(row.current_labor_cost),
-                cumulativeLaborCost: parseFloat(row.cumulative_labor_cost)
-            })),
-            component: rows.filter(row => row.category === '元件').map(row => ({
-                customerType: row.customer_type,
-                yearlyPlan: row.yearly_plan,
-                planExecutionRate: row.plan_execution_rate,
-                currentMaterialCost: parseFloat(row.current_material_cost),
-                cumulativeMaterialCost: parseFloat(row.cumulative_material_cost),
-                currentLaborCost: parseFloat(row.current_labor_cost),
-                cumulativeLaborCost: parseFloat(row.cumulative_labor_cost)
-            })),
-            project: rows.filter(row => row.category === '工程').map(row => ({
+            project: rows.map(row => ({
                 customerType: row.customer_type,
                 yearlyPlan: row.yearly_plan,
                 planExecutionRate: row.plan_execution_rate,
@@ -91,44 +67,9 @@ router.post('/', async (req, res) => {
         // 删除该期间的现有数据
         await pool.execute('DELETE FROM nanhua_main_business_cost WHERE period = ?', [period]);
         
-        // 准备批量插入数据
+        // 准备批量插入数据 - 只处理工程类数据
         const insertData = [];
         
-        // 处理设备类数据
-        if (data.equipment) {
-            data.equipment.forEach(item => {
-                insertData.push([
-                    period,
-                    '设备',
-                    item.customerType,
-                    item.yearlyPlan || 0,
-                    item.planExecutionRate || 0,
-                    item.currentMaterialCost || 0,
-                    item.cumulativeMaterialCost || 0,
-                    item.currentLaborCost || 0,
-                    item.cumulativeLaborCost || 0
-                ]);
-            });
-        }
-        
-        // 处理元件类数据
-        if (data.component) {
-            data.component.forEach(item => {
-                insertData.push([
-                    period,
-                    '元件',
-                    item.customerType,
-                    item.yearlyPlan || 0,
-                    item.planExecutionRate || 0,
-                    item.currentMaterialCost || 0,
-                    item.cumulativeMaterialCost || 0,
-                    item.currentLaborCost || 0,
-                    item.cumulativeLaborCost || 0
-                ]);
-            });
-        }
-        
-        // 处理工程类数据
         if (data.project) {
             data.project.forEach(item => {
                 insertData.push([
@@ -185,44 +126,9 @@ router.put('/:period', async (req, res) => {
         // 删除该期间的现有数据
         await pool.execute('DELETE FROM nanhua_main_business_cost WHERE period = ?', [period]);
         
-        // 准备批量插入数据
+        // 准备批量插入数据 - 只处理工程类数据
         const insertData = [];
         
-        // 处理设备类数据
-        if (data.equipment) {
-            data.equipment.forEach(item => {
-                insertData.push([
-                    period,
-                    '设备',
-                    item.customerType,
-                    item.yearlyPlan || 0,
-                    item.planExecutionRate || 0,
-                    item.currentMaterialCost || 0,
-                    item.cumulativeMaterialCost || 0,
-                    item.currentLaborCost || 0,
-                    item.cumulativeLaborCost || 0
-                ]);
-            });
-        }
-
-        // 处理元件类数据
-        if (data.component) {
-            data.component.forEach(item => {
-                insertData.push([
-                    period,
-                    '元件',
-                    item.customerType,
-                    item.yearlyPlan || 0,
-                    item.planExecutionRate || 0,
-                    item.currentMaterialCost || 0,
-                    item.cumulativeMaterialCost || 0,
-                    item.currentLaborCost || 0,
-                    item.cumulativeLaborCost || 0
-                ]);
-            });
-        }
-
-        // 处理工程类数据
         if (data.project) {
             data.project.forEach(item => {
                 insertData.push([

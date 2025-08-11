@@ -104,15 +104,14 @@ interface ContractData {
 // 固定的年初评估数据
 const fixedYearBeginningData: ContractData = {
     customers: [
-        { customerName: '一包项目', yearBeginning: 1900.00, currentEvaluation: 0, fluctuationRate: 0 },
-        { customerName: '二包项目', yearBeginning: 500.00, currentEvaluation: 0, fluctuationRate: 0 },
-        { customerName: '域内合作项目', yearBeginning: 500.00, currentEvaluation: 0, fluctuationRate: 0 },
-        { customerName: '域外合作项目', yearBeginning: 180.00, currentEvaluation: 0, fluctuationRate: 0 },
-        { customerName: '新能源项目', yearBeginning: 280.00, currentEvaluation: 0, fluctuationRate: 0 },
-        { customerName: '苏州项目', yearBeginning: 460.00, currentEvaluation: 0, fluctuationRate: 0 },
+        { customerName: '一包项目', yearBeginning: 10000.00, currentEvaluation: 0, fluctuationRate: 0 },
+        { customerName: '二包项目', yearBeginning: 4400.00, currentEvaluation: 0, fluctuationRate: 0 },
+        { customerName: '域内合作项目', yearBeginning: 8600.00, currentEvaluation: 0, fluctuationRate: 0 },
+        { customerName: '域外合作项目', yearBeginning: 4900.00, currentEvaluation: 0, fluctuationRate: 0 },
+        { customerName: '新能源项目', yearBeginning: 1900.00, currentEvaluation: 0, fluctuationRate: 0 },
+        { customerName: '苏州项目', yearBeginning: 4200.00, currentEvaluation: 0, fluctuationRate: 0 },
         { customerName: '抢修项目', yearBeginning: 0.00, currentEvaluation: 0, fluctuationRate: 0 },
-        { customerName: '运检项目', yearBeginning: 0.00, currentEvaluation: 0, fluctuationRate: 0 },
-        { customerName: '自接项目', yearBeginning: 0.00, currentEvaluation: 0, fluctuationRate: 0 }
+        { customerName: '运检项目', yearBeginning: 0.00, currentEvaluation: 0, fluctuationRate: 0 }
     ]
 }
 

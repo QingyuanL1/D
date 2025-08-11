@@ -16,9 +16,8 @@ router.get('/:period', async (req, res) => {
         { customerName: '域外合作项目', initialAmount: 0.00 },
         { customerName: '新能源项目', initialAmount: 0.00 },
         { customerName: '苏州项目', initialAmount: 1300.00 },
-        { customerName: '抢修项目', initialAmount: 0.00 },
-        { customerName: '运检项目', initialAmount: 0.00 },
-        { customerName: '自建项目', initialAmount: 0.00 }
+        { customerName: '自接项目', initialAmount: 0.00 },
+        { customerName: '其他', initialAmount: 0.00 }
       ]
     };
     

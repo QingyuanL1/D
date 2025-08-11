@@ -1867,9 +1867,8 @@ router.get('/nanhua-profit-margin/:year', async (req, res) => {
       '域外合作项目': { total: 0, count: 0, plan: 5.48 },
       '新能源项目': { total: 0, count: 0, plan: 17.25 },
       '苏州项目': { total: 0, count: 0, plan: 6.00 },
-      '抢修': { total: 0, count: 0, plan: 33.52 },
-      '运检项目': { total: 0, count: 0, plan: 13.60 },
-      '自建项目': { total: 0, count: 0, plan: 0 }
+              '自接项目': { total: 0, count: 0, plan: 47.12 },
+        '其他': { total: 0, count: 0, plan: 0.00 }
     };
 
     let hasAnyData = false;
@@ -1889,26 +1888,61 @@ router.get('/nanhua-profit-margin/:year', async (req, res) => {
             const monthLabel = `${month.toString().padStart(2, '0')}月`;
             months.push(monthLabel);
             
-                         // 计算该月的平均毛利率（包括所有客户，即使是0）
-             let totalRate = 0;
-             let totalCustomers = 0;
-             
-             result.data.customers.forEach(customer => {
-               const rate = customer.current || 0;
-               totalRate += rate;
-               totalCustomers++;
-               
-               // 累计各客户数据
-               if (customerAccumulator[customer.customerName]) {
-                 customerAccumulator[customer.customerName].total += rate;
-                 customerAccumulator[customer.customerName].count += 1;
-               }
-             });
-             
-                          const monthRate = totalCustomers > 0 ? totalRate / totalCustomers : 0;
+                                     // 计算该月的加权平均毛利率（基于收入规模）
+            let totalRevenue = 0;
+            let totalProfit = 0;
+            
+            // 首先获取收入数据来计算权重
+            try {
+              const incomeResponse = await fetch(`http://47.111.95.19:3000/nanhua-business-income/${period}`);
+              if (incomeResponse.ok) {
+                const incomeResult = await incomeResponse.json();
+                if (incomeResult.success && incomeResult.data && incomeResult.data.customers) {
+                  result.data.customers.forEach(customer => {
+                    const rate = customer.current || 0;
+                    
+                    // 找到对应的收入数据
+                    let customerName = customer.customerName;
+                    
+                    
+                    const incomeCustomer = incomeResult.data.customers.find(item => item.customerName === customerName);
+                    const revenue = incomeCustomer ? (incomeCustomer.accumulated || incomeCustomer.current || 0) : 0;
+                    
+                    if (revenue > 0) {
+                      const profit = revenue * (rate / 100);
+                      totalRevenue += revenue;
+                      totalProfit += profit;
+                    }
+                    
+                    // 累计各客户数据
+                    if (customerAccumulator[customer.customerName]) {
+                      customerAccumulator[customer.customerName].total += rate;
+                      customerAccumulator[customer.customerName].count += 1;
+                    }
+                  });
+                }
+              }
+            } catch (error) {
+              console.error(`获取${period}收入数据失败:`, error);
+            }
+            
+            // 如果无法获取收入数据，使用简单平均
+            let monthRate = 0;
+            if (totalRevenue > 0) {
+              monthRate = (totalProfit / totalRevenue) * 100;
+            } else {
+              let totalRate = 0;
+              let totalCustomers = 0;
+              result.data.customers.forEach(customer => {
+                const rate = customer.current || 0;
+                totalRate += rate;
+                totalCustomers++;
+              });
+              monthRate = totalCustomers > 0 ? totalRate / totalCustomers : 0;
+            }
              monthlyData.push(Number(monthRate.toFixed(2)));
              
-             if (totalCustomers > 0) {
+             if (totalRevenue > 0 || result.data.customers.some(c => c.current > 0)) {
                hasAnyData = true;
              }
           }
@@ -1935,9 +1969,8 @@ router.get('/nanhua-profit-margin/:year', async (req, res) => {
             { name: '域外合作项目', plan: 5.48, actual: 0, rate: 0 },
             { name: '新能源项目', plan: 17.25, actual: 0, rate: 0 },
             { name: '苏州项目', plan: 6.00, actual: 0, rate: 0 },
-            { name: '抢修', plan: 33.52, actual: 0, rate: 0 },
-            { name: '运检项目', plan: 13.60, actual: 0, rate: 0 },
-            { name: '自建项目', plan: 0, actual: 0, rate: 0 }
+                          { name: '自接项目', plan: 47.12, actual: 0, rate: 0 },
+              { name: '其他', plan: 0.00, actual: 0, rate: 0 }
           ],
           hasData: false,
           message: '该年份暂无南华毛利率数据'
@@ -2862,7 +2895,7 @@ router.get('/nanhua-new-orders/:year', async (req, res) => {
       { customer: '域外合作项目', yearlyPlan: 2000.00, category: '工程' },
       { customer: '新能源项目', yearlyPlan: 4000.00, category: '工程' },
       { customer: '苏州项目', yearlyPlan: 1000.00, category: '工程' },
-      { customer: '自建项目', yearlyPlan: 0.00, category: '工程' }
+      { customer: '自接项目', yearlyPlan: 0.00, category: '工程' }
     ];
 
     // 获取该年度所有期间的数据
@@ -3204,6 +3237,224 @@ router.get('/net-profit-curve/:year', async (req, res) => {
       success: false, 
       message: '获取净利润曲线数据失败', 
       error: error.message 
+    });
+  }
+});
+
+// 获取月度质量指标数据 - 用于月度报告第二点
+router.get('/monthly-quality-indicators/:year/:month', async (req, res) => {
+  try {
+    const { year, month } = req.params;
+    const period = `${year}-${month.padStart(2, '0')}`;
+
+    const indicators = {
+      marginContribution: { yearlyPlan: 21.98, current: 0 },
+      grossMargin: { yearlyPlan: 24.00, current: 0 },
+      netMargin: { yearlyPlan: 6.85, current: 0 },
+      roe: { yearlyPlan: 21.18, current: 0 },
+      assetLiabilityRatio: { yearlyPlan: 74.00, current: 0 }
+    };
+
+    // 1. 获取当月边际贡献率数据
+    try {
+      const [contributionRows] = await pool.execute(`
+        SELECT data FROM business_contribution
+        WHERE period = ?
+        LIMIT 1
+      `, [period]);
+
+      if (contributionRows.length > 0) {
+        const data = typeof contributionRows[0].data === 'string' ?
+          JSON.parse(contributionRows[0].data) : contributionRows[0].data;
+
+        const parseContributionRate = (value) => {
+          if (!value) return 0;
+          if (typeof value === 'string') {
+            if (value === '/' || value.includes('无收入') || value === '0' || value === '0%') return 0;
+            // 移除百分号并解析数字
+            const cleanValue = value.replace('%', '').trim();
+            const match = cleanValue.match(/(\d+(?:\.\d+)?)/);
+            if (match) {
+              const rate = parseFloat(match[1]);
+              return (!isNaN(rate) && rate >= 0 && rate <= 10000) ? rate : 0;
+            }
+          }
+          if (typeof value === 'number') {
+            return (value >= 0 && value <= 10000) ? value : 0;
+          }
+          return 0;
+        };
+
+        // 获取总边际贡献率
+        const currentRate = data.total && data.total.actual ? 
+          parseContributionRate(data.total.actual) : 0;
+        const planRate = data.total && data.total.plan ? 
+          parseContributionRate(data.total.plan) : 21.98;
+
+        indicators.marginContribution = {
+          yearlyPlan: planRate,
+          current: currentRate
+        };
+
+        console.log(`当月边际贡献率数据 - 计划: ${planRate}%, 实际: ${currentRate}%`);
+      }
+    } catch (error) {
+      console.error('获取当月边际贡献率数据失败:', error);
+    }
+
+    // 2. 获取当月毛利率数据
+    try {
+      const [profitMarginRows] = await pool.execute(`
+        SELECT data FROM business_profit_margin
+        WHERE period = ?
+        LIMIT 1
+      `, [period]);
+
+      if (profitMarginRows.length > 0) {
+        const data = typeof profitMarginRows[0].data === 'string' ?
+          JSON.parse(profitMarginRows[0].data) : profitMarginRows[0].data;
+
+        const parseProfitMarginRate = (value) => {
+          if (!value) return 0;
+          if (typeof value === 'string') {
+            if (value === '/' || value.includes('无收入') || value === '0' || value === '0%') return 0;
+            // 移除百分号并解析数字
+            const cleanValue = value.replace('%', '').trim();
+            const match = cleanValue.match(/(\d+(?:\.\d+)?)/);
+            if (match) {
+              const rate = parseFloat(match[1]);
+              return (!isNaN(rate) && rate >= 0 && rate <= 10000) ? rate : 0;
+            }
+          }
+          if (typeof value === 'number') {
+            return (value >= 0 && value <= 10000) ? value : 0;
+          }
+          return 0;
+        };
+
+        // 获取总毛利率
+        const currentRate = data.total && data.total.actual ? 
+          parseProfitMarginRate(data.total.actual) : 0;
+        const planRate = data.total && data.total.plan ? 
+          parseProfitMarginRate(data.total.plan) : 24.00;
+
+        indicators.grossMargin = {
+          yearlyPlan: planRate,
+          current: currentRate
+        };
+
+        console.log(`当月毛利率数据 - 计划: ${planRate}%, 实际: ${currentRate}%`);
+      }
+    } catch (error) {
+      console.error('获取当月毛利率数据失败:', error);
+    }
+
+    // 3. 获取当月净利率数据
+    try {
+      const periodWithDay = `${period}-01`;
+      const [incomeRows] = await pool.execute(`
+        SELECT data FROM income_statement
+        WHERE period = ?
+        LIMIT 1
+      `, [periodWithDay]);
+
+      if (incomeRows.length > 0) {
+        const incomeData = typeof incomeRows[0].data === 'string' ?
+          JSON.parse(incomeRows[0].data) : incomeRows[0].data;
+
+        const mainRevenue = incomeData.main_business_revenue?.current_amount || 0;
+        const netProfit = incomeData.net_profit?.current_amount || 0;
+
+        if (mainRevenue > 0) {
+          indicators.netMargin.current = Number(((netProfit / mainRevenue) * 100).toFixed(2));
+        }
+      }
+    } catch (error) {
+      console.error('获取当月净利率数据失败:', error);
+    }
+
+    // 4. 获取当月ROE数据 (年化)
+    try {
+      const periodWithDay = `${period}-01`;
+      const [incomeRows] = await pool.execute(`
+        SELECT data FROM income_statement
+        WHERE period = ?
+        LIMIT 1
+      `, [periodWithDay]);
+
+      const [balanceRows] = await pool.execute(`
+        SELECT data FROM balance_sheet
+        WHERE period = ?
+        LIMIT 1
+      `, [periodWithDay]);
+
+      if (incomeRows.length > 0 && balanceRows.length > 0) {
+        const incomeData = typeof incomeRows[0].data === 'string' ?
+          JSON.parse(incomeRows[0].data) : incomeRows[0].data;
+        const balanceData = typeof balanceRows[0].data === 'string' ?
+          JSON.parse(balanceRows[0].data) : balanceRows[0].data;
+
+        const netProfit = incomeData.net_profit?.current_amount || 0;
+        let shareholderEquity = balanceData.equityTotal?.endBalance || 0;
+
+        // 如果equityTotal为0，尝试从equity数组中获取
+        if (shareholderEquity === 0 && balanceData.equity) {
+          for (const item of balanceData.equity) {
+            if (item.total || item.name?.includes('股东权益') || item.name?.includes('所有者权益')) {
+              shareholderEquity = item.endBalance || 0;
+              break;
+            }
+          }
+        }
+
+        if (netProfit > 0 && shareholderEquity > 0) {
+          // 年化ROE = (当月净利润 * 12) / 股东权益 * 100%
+          indicators.roe.current = Number(((netProfit * 12 / shareholderEquity) * 100).toFixed(2));
+        }
+      }
+    } catch (error) {
+      console.error('获取当月ROE数据失败:', error);
+    }
+
+    // 5. 获取当月资产负债率数据
+    try {
+      const periodWithDay = `${period}-01`;
+      const [balanceRows] = await pool.execute(`
+        SELECT data FROM balance_sheet
+        WHERE period = ?
+        LIMIT 1
+      `, [periodWithDay]);
+
+      if (balanceRows.length > 0) {
+        const balanceData = typeof balanceRows[0].data === 'string' ?
+          JSON.parse(balanceRows[0].data) : balanceRows[0].data;
+
+        const totalAssets = balanceData.assetsTotal?.endBalance || 0;
+        const totalLiabilities = balanceData.liabilitiesTotal?.endBalance || 0;
+
+        if (totalAssets > 0) {
+          indicators.assetLiabilityRatio.current = Number(((totalLiabilities / totalAssets) * 100).toFixed(2));
+        }
+      }
+    } catch (error) {
+      console.error('获取当月资产负债率数据失败:', error);
+    }
+
+
+
+
+
+    res.json({
+      success: true,
+      data: indicators
+    });
+
+  } catch (error) {
+    console.error('获取月度质量指标失败:', error);
+    res.status(500).json({
+      success: false,
+      message: '获取月度质量指标失败',
+      error: error.message
     });
   }
 });

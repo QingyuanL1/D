@@ -3,7 +3,7 @@
         <div class="flex justify-between items-center mb-6">
             <h1 class="text-2xl font-bold">成本计提情况:（单位：万元）</h1>
             <div class="flex items-center space-x-4">
-                <span class="text-xs text-gray-500">本年累计 = 年初余额 + 当期新增累计 - 当期冲销累计</span>
+                <span class="text-xs text-gray-500">本年累计 = 年初余额 + 累计新增（1月至当前月） - 累计冲销（1月至当前月）</span>
                 <input v-model="period" type="month" class="px-3 py-2 border rounded" />
             </div>
         </div>
@@ -122,10 +122,8 @@ const fixedBalanceData: CostProvisionData = {
         { customerName: '域外合作项目', yearBeginBalance: 661.56, monthlyIncrease: 0, monthlyWriteOff: 0, yearlyAccumulated: 0, provisionRate: 0 },
         { customerName: '新能源项目', yearBeginBalance: 730.12, monthlyIncrease: 0, monthlyWriteOff: 0, yearlyAccumulated: 0, provisionRate: 0 },
         { customerName: '苏州项目', yearBeginBalance: 93.99, monthlyIncrease: 0, monthlyWriteOff: 0, yearlyAccumulated: 0, provisionRate: 0 },
-        { customerName: '抢修项目', yearBeginBalance: 0.00, monthlyIncrease: 0, monthlyWriteOff: 0, yearlyAccumulated: 0, provisionRate: 0 },
-        { customerName: '运检项目', yearBeginBalance: 242.66, monthlyIncrease: 0, monthlyWriteOff: 0, yearlyAccumulated: 0, provisionRate: 0 },
-        { customerName: '派遣', yearBeginBalance: 19.50, monthlyIncrease: 0, monthlyWriteOff: 0, yearlyAccumulated: 0, provisionRate: 0 },
-        { customerName: '自接', yearBeginBalance: 0.00, monthlyIncrease: 0, monthlyWriteOff: 0, yearlyAccumulated: 0, provisionRate: 0 }
+        { customerName: '自接项目', yearBeginBalance: 242.66, monthlyIncrease: 0, monthlyWriteOff: 0, yearlyAccumulated: 0, provisionRate: 0 },
+        { customerName: '其他', yearBeginBalance: 19.50, monthlyIncrease: 0, monthlyWriteOff: 0, yearlyAccumulated: 0, provisionRate: 0 }
     ]
 }
 
@@ -149,60 +147,43 @@ const formatProvisionRate = (value: number): string => {
     return value.toFixed(2) + '%'
 }
 
-// 计算累计数据（从年初到当前月份）
-const calculateAccumulated = async (targetPeriod: string) => {
+// 使用优化接口获取累计数据（替代原来的逐月请求方式，大幅提升性能）
+const loadAccumulatedData = async (targetPeriod: string) => {
     try {
-        const [year, month] = targetPeriod.split('-')
-        const currentMonth = parseInt(month)
-        
-        // 为每个客户计算累计值
-        for (let customer of costProvisionData.value.customers) {
-            let accumulatedIncrease = 0
-            let accumulatedWriteOff = 0
-            
-            // 从1月累计到当前月份
-            for (let m = 1; m <= currentMonth; m++) {
-                const monthPeriod = `${year}-${m.toString().padStart(2, '0')}`
-                try {
-                    const response = await fetch(`http://47.111.95.19:3000/nanhua-cost-provision/${monthPeriod}`)
-                    if (response.ok) {
-                        const result = await response.json()
-                        const customerData = result.data.customers.find((c: any) => c.customerName === customer.customerName)
-                        if (customerData) {
-                            accumulatedIncrease += customerData.monthlyIncrease || 0
-                            accumulatedWriteOff += customerData.monthlyWriteOff || 0
-                        }
-                    }
-                } catch (error) {
-                    console.warn(`无法加载${monthPeriod}的数据:`, error)
-                }
+        const response = await fetch(`http://47.111.95.19:3000/nanhua-cost-provision/accumulated/${targetPeriod}`)
+        if (!response.ok) {
+            if (response.status !== 404) {
+                throw new Error('加载累计数据失败')
             }
-            
-            // 本年累计 = 年初余额 + 累计新增 - 累计冲销
-            customer.yearlyAccumulated = customer.yearBeginBalance + accumulatedIncrease - accumulatedWriteOff
-            
-            // 计算计提率 = 本年累计 / 年初余额 * 100%
-            if (customer.yearBeginBalance > 0) {
-                customer.provisionRate = (customer.yearlyAccumulated / customer.yearBeginBalance) * 100
-            } else {
-                customer.provisionRate = 0
-            }
+            return
+        }
+        const result = await response.json()
+        if (result.data && result.data.customers) {
+            // 使用后端返回的累计数据
+            costProvisionData.value.customers = result.data.customers.map((item: any) => ({
+                customerName: item.customerName,
+                yearBeginBalance: Number(item.yearBeginBalance) || 0,
+                monthlyIncrease: Number(item.monthlyIncrease) || 0,
+                monthlyWriteOff: Number(item.monthlyWriteOff) || 0,
+                yearlyAccumulated: Number(item.yearlyAccumulated) || 0,
+                provisionRate: Number(item.provisionRate) || 0
+            }))
         }
     } catch (error) {
-        console.error('计算累计数据失败:', error)
+        console.error('加载累计数据失败:', error)
     }
 }
 
-// 监听当期新增和冲销字段变化，自动重新计算本年累计和计提率
+// 监听当期新增和冲销字段变化，本地预览计算（不覆盖已有的累计数据）
 watch(() => costProvisionData.value.customers.map(item => [item.monthlyIncrease, item.monthlyWriteOff]), () => {
-    // 简化计算：直接基于当前输入值计算
+    // 用户修改当期数据时，仅重新计算计提率，不修改yearlyAccumulated
+    // 因为yearlyAccumulated应该基于历史累计数据，需要保存后重新获取
     costProvisionData.value.customers.forEach(item => {
-        const cumulativeIncrease = Number(item.monthlyIncrease) || 0
-        const cumulativeWriteOff = Number(item.monthlyWriteOff) || 0
-        item.yearlyAccumulated = item.yearBeginBalance + cumulativeIncrease - cumulativeWriteOff
-        item.provisionRate = item.yearBeginBalance > 0 ? 
-            (item.yearlyAccumulated / item.yearBeginBalance) * 100 : 
-            (item.yearlyAccumulated !== 0 ? (item.yearlyAccumulated > 0 ? 100 : -100) : 0)
+        if (item.yearBeginBalance > 0) {
+            item.provisionRate = (item.yearlyAccumulated / item.yearBeginBalance) * 100
+        } else {
+            item.provisionRate = item.yearlyAccumulated !== 0 ? (item.yearlyAccumulated > 0 ? 100 : -100) : 0
+        }
     })
 }, { deep: true })
 
@@ -231,8 +212,8 @@ const totalData = computed(() => {
     return total
 })
 
-// 加载数据
-const loadData = async (targetPeriod: string) => {
+// 加载单月数据（仅在需要时使用）
+const loadSingleMonthData = async (targetPeriod: string) => {
     try {
         const response = await fetch(`http://47.111.95.19:3000/nanhua-cost-provision/${targetPeriod}`)
         if (!response.ok) {
@@ -243,7 +224,7 @@ const loadData = async (targetPeriod: string) => {
         }
         const result = await response.json()
         if (result.data && result.data.customers) {
-            // 直接使用后端返回的数据
+            // 仅用于获取单月数据，不包含累计计算
             costProvisionData.value.customers = result.data.customers.map((item: any) => ({
                 customerName: item.customerName,
                 yearBeginBalance: Number(item.yearBeginBalance) || 0,
@@ -278,8 +259,7 @@ const loadRemarksAndSuggestions = async (targetPeriod: string) => {
 watch(() => route.query.period, async (newPeriod) => {
     if (newPeriod) {
         period.value = newPeriod.toString()
-        await loadData(newPeriod.toString())
-        await calculateAccumulated(newPeriod.toString())
+        await loadAccumulatedData(newPeriod.toString())
         loadRemarksAndSuggestions(newPeriod.toString())
     }
 })
@@ -288,8 +268,7 @@ watch(() => route.query.period, async (newPeriod) => {
 watch(period, async (newPeriod, oldPeriod) => {
     if (newPeriod && newPeriod !== oldPeriod) {
         console.log(`期间发生变化: ${oldPeriod} -> ${newPeriod}`)
-        await loadData(newPeriod)
-        await calculateAccumulated(newPeriod)
+        await loadAccumulatedData(newPeriod)
         loadRemarksAndSuggestions(newPeriod)
     }
 })
@@ -314,6 +293,9 @@ const handleSave = async () => {
         // 记录提交状态（包含备注和建议）
         await recordFormSubmission(MODULE_IDS.NANHUA_COST_PROVISION, period.value, costProvisionData.value, remarks.value, suggestions.value)
 
+        // 保存成功后重新加载累计数据，确保显示正确的累计值
+        await loadAccumulatedData(period.value)
+
         alert('保存成功')
     } catch (error) {
         console.error('保存失败:', error)
@@ -329,12 +311,10 @@ const handleReset = () => {
 
 onMounted(async () => {
     if (route.query.period) {
-        await loadData(route.query.period.toString())
-        await calculateAccumulated(route.query.period.toString())
+        await loadAccumulatedData(route.query.period.toString())
         loadRemarksAndSuggestions(route.query.period.toString())
     } else {
-        await loadData(period.value)
-        await calculateAccumulated(period.value)
+        await loadAccumulatedData(period.value)
         loadRemarksAndSuggestions(period.value)
     }
 })
