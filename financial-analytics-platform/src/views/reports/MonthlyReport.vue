@@ -115,16 +115,7 @@
             :data="qualityIndicators.assetLiabilityRatio"
             type="percentage"
           />
-          <IndicatorCard
-            title="●应收账款指标："
-            :data="qualityIndicators.receivables"
-            type="amount-with-fluctuation"
-          />
-          <IndicatorCard
-            title="●存量指标："
-            :data="qualityIndicators.inventory"
-            type="amount-with-fluctuation"
-          />
+
         </div>
       </div>
 
@@ -2993,307 +2984,79 @@ const updateKeyIndicatorsFromAPI = async () => {
 // 从Analytics API更新质量指标数据
 const updateQualityIndicatorsFromAPI = async () => {
   try {
-    const currentYear = selectedPeriod.value.split('-')[0]
-    console.log('正在从Analytics API更新质量指标数据，年份:', currentYear, '公司:', selectedCompanyKey.value)
+    const [currentYear, currentMonth] = selectedPeriod.value.split('-')
+    console.log('正在从Analytics API更新当月质量指标数据，年份:', currentYear, '月份:', currentMonth, '公司:', selectedCompanyKey.value)
 
-    // 1. 获取边际贡献率数据 - 使用电气公司专用API
+    // 使用新的月度质量指标API
     try {
-      const contributionRateResponse = await fetch(`http://47.111.95.19:3000/analytics/contribution-rate/${currentYear}`)
-      if (contributionRateResponse.ok) {
-        const contributionRateResult = await contributionRateResponse.json()
-        console.log('边际贡献率API响应:', contributionRateResult)
-        if (contributionRateResult.success && contributionRateResult.data) {
-          qualityIndicators.value.marginContribution = {
-            yearlyPlan: contributionRateResult.data.targetRate || 21.98,
-            current: contributionRateResult.data.currentRate || 0
-          }
-          console.log('边际贡献率数据已更新:', qualityIndicators.value.marginContribution)
-        } else {
-          // 如果没有实际数据，使用模拟数据
-          qualityIndicators.value.marginContribution = {
-            yearlyPlan: 21.98,
-            current: 20.15 + Math.random() * 2 // 20.15-22.15之间的随机值
-          }
-          console.log('边际贡献率使用模拟数据:', qualityIndicators.value.marginContribution)
-        }
-      } else {
-        console.log('边际贡献率API请求失败，状态:', contributionRateResponse.status)
-        // API请求失败时使用模拟数据
-        qualityIndicators.value.marginContribution = {
-          yearlyPlan: 21.98,
-          current: 20.15 + Math.random() * 2
-        }
-      }
-    } catch (error) {
-      console.error('获取边际贡献率数据失败:', error)
-      // 网络错误时使用模拟数据
-      qualityIndicators.value.marginContribution = {
-        yearlyPlan: 21.98,
-        current: 20.15 + Math.random() * 2
-      }
-    }
-
-    // 2. 获取毛利率数据 - 使用电气公司专用API
-    try {
-      const profitMarginResponse = await fetch(`http://47.111.95.19:3000/analytics/profit-margin/${currentYear}`)
-      if (profitMarginResponse.ok) {
-        const profitMarginResult = await profitMarginResponse.json()
-        console.log('毛利率API响应:', profitMarginResult)
-        if (profitMarginResult.success && profitMarginResult.data) {
-          qualityIndicators.value.grossMargin = {
-            yearlyPlan: profitMarginResult.data.targetRate || 24.00,
-            current: profitMarginResult.data.currentRate || 0
-          }
-          console.log('毛利率数据已更新:', qualityIndicators.value.grossMargin)
-        } else {
-          // 如果没有实际数据，使用模拟数据
-          qualityIndicators.value.grossMargin = {
-            yearlyPlan: 24.00,
-            current: 21.50 + Math.random() * 3 // 21.50-24.50之间的随机值
-          }
-          console.log('毛利率使用模拟数据:', qualityIndicators.value.grossMargin)
-        }
-      } else {
-        console.log('毛利率API请求失败，状态:', profitMarginResponse.status)
-        qualityIndicators.value.grossMargin = {
-          yearlyPlan: 24.00,
-          current: 21.50 + Math.random() * 3
-        }
-      }
-    } catch (error) {
-      console.error('获取毛利率数据失败:', error)
-      qualityIndicators.value.grossMargin = {
-        yearlyPlan: 24.00,
-        current: 21.50 + Math.random() * 3
-      }
-    }
-
-    // 3. 获取净利率数据 - 使用电气公司专用API
-    try {
-      const netProfitMarginResponse = await fetch(`http://47.111.95.19:3000/analytics/net-profit-margin/${currentYear}`)
-      if (netProfitMarginResponse.ok) {
-        const netProfitMarginResult = await netProfitMarginResponse.json()
-        if (netProfitMarginResult.success && netProfitMarginResult.data && netProfitMarginResult.data.hasData) {
-          qualityIndicators.value.netMargin = {
-            yearlyPlan: netProfitMarginResult.data.targetRate || 6.85,
-            current: netProfitMarginResult.data.currentRate || 0
-          }
-          console.log('净利率数据已更新:', qualityIndicators.value.netMargin)
-        } else {
-          // 如果没有实际数据，使用模拟数据
-          qualityIndicators.value.netMargin = {
-            yearlyPlan: 6.85,
-            current: 5.10 + Math.random() * 2 // 5.10-7.10之间的随机值
-          }
-          console.log('净利率使用模拟数据:', qualityIndicators.value.netMargin)
-        }
-      } else {
-        qualityIndicators.value.netMargin = {
-          yearlyPlan: 6.85,
-          current: 5.10 + Math.random() * 2
-        }
-      }
-    } catch (error) {
-      console.error('获取净利率数据失败:', error)
-      qualityIndicators.value.netMargin = {
-        yearlyPlan: 6.85,
-        current: 5.10 + Math.random() * 2
-      }
-    }
-
-    // 4. 获取ROE数据 - 使用电气公司专用API
-    try {
-      const roeResponse = await fetch(`http://47.111.95.19:3000/analytics/roe/${currentYear}?company=main`)
-      if (roeResponse.ok) {
-        const roeResult = await roeResponse.json()
-        if (roeResult.success && roeResult.data && roeResult.data.summary) {
-          qualityIndicators.value.roe = {
-            yearlyPlan: roeResult.data.summary?.targetROE || 21.18,
-            current: roeResult.data.summary?.currentROE || 0
-          }
-          console.log('ROE数据已更新:', qualityIndicators.value.roe)
-        } else {
-          // 如果没有实际数据，使用模拟数据
-          qualityIndicators.value.roe = {
-            yearlyPlan: 21.18,
-            current: 18.50 + Math.random() * 4 // 18.50-22.50之间的随机值
-          }
-          console.log('ROE使用模拟数据:', qualityIndicators.value.roe)
-        }
-      } else {
-        qualityIndicators.value.roe = {
-          yearlyPlan: 21.18,
-          current: 18.50 + Math.random() * 4
-        }
-      }
-    } catch (error) {
-      console.error('获取ROE数据失败:', error)
-      qualityIndicators.value.roe = {
-        yearlyPlan: 21.18,
-        current: 18.50 + Math.random() * 4
-      }
-    }
-
-    // 5. 获取资产负债率数据 - 使用电气公司专用API
-    try {
-      const assetLiabilityResponse = await fetch(`http://47.111.95.19:3000/analytics/asset-liability-ratio/${currentYear}?company=main`)
-      if (assetLiabilityResponse.ok) {
-        const assetLiabilityResult = await assetLiabilityResponse.json()
-        if (assetLiabilityResult.success && assetLiabilityResult.data && assetLiabilityResult.data.hasData) {
-          qualityIndicators.value.assetLiabilityRatio = {
-            yearlyPlan: assetLiabilityResult.data.targetRate || 74.00,
-            current: assetLiabilityResult.data.currentRate || 0
-          }
-          console.log('资产负债率数据已更新:', qualityIndicators.value.assetLiabilityRatio)
-        } else {
-          // 如果没有实际数据，使用模拟数据
-          qualityIndicators.value.assetLiabilityRatio = {
-            yearlyPlan: 74.00,
-            current: 72.00 + Math.random() * 6 // 72.00-78.00之间的随机值
-          }
-          console.log('资产负债率使用模拟数据:', qualityIndicators.value.assetLiabilityRatio)
-        }
-      } else {
-        qualityIndicators.value.assetLiabilityRatio = {
-          yearlyPlan: 74.00,
-          current: 72.00 + Math.random() * 6
-        }
-      }
-    } catch (error) {
-      console.error('获取资产负债率数据失败:', error)
-      qualityIndicators.value.assetLiabilityRatio = {
-        yearlyPlan: 74.00,
-        current: 72.00 + Math.random() * 6
-      }
-    }
-
-    // 6. 获取存量指标数据 - 使用电气公司专用API
-    try {
-      const inventoryResponse = await fetch(`http://47.111.95.19:3000/analytics/inventory-metrics/${currentYear}`)
-      if (inventoryResponse.ok) {
-        const inventoryResult = await inventoryResponse.json()
-        if (inventoryResult.success && inventoryResult.data && inventoryResult.data.hasData) {
-          const currentTotal = inventoryResult.data.currentTotal || 0
-          // 假设年初值为当前值的80%作为参考
-          const initialValue = currentTotal * 0.8
-          const fluctuation = initialValue > 0 ? ((currentTotal - initialValue) / initialValue * 100) : 0
-
-          qualityIndicators.value.inventory = {
-            initial: Math.round(initialValue * 100) / 100,
-            current: currentTotal,
-            fluctuation: Math.round(fluctuation * 100) / 100
-          }
-          console.log('存量指标数据已更新:', qualityIndicators.value.inventory)
-        } else {
-          // 如果没有实际数据，使用模拟数据
-          const baseValue = 120000 + Math.random() * 10000 // 120000-130000之间
-          const initialValue = baseValue * (0.85 + Math.random() * 0.1) // 85%-95%之间
-          const fluctuation = ((baseValue - initialValue) / initialValue * 100)
-          
-          qualityIndicators.value.inventory = {
-            initial: Math.round(initialValue * 100) / 100,
-            current: Math.round(baseValue * 100) / 100,
-            fluctuation: Math.round(fluctuation * 100) / 100
-          }
-          console.log('存量指标使用模拟数据:', qualityIndicators.value.inventory)
-        }
-      } else {
-        const baseValue = 120000 + Math.random() * 10000
-        const initialValue = baseValue * (0.85 + Math.random() * 0.1)
-        const fluctuation = ((baseValue - initialValue) / initialValue * 100)
+      const monthlyIndicatorsResponse = await fetch(`http://47.111.95.19:3000/analytics/monthly-quality-indicators/${currentYear}/${currentMonth}`)
+      if (monthlyIndicatorsResponse.ok) {
+        const monthlyResult = await monthlyIndicatorsResponse.json()
+        console.log('月度质量指标API响应:', monthlyResult)
         
-        qualityIndicators.value.inventory = {
-          initial: Math.round(initialValue * 100) / 100,
-          current: Math.round(baseValue * 100) / 100,
-          fluctuation: Math.round(fluctuation * 100) / 100
-        }
-      }
-    } catch (error) {
-      console.error('获取存量指标数据失败:', error)
-      const baseValue = 120000 + Math.random() * 10000
-      const initialValue = baseValue * (0.85 + Math.random() * 0.1)
-      const fluctuation = ((baseValue - initialValue) / initialValue * 100)
-      
-      qualityIndicators.value.inventory = {
-        initial: Math.round(initialValue * 100) / 100,
-        current: Math.round(baseValue * 100) / 100,
-        fluctuation: Math.round(fluctuation * 100) / 100
-      }
-    }
-
-    // 7. 获取应收账款数据 - 使用直接的accounts-receivable API
-    try {
-      const receivablesResponse = await fetch(`http://47.111.95.19:3000/accounts-receivable/${selectedPeriod.value}`)
-      if (receivablesResponse.ok) {
-        const receivablesResult = await receivablesResponse.json()
-        if (receivablesResult.success && receivablesResult.data) {
-          // 计算总的应收账款
-          let totalCurrent = 0
-          let totalInitial = 0
-
-          // 汇总所有类别的应收账款
-          if (receivablesResult.data.equipmentData && Array.isArray(receivablesResult.data.equipmentData)) {
-            receivablesResult.data.equipmentData.forEach(item => {
-              totalCurrent += parseFloat(item.currentBalance || 0)
-              totalInitial += parseFloat(item.initialBalance || 0)
-            })
+        if (monthlyResult.success && monthlyResult.data) {
+          // 更新所有质量指标数据
+          qualityIndicators.value = {
+            marginContribution: monthlyResult.data.marginContribution,
+            grossMargin: monthlyResult.data.grossMargin,
+            netMargin: monthlyResult.data.netMargin,
+            roe: monthlyResult.data.roe,
+            assetLiabilityRatio: monthlyResult.data.assetLiabilityRatio
           }
-
-          if (receivablesResult.data.componentData && Array.isArray(receivablesResult.data.componentData)) {
-            receivablesResult.data.componentData.forEach(item => {
-              totalCurrent += parseFloat(item.currentBalance || 0)
-              totalInitial += parseFloat(item.initialBalance || 0)
-            })
-          }
-
-          if (receivablesResult.data.projectData && Array.isArray(receivablesResult.data.projectData)) {
-            receivablesResult.data.projectData.forEach(item => {
-              totalCurrent += parseFloat(item.currentBalance || 0)
-              totalInitial += parseFloat(item.initialBalance || 0)
-            })
-          }
-
-          // 计算波动率
-          const fluctuation = totalInitial > 0 ? ((totalCurrent - totalInitial) / totalInitial * 100) : 0
-
-          qualityIndicators.value.receivables = {
-            initial: Math.round(totalInitial * 100) / 100,
-            current: Math.round(totalCurrent * 100) / 100,
-            fluctuation: Math.round(fluctuation * 100) / 100
-          }
-          console.log('应收账款数据已更新:', qualityIndicators.value.receivables)
+          console.log('月度质量指标数据已更新:', qualityIndicators.value)
         } else {
-          // 如果没有实际数据，使用模拟数据
-          const baseInitial = 19000 + Math.random() * 2000 // 19000-21000之间
-          const baseCurrent = baseInitial * (1.15 + Math.random() * 0.15) // 115%-130%之间
-          const fluctuation = ((baseCurrent - baseInitial) / baseInitial * 100)
-          
-          qualityIndicators.value.receivables = {
-            initial: Math.round(baseInitial * 100) / 100,
-            current: Math.round(baseCurrent * 100) / 100,
-            fluctuation: Math.round(fluctuation * 100) / 100
-          }
-          console.log('应收账款使用模拟数据:', qualityIndicators.value.receivables)
+          console.log('月度质量指标API返回失败，使用默认数据')
+          setDefaultQualityIndicators()
         }
+      } else {
+        console.log('月度质量指标API请求失败，状态:', monthlyIndicatorsResponse.status)
+        setDefaultQualityIndicators()
       }
     } catch (error) {
-      console.error('获取应收账款数据失败:', error)
-      // 使用默认值
-      const baseInitial = 19000 + Math.random() * 2000
-      const baseCurrent = baseInitial * (1.15 + Math.random() * 0.15)
-      const fluctuation = ((baseCurrent - baseInitial) / baseInitial * 100)
-      
-      qualityIndicators.value.receivables = {
-        initial: Math.round(baseInitial * 100) / 100,
-        current: Math.round(baseCurrent * 100) / 100,
-        fluctuation: Math.round(fluctuation * 100) / 100
-      }
-      console.log('应收账款使用错误处理的模拟数据:', qualityIndicators.value.receivables)
+      console.error('获取月度质量指标数据失败:', error)
+      setDefaultQualityIndicators()
     }
+
+    console.log('月度质量指标数据更新完成:', qualityIndicators.value)
 
   } catch (error) {
-    console.error('更新质量指标数据失败:', error)
+    console.error('更新月度质量指标数据失败:', error)
+    setDefaultQualityIndicators()
   }
+}
+
+// 设置默认质量指标数据
+const setDefaultQualityIndicators = () => {
+  qualityIndicators.value = {
+    marginContribution: { yearlyPlan: 21.98, current: 20.15 + Math.random() * 2 },
+    grossMargin: { yearlyPlan: 24.00, current: 21.50 + Math.random() * 3 },
+    netMargin: { yearlyPlan: 6.85, current: 5.10 + Math.random() * 2 },
+    roe: { yearlyPlan: 21.18, current: 18.50 + Math.random() * 5 },
+    assetLiabilityRatio: { yearlyPlan: 74.00, current: 72.00 + Math.random() * 8 }
+  }
+  
+  // 计算波动数据
+  qualityIndicators.value.receivables.current = 
+    qualityIndicators.value.receivables.initial * (1 + (Math.random() * 0.5 + 0.1))
+  qualityIndicators.value.receivables.fluctuation = 
+    ((qualityIndicators.value.receivables.current - qualityIndicators.value.receivables.initial) / 
+     qualityIndicators.value.receivables.initial * 100)
+
+  qualityIndicators.value.inventory.current = 
+    qualityIndicators.value.inventory.initial * (1 + (Math.random() * 0.1 - 0.05))
+  qualityIndicators.value.inventory.fluctuation = 
+    ((qualityIndicators.value.inventory.current - qualityIndicators.value.inventory.initial) / 
+     qualityIndicators.value.inventory.initial * 100)
+     
+  // 格式化数值
+  Object.keys(qualityIndicators.value).forEach(key => {
+    const indicator = qualityIndicators.value[key]
+    Object.keys(indicator).forEach(prop => {
+      if (typeof indicator[prop] === 'number') {
+        indicator[prop] = Number(indicator[prop].toFixed(2))
+      }
+    })
+  })
 }
 
 // 手动刷新关键指标

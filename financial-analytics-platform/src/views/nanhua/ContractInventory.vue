@@ -46,7 +46,7 @@
                         </td>
                     </tr>
                     <tr>
-                        <td class="border border-gray-300 px-4 py-2">自建项目</td>
+                        <td class="border border-gray-300 px-4 py-2">自接项目</td>
                         <td class="border border-gray-300 px-4 py-2 text-right">{{ formatNumber(contractData.yunJianProjects[2].beginningRollingData) }}</td>
                         <td class="border border-gray-300 px-4 py-2">
                             <input v-model="contractData.yunJianProjects[2].currentAmount" type="number" class="w-full px-2 py-1 border rounded text-right" step="0.01" @input="calculateAccumulated(contractData.yunJianProjects[2])" />
@@ -190,7 +190,7 @@ const fixedPlanData: ContractData = {
     yunJianProjects: [
         { projectName: '一包项目', beginningRollingData: 1900.00, currentAmount: 0, accumulatedAmount: 0, fluctuationRate: 0 },
         { projectName: '二包项目', beginningRollingData: 500.00, currentAmount: 0, accumulatedAmount: 0, fluctuationRate: 0 },
-        { projectName: '自建项目', beginningRollingData: 0.00, currentAmount: 0, accumulatedAmount: 0, fluctuationRate: 0 }
+        { projectName: '自接项目', beginningRollingData: 0.00, currentAmount: 0, accumulatedAmount: 0, fluctuationRate: 0 }
     ],
     yunJianHeLiProject: { projectName: '运检合力项目', beginningRollingData: 180.00, currentAmount: 0, accumulatedAmount: 0, fluctuationRate: 0 },
     engineeringProjects: [

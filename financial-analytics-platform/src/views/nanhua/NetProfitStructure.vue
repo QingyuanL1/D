@@ -260,7 +260,7 @@ const getInitialMainBusinessData = (): MainBusinessItem[] => [
     { customerName: '苏州项目', yearlyPlan: 0, currentPeriod: 0, cumulative: 0, annualRatio: 0 },
     { customerName: '抢修项目', yearlyPlan: 0, currentPeriod: 0, cumulative: 0, annualRatio: 0 },
     { customerName: '运检项目', yearlyPlan: 0, currentPeriod: 0, cumulative: 0, annualRatio: 0 },
-    { customerName: '自建项目', yearlyPlan: 0, currentPeriod: 0, cumulative: 0, annualRatio: 0 }
+    { customerName: '自接项目', yearlyPlan: 0, currentPeriod: 0, cumulative: 0, annualRatio: 0 }
 ]
 
 // 非主营业务数据

@@ -5,7 +5,7 @@
       <input 
         :value="period" 
         @input="$emit('update:period', $event.target.value)"
-        @change="$emit('period-change')"
+        @change="$emit('period-change', $event.target.value)"
         type="month" 
         class="px-3 py-2 border rounded" 
       />

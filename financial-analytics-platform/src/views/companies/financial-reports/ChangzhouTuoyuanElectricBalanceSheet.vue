@@ -1,17 +1,18 @@
 <template>
-    <div class="max-w-[1400px] mx-auto bg-white rounded-lg shadow-lg p-6">
-        <h1 class="text-2xl font-bold text-center mb-6">资产负债2表(主表)（单位：万元）</h1>
+  <div class="bg-gray-100 p-8">
+    <div class="max-w-[1600px] mx-auto bg-white rounded-lg shadow-lg p-6">
+      <h1 class="text-2xl font-bold text-center mb-6">资产负债表(主表)（单位：万元）</h1>
 
-        <!-- 期间选择器右对齐 -->
-        <div class="mb-4 flex justify-end">
-            <div class="w-48">
-                <label class="block text-gray-700">期间：</label>
-                <input type="month" v-model="period" class="w-full px-2 py-1 border rounded" />
-            </div>
-        </div>
+      <!-- 期间选择器 -->
+      <div class="mb-4">
+        <label class="block text-gray-700">期间：</label>
+        <input type="month" v-model="period" class="w-full px-4 py-2 border rounded" />
+      </div>
 
-        <div class="overflow-x-auto">
-            <table class="w-full border-collapse border border-black text-sm">
+
+
+      <div class="overflow-x-auto">
+            <table class="w-full border-collapse border border-gray-300 text-sm">
                 <thead>
                     <tr>
                         <th class="border border-gray-300 px-4 py-2">资产</th>
@@ -25,633 +26,712 @@
                 <tbody>
                     <!-- 流动资产 -->
                     <tr>
-                        <td class="border border-black px-2 py-1 font-bold">流动资产</td>
-                        <td class="border border-black px-2 py-1"></td>
-                        <td class="border border-black px-2 py-1"></td>
-                        <td class="border border-black px-2 py-1 font-bold">流动负债：</td>
-                        <td class="border border-black px-2 py-1"></td>
-                        <td class="border border-black px-2 py-1"></td>
+                        <td class="border border-gray-300 px-4 py-2 font-bold">流动资产</td>
+                        <td class="border border-gray-300 px-4 py-2"></td>
+                        <td class="border border-gray-300 px-4 py-2"></td>
+                        <td class="border border-gray-300 px-4 py-2 font-bold">流动负债：</td>
+                        <td class="border border-gray-300 px-4 py-2"></td>
+                        <td class="border border-gray-300 px-4 py-2"></td>
                     </tr>
 
                     <tr>
-                        <td class="border border-black px-2 py-1 pl-4">货币资金</td>
-                        <td class="border border-black px-2 py-1 text-right">
+                        <td class="border border-gray-300 px-4 py-2 pl-4">货币资金</td>
+                        <td class="border border-gray-300 px-4 py-2 text-right">
                             <input v-model.number="balanceSheetData.monetary_funds_ending" type="number"
-                                class="w-full text-right border-0 p-0 bg-transparent" step="0.01" placeholder="0"
+                                class="w-full text-right px-2 py-1 border rounded" step="0.01" placeholder="0"
                                 data-field="monetary_funds_ending" @input="handleInputChange" />
                         </td>
-                        <td class="border border-black px-2 py-1 text-right">
+                        <td class="border border-gray-300 px-4 py-2 text-right">
                             <input v-model.number="balanceSheetData.monetary_funds_beginning" type="number"
-                                class="w-full text-right border-0 p-0 bg-transparent" step="0.01" placeholder="期初余额"
+                                class="w-full text-right px-2 py-1 border rounded" step="0.01" placeholder="期初余额"
                                 data-field="monetary_funds_beginning" @input="handleInputChange" />
                         </td>
-                        <td class="border border-black px-2 py-1 pl-4">短期借款</td>
-                        <td class="border border-black px-2 py-1 text-right">
+                        <td class="border border-gray-300 px-4 py-2 pl-4">短期借款</td>
+                        <td class="border border-gray-300 px-4 py-2 text-right">
                             <input v-model.number="balanceSheetData.short_term_loans_ending" type="number"
-                                class="w-full text-right border-0 p-0 bg-transparent" step="0.01" placeholder="0"
+                                class="w-full text-right px-2 py-1 border rounded" step="0.01" placeholder="0"
                                 data-field="short_term_loans_ending" @input="handleInputChange" />
                         </td>
-                        <td class="border border-black px-2 py-1 text-right">
+                        <td class="border border-gray-300 px-4 py-2 text-right">
                             <input v-model.number="balanceSheetData.short_term_loans_beginning" type="number"
-                                class="w-full text-right border-0 p-0 bg-transparent" step="0.01" placeholder="期初余额"
+                                class="w-full text-right px-2 py-1 border rounded" step="0.01" placeholder="期初余额"
                                 data-field="short_term_loans_beginning" @input="handleInputChange" />
                         </td>
                     </tr>
 
                     <tr>
-                        <td class="border border-black px-2 py-1 pl-4">短期投资</td>
-                        <td class="border border-black px-2 py-1 text-right">
+                        <td class="border border-gray-300 px-4 py-2 pl-4">短期投资</td>
+                        <td class="border border-gray-300 px-4 py-2 text-right">
                             <input v-model.number="balanceSheetData.short_term_investments_ending" type="number"
-                                class="w-full text-right border-0 p-0 bg-transparent" step="0.01" placeholder="0"
+                                class="w-full text-right px-2 py-1 border rounded" step="0.01" placeholder="0"
                                 data-field="short_term_investments_ending" @input="handleInputChange" />
                         </td>
-                        <td class="border border-black px-2 py-1 text-right">
+                        <td class="border border-gray-300 px-4 py-2 text-right">
                             <input v-model.number="balanceSheetData.short_term_investments_beginning" type="number"
-                                class="w-full text-right border-0 p-0 bg-transparent" step="0.01" placeholder="期初余额"
+                                class="w-full text-right px-2 py-1 border rounded" step="0.01" placeholder="期初余额"
                                 data-field="short_term_investments_beginning" @input="handleInputChange" />
                         </td>
-                        <td class="border border-black px-2 py-1 pl-4">应付票据</td>
-                        <td class="border border-black px-2 py-1 text-right">
+                        <td class="border border-gray-300 px-4 py-2 pl-4">应付票据</td>
+                        <td class="border border-gray-300 px-4 py-2 text-right">
                             <input v-model.number="balanceSheetData.notes_payable_ending" type="number"
-                                class="w-full text-right border-0 p-0 bg-transparent" step="0.01" placeholder="0"
+                                class="w-full text-right px-2 py-1 border rounded" step="0.01" placeholder="0"
                                 data-field="notes_payable_ending" @input="handleInputChange" />
                         </td>
-                        <td class="border border-black px-2 py-1 text-right">
+                        <td class="border border-gray-300 px-4 py-2 text-right">
                             <input v-model.number="balanceSheetData.notes_payable_beginning" type="number"
-                                class="w-full text-right border-0 p-0 bg-transparent" step="0.01" placeholder="期初余额"
+                                class="w-full text-right px-2 py-1 border rounded" step="0.01" placeholder="期初余额"
                                 data-field="notes_payable_beginning" @input="handleInputChange" />
                         </td>
                     </tr>
 
                     <tr>
-                        <td class="border border-black px-2 py-1 pl-4">应收票据</td>
-                        <td class="border border-black px-2 py-1 text-right">
+                        <td class="border border-gray-300 px-4 py-2 pl-4">应收票据</td>
+                        <td class="border border-gray-300 px-4 py-2 text-right">
                             <input v-model="balanceSheetData.notes_receivable_beginning" type="number"
-                                class="w-full text-right border-0 p-0" step="0.01" />
+                                class="w-full text-right px-2 py-1 border rounded" step="0.01" />
                         </td>
-                        <td class="border border-black px-2 py-1 text-right bg-gray-50">
-                            {{ getCumulativeValue('notes_receivable_ending').toLocaleString() }}
+                        <td class="border border-gray-300 px-4 py-2 text-right">
+                            <input v-model.number="balanceSheetData.notes_receivable_ending" type="number"
+                                class="w-full text-right px-2 py-1 border rounded" step="0.01" placeholder="期初余额"
+                                data-field="notes_receivable_ending" @input="handleInputChange" />
                         </td>
-                        <td class="border border-black px-2 py-1 pl-4">应付账款</td>
-                        <td class="border border-black px-2 py-1 text-right">
+                        <td class="border border-gray-300 px-4 py-2 pl-4">应付账款</td>
+                        <td class="border border-gray-300 px-4 py-2 text-right">
                             <input v-model="balanceSheetData.accounts_payable_beginning" type="number"
-                                class="w-full text-right border-0 p-0" step="0.01" />
+                                class="w-full text-right px-2 py-1 border rounded" step="0.01" />
                         </td>
-                        <td class="border border-black px-2 py-1 text-right bg-gray-50">
-                            {{ getCumulativeValue('accounts_payable_ending').toLocaleString() }}
+                        <td class="border border-gray-300 px-4 py-2 text-right">
+                            <input v-model.number="balanceSheetData.accounts_payable_ending" type="number"
+                                class="w-full text-right px-2 py-1 border rounded" step="0.01" placeholder="期初余额"
+                                data-field="accounts_payable_ending" @input="handleInputChange" />
                         </td>
                     </tr>
 
                     <tr>
-                        <td class="border border-black px-2 py-1 pl-4">应收账款</td>
-                        <td class="border border-black px-2 py-1 text-right">
+                        <td class="border border-gray-300 px-4 py-2 pl-4">应收账款</td>
+                        <td class="border border-gray-300 px-4 py-2 text-right">
                             <input v-model="balanceSheetData.accounts_receivable_beginning" type="number"
-                                class="w-full text-right border-0 p-0" step="0.01" />
+                                class="w-full text-right px-2 py-1 border rounded" step="0.01" />
                         </td>
-                        <td class="border border-black px-2 py-1 text-right bg-gray-50">
-                            {{ getCumulativeValue('accounts_receivable_ending').toLocaleString() }}
+                        <td class="border border-gray-300 px-4 py-2 text-right">
+                            <input v-model.number="balanceSheetData.accounts_receivable_ending" type="number"
+                                class="w-full text-right px-2 py-1 border rounded" step="0.01" placeholder="期初余额"
+                                data-field="accounts_receivable_ending" @input="handleInputChange" />
                         </td>
-                        <td class="border border-black px-2 py-1 pl-4">预收账款</td>
-                        <td class="border border-black px-2 py-1 text-right">
+                        <td class="border border-gray-300 px-4 py-2 pl-4">预收账款</td>
+                        <td class="border border-gray-300 px-4 py-2 text-right">
                             <input v-model="balanceSheetData.advance_receipts_beginning" type="number"
-                                class="w-full text-right border-0 p-0" step="0.01" />
+                                class="w-full text-right px-2 py-1 border rounded" step="0.01" />
                         </td>
-                        <td class="border border-black px-2 py-1 text-right bg-gray-50">
-                            {{ getCumulativeValue('advance_receipts_ending').toLocaleString() }}
+                        <td class="border border-gray-300 px-4 py-2 text-right">
+                            <input v-model.number="balanceSheetData.advance_receipts_ending" type="number"
+                                class="w-full text-right px-2 py-1 border rounded" step="0.01" placeholder="期初余额"
+                                data-field="advance_receipts_ending" @input="handleInputChange" />
                         </td>
                     </tr>
 
                     <tr>
-                        <td class="border border-black px-2 py-1 pl-4">减：坏账准备</td>
-                        <td class="border border-black px-2 py-1 text-right">
+                        <td class="border border-gray-300 px-4 py-2 pl-4">减：坏账准备</td>
+                        <td class="border border-gray-300 px-4 py-2 text-right">
                             <input v-model="balanceSheetData.bad_debt_provision_beginning" type="number"
-                                class="w-full text-right border-0 p-0" step="0.01" />
+                                class="w-full text-right px-2 py-1 border rounded" step="0.01" />
                         </td>
-                        <td class="border border-black px-2 py-1 text-right bg-gray-50">
-                            {{ getCumulativeValue('bad_debt_provision_ending').toLocaleString() }}
+                        <td class="border border-gray-300 px-4 py-2 text-right">
+                            <input v-model.number="balanceSheetData.bad_debt_provision_ending" type="number"
+                                class="w-full text-right px-2 py-1 border rounded" step="0.01" placeholder="期初余额"
+                                data-field="bad_debt_provision_ending" @input="handleInputChange" />
                         </td>
-                        <td class="border border-black px-2 py-1 pl-4">其他应付款</td>
-                        <td class="border border-black px-2 py-1 text-right">
+                        <td class="border border-gray-300 px-4 py-2 pl-4">其他应付款</td>
+                        <td class="border border-gray-300 px-4 py-2 text-right">
                             <input v-model="balanceSheetData.other_payables_beginning" type="number"
-                                class="w-full text-right border-0 p-0" step="0.01" />
+                                class="w-full text-right px-2 py-1 border rounded" step="0.01" />
                         </td>
-                        <td class="border border-black px-2 py-1 text-right bg-gray-50">
-                            {{ getCumulativeValue('other_payables_ending').toLocaleString() }}
+                        <td class="border border-gray-300 px-4 py-2 text-right">
+                            <input v-model.number="balanceSheetData.other_payables_ending" type="number"
+                                class="w-full text-right px-2 py-1 border rounded" step="0.01" placeholder="期初余额"
+                                data-field="other_payables_ending" @input="handleInputChange" />
                         </td>
                     </tr>
 
                     <tr>
-                        <td class="border border-black px-2 py-1 pl-4">应收账款净额</td>
-                        <td class="border border-black px-2 py-1 text-right">
+                        <td class="border border-gray-300 px-4 py-2 pl-4">应收账款净额</td>
+                        <td class="border border-gray-300 px-4 py-2 text-right">
                             <input v-model="balanceSheetData.accounts_receivable_net_beginning" type="number"
-                                class="w-full text-right border-0 p-0" step="0.01" />
+                                class="w-full text-right px-2 py-1 border rounded" step="0.01" />
                         </td>
-                        <td class="border border-black px-2 py-1 text-right">
+                        <td class="border border-gray-300 px-4 py-2 text-right">
                             <input v-model="balanceSheetData.accounts_receivable_net_ending" type="number"
-                                class="w-full text-right border-0 p-0" step="0.01" />
+                                class="w-full text-right px-2 py-1 border rounded" step="0.01" />
                         </td>
-                        <td class="border border-black px-2 py-1 pl-4">应付工资</td>
-                        <td class="border border-black px-2 py-1 text-right">
+                        <td class="border border-gray-300 px-4 py-2 pl-4">应付工资</td>
+                        <td class="border border-gray-300 px-4 py-2 text-right">
                             <input v-model="balanceSheetData.payroll_payable_beginning" type="number"
-                                class="w-full text-right border-0 p-0" step="0.01" />
+                                class="w-full text-right px-2 py-1 border rounded" step="0.01" />
                         </td>
-                        <td class="border border-black px-2 py-1 text-right bg-gray-50">
-                            {{ getCumulativeValue('payroll_payable_ending').toLocaleString() }}
+                        <td class="border border-gray-300 px-4 py-2 text-right">
+                            <input v-model.number="balanceSheetData.payroll_payable_ending" type="number"
+                                class="w-full text-right px-2 py-1 border rounded" step="0.01" placeholder="期初余额"
+                                data-field="payroll_payable_ending" @input="handleInputChange" />
                         </td>
                     </tr>
 
                     <tr>
-                        <td class="border border-black px-2 py-1 pl-4">预付账款</td>
-                        <td class="border border-black px-2 py-1 text-right">
+                        <td class="border border-gray-300 px-4 py-2 pl-4">预付账款</td>
+                        <td class="border border-gray-300 px-4 py-2 text-right">
                             <input v-model="balanceSheetData.prepaid_accounts_beginning" type="number"
-                                class="w-full text-right border-0 p-0" step="0.01" />
+                                class="w-full text-right px-2 py-1 border rounded" step="0.01" />
                         </td>
-                        <td class="border border-black px-2 py-1 text-right bg-gray-50">
-                            {{ getCumulativeValue('prepaid_accounts_ending').toLocaleString() }}
+                        <td class="border border-gray-300 px-4 py-2 text-right">
+                            <input v-model.number="balanceSheetData.prepaid_accounts_ending" type="number"
+                                class="w-full text-right px-2 py-1 border rounded" step="0.01" placeholder="期初余额"
+                                data-field="prepaid_accounts_ending" @input="handleInputChange" />
                         </td>
-                        <td class="border border-black px-2 py-1 pl-4">应付福利费</td>
-                        <td class="border border-black px-2 py-1 text-right">
+                        <td class="border border-gray-300 px-4 py-2 pl-4">应付福利费</td>
+                        <td class="border border-gray-300 px-4 py-2 text-right">
                             <input v-model="balanceSheetData.welfare_payable_beginning" type="number"
-                                class="w-full text-right border-0 p-0" step="0.01" />
+                                class="w-full text-right px-2 py-1 border rounded" step="0.01" />
                         </td>
-                        <td class="border border-black px-2 py-1 text-right bg-gray-50">
-                            {{ getCumulativeValue('welfare_payable_ending').toLocaleString() }}
+                        <td class="border border-gray-300 px-4 py-2 text-right">
+                            <input v-model.number="balanceSheetData.welfare_payable_ending" type="number"
+                                class="w-full text-right px-2 py-1 border rounded" step="0.01" placeholder="期初余额"
+                                data-field="welfare_payable_ending" @input="handleInputChange" />
                         </td>
                     </tr>
 
                     <tr>
-                        <td class="border border-black px-2 py-1 pl-4">应收补贴款</td>
-                        <td class="border border-black px-2 py-1 text-right">
+                        <td class="border border-gray-300 px-4 py-2 pl-4">应收补贴款</td>
+                        <td class="border border-gray-300 px-4 py-2 text-right">
                             <input v-model="balanceSheetData.subsidy_receivable_beginning" type="number"
-                                class="w-full text-right border-0 p-0" step="0.01" />
+                                class="w-full text-right px-2 py-1 border rounded" step="0.01" />
                         </td>
-                        <td class="border border-black px-2 py-1 text-right bg-gray-50">
-                            {{ getCumulativeValue('subsidy_receivable_ending').toLocaleString() }}
+                        <td class="border border-gray-300 px-4 py-2 text-right">
+                            <input v-model.number="balanceSheetData.subsidy_receivable_ending" type="number"
+                                class="w-full text-right px-2 py-1 border rounded" step="0.01" placeholder="期初余额"
+                                data-field="subsidy_receivable_ending" @input="handleInputChange" />
                         </td>
-                        <td class="border border-black px-2 py-1 pl-4">未交税金</td>
-                        <td class="border border-black px-2 py-1 text-right">
+                        <td class="border border-gray-300 px-4 py-2 pl-4">未交税金</td>
+                        <td class="border border-gray-300 px-4 py-2 text-right">
                             <input v-model="balanceSheetData.taxes_payable_beginning" type="number"
-                                class="w-full text-right border-0 p-0" step="0.01" />
+                                class="w-full text-right px-2 py-1 border rounded" step="0.01" />
                         </td>
-                        <td class="border border-black px-2 py-1 text-right bg-gray-50">
-                            {{ getCumulativeValue('taxes_payable_ending').toLocaleString() }}
+                        <td class="border border-gray-300 px-4 py-2 text-right">
+                            <input v-model.number="balanceSheetData.taxes_payable_ending" type="number"
+                                class="w-full text-right px-2 py-1 border rounded" step="0.01" placeholder="期初余额"
+                                data-field="taxes_payable_ending" @input="handleInputChange" />
                         </td>
                     </tr>
 
                     <tr>
-                        <td class="border border-black px-2 py-1 pl-4">其他应收款</td>
-                        <td class="border border-black px-2 py-1 text-right">
+                        <td class="border border-gray-300 px-4 py-2 pl-4">其他应收款</td>
+                        <td class="border border-gray-300 px-4 py-2 text-right">
                             <input v-model="balanceSheetData.other_receivables_beginning" type="number"
-                                class="w-full text-right border-0 p-0" step="0.01" />
+                                class="w-full text-right px-2 py-1 border rounded" step="0.01" />
                         </td>
-                        <td class="border border-black px-2 py-1 text-right bg-gray-50">
-                            {{ getCumulativeValue('other_receivables_ending').toLocaleString() }}
+                        <td class="border border-gray-300 px-4 py-2 text-right">
+                            <input v-model.number="balanceSheetData.other_receivables_ending" type="number"
+                                class="w-full text-right px-2 py-1 border rounded" step="0.01" placeholder="期初余额"
+                                data-field="other_receivables_ending" @input="handleInputChange" />
                         </td>
-                        <td class="border border-black px-2 py-1 pl-4">未付利润</td>
-                        <td class="border border-black px-2 py-1"></td>
-                        <td class="border border-black px-2 py-1"></td>
+                        <td class="border border-gray-300 px-4 py-2 pl-4">未付利润</td>
+                        <td class="border border-gray-300 px-4 py-2"></td>
+                        <td class="border border-gray-300 px-4 py-2"></td>
                     </tr>
 
                     <tr>
-                        <td class="border border-black px-2 py-1 pl-4">存货</td>
-                        <td class="border border-black px-2 py-1 text-right">
+                        <td class="border border-gray-300 px-4 py-2 pl-4">存货</td>
+                        <td class="border border-gray-300 px-4 py-2 text-right">
                             <input v-model="balanceSheetData.inventory_beginning" type="number"
-                                class="w-full text-right border-0 p-0" step="0.01" />
+                                class="w-full text-right px-2 py-1 border rounded" step="0.01" />
                         </td>
-                        <td class="border border-black px-2 py-1 text-right bg-gray-50">
-                            {{ getCumulativeValue('inventory_ending').toLocaleString() }}
+                        <td class="border border-gray-300 px-4 py-2 text-right">
+                            <input v-model.number="balanceSheetData.inventory_ending" type="number"
+                                class="w-full text-right px-2 py-1 border rounded" step="0.01" placeholder="期初余额"
+                                data-field="inventory_ending" @input="handleInputChange" />
                         </td>
-                        <td class="border border-black px-2 py-1 pl-4">其他未交款</td>
-                        <td class="border border-black px-2 py-1"></td>
-                        <td class="border border-black px-2 py-1"></td>
+                        <td class="border border-gray-300 px-4 py-2 pl-4">其他未交款</td>
+                        <td class="border border-gray-300 px-4 py-2"></td>
+                        <td class="border border-gray-300 px-4 py-2"></td>
                     </tr>
 
                     <tr>
-                        <td class="border border-black px-2 py-1 pl-6">其中：原材料</td>
-                        <td class="border border-black px-2 py-1 text-right">
+                        <td class="border border-gray-300 px-4 py-2 pl-6">其中：原材料</td>
+                        <td class="border border-gray-300 px-4 py-2 text-right">
                             <input v-model="balanceSheetData.raw_materials_beginning" type="number"
-                                class="w-full text-right border-0 p-0" step="0.01" />
+                                class="w-full text-right px-2 py-1 border rounded" step="0.01" />
                         </td>
-                        <td class="border border-black px-2 py-1 text-right bg-gray-50">
-                            {{ getCumulativeValue('raw_materials_ending').toLocaleString() }}
+                        <td class="border border-gray-300 px-4 py-2 text-right">
+                            <input v-model.number="balanceSheetData.raw_materials_ending" type="number"
+                                class="w-full text-right px-2 py-1 border rounded" step="0.01" placeholder="期初余额"
+                                data-field="raw_materials_ending" @input="handleInputChange" />
                         </td>
-                        <td class="border border-black px-2 py-1"></td>
-                        <td class="border border-black px-2 py-1"></td>
-                        <td class="border border-black px-2 py-1"></td>
+                        <td class="border border-gray-300 px-4 py-2"></td>
+                        <td class="border border-gray-300 px-4 py-2"></td>
+                        <td class="border border-gray-300 px-4 py-2"></td>
                     </tr>
 
                     <tr>
-                        <td class="border border-black px-2 py-1 pl-6">库存商品</td>
-                        <td class="border border-black px-2 py-1 text-right">
+                        <td class="border border-gray-300 px-4 py-2 pl-6">库存商品</td>
+                        <td class="border border-gray-300 px-4 py-2 text-right">
                             <input v-model="balanceSheetData.finished_goods_beginning" type="number"
-                                class="w-full text-right border-0 p-0" step="0.01" />
+                                class="w-full text-right px-2 py-1 border rounded" step="0.01" />
                         </td>
-                        <td class="border border-black px-2 py-1 text-right bg-gray-50">
-                            {{ getCumulativeValue('finished_goods_ending').toLocaleString() }}
+                        <td class="border border-gray-300 px-4 py-2 text-right">
+                            <input v-model.number="balanceSheetData.finished_goods_ending" type="number"
+                                class="w-full text-right px-2 py-1 border rounded" step="0.01" placeholder="期初余额"
+                                data-field="finished_goods_ending" @input="handleInputChange" />
                         </td>
-                        <td class="border border-black px-2 py-1"></td>
-                        <td class="border border-black px-2 py-1"></td>
-                        <td class="border border-black px-2 py-1"></td>
+                        <td class="border border-gray-300 px-4 py-2"></td>
+                        <td class="border border-gray-300 px-4 py-2"></td>
+                        <td class="border border-gray-300 px-4 py-2"></td>
                     </tr>
 
                     <tr>
-                        <td class="border border-black px-2 py-1 pl-6">在产品</td>
-                        <td class="border border-black px-2 py-1 text-right">
+                        <td class="border border-gray-300 px-4 py-2 pl-6">在产品</td>
+                        <td class="border border-gray-300 px-4 py-2 text-right">
                             <input v-model="balanceSheetData.work_in_process_beginning" type="number"
-                                class="w-full text-right border-0 p-0" step="0.01" />
+                                class="w-full text-right px-2 py-1 border rounded" step="0.01" />
                         </td>
-                        <td class="border border-black px-2 py-1 text-right bg-gray-50">
-                            {{ getCumulativeValue('work_in_process_ending').toLocaleString() }}
+                        <td class="border border-gray-300 px-4 py-2 text-right">
+                            <input v-model.number="balanceSheetData.work_in_process_ending" type="number"
+                                class="w-full text-right px-2 py-1 border rounded" step="0.01" placeholder="期初余额"
+                                data-field="work_in_process_ending" @input="handleInputChange" />
                         </td>
-                        <td class="border border-black px-2 py-1"></td>
-                        <td class="border border-black px-2 py-1"></td>
-                        <td class="border border-black px-2 py-1"></td>
+                        <td class="border border-gray-300 px-4 py-2"></td>
+                        <td class="border border-gray-300 px-4 py-2"></td>
+                        <td class="border border-gray-300 px-4 py-2"></td>
                     </tr>
 
                     <tr>
-                        <td class="border border-black px-2 py-1 pl-4">待摊费用</td>
-                        <td class="border border-black px-2 py-1"></td>
-                        <td class="border border-black px-2 py-1"></td>
-                        <td class="border border-black px-2 py-1 pl-4">预提费用</td>
-                        <td class="border border-black px-2 py-1 text-center">-</td>
-                        <td class="border border-black px-2 py-1"></td>
+                        <td class="border border-gray-300 px-4 py-2 pl-4">待摊费用</td>
+                        <td class="border border-gray-300 px-4 py-2"></td>
+                        <td class="border border-gray-300 px-4 py-2"></td>
+                        <td class="border border-gray-300 px-4 py-2 pl-4">预提费用</td>
+                        <td class="border border-gray-300 px-4 py-2 text-center">-</td>
+                        <td class="border border-gray-300 px-4 py-2"></td>
                     </tr>
 
                     <tr>
-                        <td class="border border-black px-2 py-1 pl-4">待处理流动资产净损失</td>
-                        <td class="border border-black px-2 py-1"></td>
-                        <td class="border border-black px-2 py-1"></td>
-                        <td class="border border-black px-2 py-1 pl-4">一年内到期的长期负债</td>
-                        <td class="border border-black px-2 py-1"></td>
-                        <td class="border border-black px-2 py-1"></td>
+                        <td class="border border-gray-300 px-4 py-2 pl-4">待处理流动资产净损失</td>
+                        <td class="border border-gray-300 px-4 py-2"></td>
+                        <td class="border border-gray-300 px-4 py-2"></td>
+                        <td class="border border-gray-300 px-4 py-2 pl-4">一年内到期的长期负债</td>
+                        <td class="border border-gray-300 px-4 py-2"></td>
+                        <td class="border border-gray-300 px-4 py-2"></td>
                     </tr>
 
                     <tr>
-                        <td class="border border-black px-2 py-1 pl-4">一年内到期的长期债券投资</td>
-                        <td class="border border-black px-2 py-1"></td>
-                        <td class="border border-black px-2 py-1"></td>
-                        <td class="border border-black px-2 py-1 pl-4">其他流动负债</td>
-                        <td class="border border-black px-2 py-1"></td>
-                        <td class="border border-black px-2 py-1"></td>
+                        <td class="border border-gray-300 px-4 py-2 pl-4">一年内到期的长期债券投资</td>
+                        <td class="border border-gray-300 px-4 py-2"></td>
+                        <td class="border border-gray-300 px-4 py-2"></td>
+                        <td class="border border-gray-300 px-4 py-2 pl-4">其他流动负债</td>
+                        <td class="border border-gray-300 px-4 py-2"></td>
+                        <td class="border border-gray-300 px-4 py-2"></td>
                     </tr>
 
                     <tr>
-                        <td class="border border-black px-2 py-1 pl-4">其他流动资产</td>
-                        <td class="border border-black px-2 py-1"></td>
-                        <td class="border border-black px-2 py-1"></td>
-                        <td class="border border-black px-2 py-1 font-bold">流动负债合计</td>
-                        <td class="border border-black px-2 py-1 text-right font-bold">
+                        <td class="border border-gray-300 px-4 py-2 pl-4">其他流动资产</td>
+                        <td class="border border-gray-300 px-4 py-2"></td>
+                        <td class="border border-gray-300 px-4 py-2"></td>
+                        <td class="border border-gray-300 px-4 py-2 font-bold">流动负债合计</td>
+                        <td class="border border-gray-300 px-4 py-2 text-right font-bold">
                             <input v-model="balanceSheetData.current_liabilities_total_beginning" type="number"
-                                class="w-full text-right border-0 p-0 font-bold" step="0.01" />
+                                class="w-full text-right px-2 py-1 border rounded font-bold" step="0.01" />
                         </td>
-                        <td class="border border-black px-2 py-1 text-right font-bold bg-gray-50">
-                            {{ getCumulativeValue('current_liabilities_total_ending').toLocaleString() }}
+                        <td class="border border-gray-300 px-4 py-2 text-right font-bold">
+                            <input v-model.number="balanceSheetData.current_liabilities_total_ending" type="number"
+                                class="w-full text-right px-2 py-1 border rounded font-bold" step="0.01" placeholder="期初余额"
+                                data-field="current_liabilities_total_ending" @input="handleInputChange" />
                         </td>
                     </tr>
 
                     <tr>
-                        <td class="border border-black px-2 py-1 font-bold">流动资产合计</td>
-                        <td class="border border-black px-2 py-1 text-right font-bold">
+                        <td class="border border-gray-300 px-4 py-2 font-bold">流动资产合计</td>
+                        <td class="border border-gray-300 px-4 py-2 text-right font-bold">
                             <input v-model="balanceSheetData.current_assets_total_beginning" type="number"
-                                class="w-full text-right border-0 p-0 font-bold" step="0.01" />
+                                class="w-full text-right px-2 py-1 border rounded font-bold" step="0.01" />
                         </td>
-                        <td class="border border-black px-2 py-1 text-right font-bold bg-gray-50">
-                            {{ getCumulativeValue('current_assets_total_ending').toLocaleString() }}
+                        <td class="border border-gray-300 px-4 py-2 text-right font-bold">
+                            <input v-model.number="balanceSheetData.current_assets_total_ending" type="number"
+                                class="w-full text-right px-2 py-1 border rounded font-bold" step="0.01" placeholder="期初余额"
+                                data-field="current_assets_total_ending" @input="handleInputChange" />
                         </td>
-                        <td class="border border-black px-2 py-1 font-bold">长期负债：</td>
-                        <td class="border border-black px-2 py-1"></td>
-                        <td class="border border-black px-2 py-1"></td>
+                        <td class="border border-gray-300 px-4 py-2 font-bold">长期负债：</td>
+                        <td class="border border-gray-300 px-4 py-2"></td>
+                        <td class="border border-gray-300 px-4 py-2"></td>
                     </tr>
 
                     <tr>
-                        <td class="border border-black px-2 py-1 pl-4">长期投资</td>
-                        <td class="border border-black px-2 py-1 text-right">
+                        <td class="border border-gray-300 px-4 py-2 pl-4">长期投资</td>
+                        <td class="border border-gray-300 px-4 py-2 text-right">
                             <input v-model="balanceSheetData.long_term_investments_beginning" type="number"
-                                class="w-full text-right border-0 p-0" step="0.01" />
+                                class="w-full text-right px-2 py-1 border rounded" step="0.01" />
                         </td>
-                        <td class="border border-black px-2 py-1 text-right bg-gray-50">
-                            {{ getCumulativeValue('long_term_investments_ending').toLocaleString() }}
+                        <td class="border border-gray-300 px-4 py-2 text-right">
+                            <input v-model.number="balanceSheetData.long_term_investments_ending" type="number"
+                                class="w-full text-right px-2 py-1 border rounded" step="0.01" placeholder="期初余额"
+                                data-field="long_term_investments_ending" @input="handleInputChange" />
                         </td>
-                        <td class="border border-black px-2 py-1 pl-4">长期借款</td>
-                        <td class="border border-black px-2 py-1 text-right">
+                        <td class="border border-gray-300 px-4 py-2 pl-4">长期借款</td>
+                        <td class="border border-gray-300 px-4 py-2 text-right">
                             <input v-model="balanceSheetData.long_term_loans_beginning" type="number"
-                                class="w-full text-right border-0 p-0" step="0.01" />
+                                class="w-full text-right px-2 py-1 border rounded" step="0.01" />
                         </td>
-                        <td class="border border-black px-2 py-1 text-right bg-gray-50">
-                            {{ getCumulativeValue('long_term_loans_ending').toLocaleString() }}
+                        <td class="border border-gray-300 px-4 py-2 text-right">
+                            <input v-model.number="balanceSheetData.long_term_loans_ending" type="number"
+                                class="w-full text-right px-2 py-1 border rounded" step="0.01" placeholder="期初余额"
+                                data-field="long_term_loans_ending" @input="handleInputChange" />
                         </td>
                     </tr>
 
                     <tr>
-                        <td class="border border-black px-2 py-1 font-bold">固定资产：</td>
-                        <td class="border border-black px-2 py-1"></td>
-                        <td class="border border-black px-2 py-1"></td>
-                        <td class="border border-black px-2 py-1 pl-4">长期应付款</td>
-                        <td class="border border-black px-2 py-1 text-right">
+                        <td class="border border-gray-300 px-4 py-2 font-bold">固定资产：</td>
+                        <td class="border border-gray-300 px-4 py-2"></td>
+                        <td class="border border-gray-300 px-4 py-2"></td>
+                        <td class="border border-gray-300 px-4 py-2 pl-4">长期应付款</td>
+                        <td class="border border-gray-300 px-4 py-2 text-right">
                             <input v-model="balanceSheetData.long_term_payables_beginning" type="number"
-                                class="w-full text-right border-0 p-0" step="0.01" />
+                                class="w-full text-right px-2 py-1 border rounded" step="0.01" />
                         </td>
-                        <td class="border border-black px-2 py-1 text-right bg-gray-50">
-                            {{ getCumulativeValue('long_term_payables_ending').toLocaleString() }}
+                        <td class="border border-gray-300 px-4 py-2 text-right">
+                            <input v-model.number="balanceSheetData.long_term_payables_ending" type="number"
+                                class="w-full text-right px-2 py-1 border rounded" step="0.01" placeholder="期初余额"
+                                data-field="long_term_payables_ending" @input="handleInputChange" />
                         </td>
                     </tr>
 
                     <tr>
-                        <td class="border border-black px-2 py-1 pl-4">固定资产原价</td>
-                        <td class="border border-black px-2 py-1 text-right">
+                        <td class="border border-gray-300 px-4 py-2 pl-4">固定资产原价</td>
+                        <td class="border border-gray-300 px-4 py-2 text-right">
                             <input v-model="balanceSheetData.fixed_assets_original_cost_beginning" type="number"
-                                class="w-full text-right border-0 p-0" step="0.01" />
+                                class="w-full text-right px-2 py-1 border rounded" step="0.01" />
                         </td>
-                        <td class="border border-black px-2 py-1 text-right bg-gray-50">
-                            {{ getCumulativeValue('fixed_assets_original_cost_ending').toLocaleString() }}
+                        <td class="border border-gray-300 px-4 py-2 text-right">
+                            <input v-model.number="balanceSheetData.fixed_assets_original_cost_ending" type="number"
+                                class="w-full text-right px-2 py-1 border rounded" step="0.01" placeholder="期初余额"
+                                data-field="fixed_assets_original_cost_ending" @input="handleInputChange" />
                         </td>
-                        <td class="border border-black px-2 py-1 pl-4">其他长期负债</td>
-                        <td class="border border-black px-2 py-1"></td>
-                        <td class="border border-black px-2 py-1"></td>
+                        <td class="border border-gray-300 px-4 py-2 pl-4">其他长期负债</td>
+                        <td class="border border-gray-300 px-4 py-2"></td>
+                        <td class="border border-gray-300 px-4 py-2"></td>
                     </tr>
 
                     <tr>
-                        <td class="border border-black px-2 py-1 pl-4">减：累计折旧</td>
-                        <td class="border border-black px-2 py-1 text-right">
+                        <td class="border border-gray-300 px-4 py-2 pl-4">减：累计折旧</td>
+                        <td class="border border-gray-300 px-4 py-2 text-right">
                             <input v-model="balanceSheetData.accumulated_depreciation_beginning" type="number"
-                                class="w-full text-right border-0 p-0" step="0.01" />
+                                class="w-full text-right px-2 py-1 border rounded" step="0.01" />
                         </td>
-                        <td class="border border-black px-2 py-1 text-right bg-gray-50">
-                            {{ getCumulativeValue('accumulated_depreciation_ending').toLocaleString() }}
+                        <td class="border border-gray-300 px-4 py-2 text-right">
+                            <input v-model.number="balanceSheetData.accumulated_depreciation_ending" type="number"
+                                class="w-full text-right px-2 py-1 border rounded" step="0.01" placeholder="期初余额"
+                                data-field="accumulated_depreciation_ending" @input="handleInputChange" />
                         </td>
-                        <td class="border border-black px-2 py-1 pl-6">其中：住房周转金</td>
-                        <td class="border border-black px-2 py-1"></td>
-                        <td class="border border-black px-2 py-1"></td>
+                        <td class="border border-gray-300 px-4 py-2 pl-6">其中：住房周转金</td>
+                        <td class="border border-gray-300 px-4 py-2"></td>
+                        <td class="border border-gray-300 px-4 py-2"></td>
                     </tr>
 
                     <tr>
-                        <td class="border border-black px-2 py-1 pl-4">固定资产净值</td>
-                        <td class="border border-black px-2 py-1 text-right">
+                        <td class="border border-gray-300 px-4 py-2 pl-4">固定资产净值</td>
+                        <td class="border border-gray-300 px-4 py-2 text-right">
                             <input v-model="balanceSheetData.fixed_assets_net_beginning" type="number"
-                                class="w-full text-right border-0 p-0" step="0.01" />
+                                class="w-full text-right px-2 py-1 border rounded" step="0.01" />
                         </td>
-                        <td class="border border-black px-2 py-1 text-right bg-gray-50">
-                            {{ getCumulativeValue('fixed_assets_net_ending').toLocaleString() }}
+                        <td class="border border-gray-300 px-4 py-2 text-right">
+                            <input v-model.number="balanceSheetData.fixed_assets_net_ending" type="number"
+                                class="w-full text-right px-2 py-1 border rounded" step="0.01" placeholder="期初余额"
+                                data-field="fixed_assets_net_ending" @input="handleInputChange" />
                         </td>
-                        <td class="border border-black px-2 py-1"></td>
-                        <td class="border border-black px-2 py-1"></td>
-                        <td class="border border-black px-2 py-1"></td>
+                        <td class="border border-gray-300 px-4 py-2"></td>
+                        <td class="border border-gray-300 px-4 py-2"></td>
+                        <td class="border border-gray-300 px-4 py-2"></td>
                     </tr>
 
                     <tr>
-                        <td class="border border-black px-2 py-1 pl-4">固定资产清理</td>
-                        <td class="border border-black px-2 py-1"></td>
-                        <td class="border border-black px-2 py-1"></td>
-                        <td class="border border-black px-2 py-1 font-bold">长期负债合计</td>
-                        <td class="border border-black px-2 py-1 text-right font-bold">
+                        <td class="border border-gray-300 px-4 py-2 pl-4">固定资产清理</td>
+                        <td class="border border-gray-300 px-4 py-2"></td>
+                        <td class="border border-gray-300 px-4 py-2"></td>
+                        <td class="border border-gray-300 px-4 py-2 font-bold">长期负债合计</td>
+                        <td class="border border-gray-300 px-4 py-2 text-right font-bold">
                             <input v-model="balanceSheetData.long_term_liabilities_total_beginning" type="number"
-                                class="w-full text-right border-0 p-0 font-bold" step="0.01" />
+                                class="w-full text-right px-2 py-1 border rounded font-bold" step="0.01" />
                         </td>
-                        <td class="border border-black px-2 py-1 text-right font-bold bg-gray-50">
-                            {{ getCumulativeValue('long_term_liabilities_total_ending').toLocaleString() }}
+                        <td class="border border-gray-300 px-4 py-2 text-right font-bold">
+                            <input v-model.number="balanceSheetData.long_term_liabilities_total_ending" type="number"
+                                class="w-full text-right px-2 py-1 border rounded font-bold" step="0.01" placeholder="期初余额"
+                                data-field="long_term_liabilities_total_ending" @input="handleInputChange" />
                         </td>
                     </tr>
 
                     <tr>
-                        <td class="border border-black px-2 py-1 pl-4">在建工程</td>
-                        <td class="border border-black px-2 py-1 text-right">
+                        <td class="border border-gray-300 px-4 py-2 pl-4">在建工程</td>
+                        <td class="border border-gray-300 px-4 py-2 text-right">
                             <input v-model="balanceSheetData.construction_in_progress_beginning" type="number"
-                                class="w-full text-right border-0 p-0" step="0.01" />
+                                class="w-full text-right px-2 py-1 border rounded" step="0.01" />
                         </td>
-                        <td class="border border-black px-2 py-1 text-right bg-gray-50">
-                            {{ getCumulativeValue('construction_in_progress_ending').toLocaleString() }}
+                        <td class="border border-gray-300 px-4 py-2 text-right">
+                            <input v-model.number="balanceSheetData.construction_in_progress_ending" type="number"
+                                class="w-full text-right px-2 py-1 border rounded" step="0.01" placeholder="期初余额"
+                                data-field="construction_in_progress_ending" @input="handleInputChange" />
                         </td>
-                        <td class="border border-black px-2 py-1 pl-4">递延税项：</td>
-                        <td class="border border-black px-2 py-1"></td>
-                        <td class="border border-black px-2 py-1"></td>
+                        <td class="border border-gray-300 px-4 py-2 pl-4">递延税项：</td>
+                        <td class="border border-gray-300 px-4 py-2"></td>
+                        <td class="border border-gray-300 px-4 py-2"></td>
                     </tr>
 
                     <tr>
-                        <td class="border border-black px-2 py-1 pl-4">待处理固定资产净损失</td>
-                        <td class="border border-black px-2 py-1 text-right">
+                        <td class="border border-gray-300 px-4 py-2 pl-4">待处理固定资产净损失</td>
+                        <td class="border border-gray-300 px-4 py-2 text-right">
                             <input v-model="balanceSheetData.pending_fixed_asset_losses_beginning" type="number"
-                                class="w-full text-right border-0 p-0" step="0.01" />
+                                class="w-full text-right px-2 py-1 border rounded" step="0.01" />
                         </td>
-                        <td class="border border-black px-2 py-1 text-right bg-gray-50">
-                            {{ getCumulativeValue('pending_fixed_asset_losses_ending').toLocaleString() }}
+                        <td class="border border-gray-300 px-4 py-2 text-right">
+                            <input v-model.number="balanceSheetData.pending_fixed_asset_losses_ending" type="number"
+                                class="w-full text-right px-2 py-1 border rounded" step="0.01" placeholder="期初余额"
+                                data-field="pending_fixed_asset_losses_ending" @input="handleInputChange" />
                         </td>
-                        <td class="border border-black px-2 py-1 pl-4">递延税款贷项</td>
-                        <td class="border border-black px-2 py-1"></td>
-                        <td class="border border-black px-2 py-1"></td>
+                        <td class="border border-gray-300 px-4 py-2 pl-4">递延税款贷项</td>
+                        <td class="border border-gray-300 px-4 py-2"></td>
+                        <td class="border border-gray-300 px-4 py-2"></td>
                     </tr>
 
                     <tr>
-                        <td class="border border-black px-2 py-1 font-bold">固定资产合计</td>
-                        <td class="border border-black px-2 py-1 text-right font-bold">
+                        <td class="border border-gray-300 px-4 py-2 font-bold">固定资产合计</td>
+                        <td class="border border-gray-300 px-4 py-2 text-right font-bold">
                             <input v-model="balanceSheetData.fixed_assets_total_beginning" type="number"
-                                class="w-full text-right border-0 p-0 font-bold" step="0.01" />
+                                class="w-full text-right px-2 py-1 border rounded font-bold" step="0.01" />
                         </td>
-                        <td class="border border-black px-2 py-1 text-right font-bold bg-gray-50">
-                            {{ getCumulativeValue('fixed_assets_total_ending').toLocaleString() }}
+                        <td class="border border-gray-300 px-4 py-2 text-right font-bold">
+                            <input v-model.number="balanceSheetData.fixed_assets_total_ending" type="number"
+                                class="w-full text-right px-2 py-1 border rounded font-bold" step="0.01" placeholder="期初余额"
+                                data-field="fixed_assets_total_ending" @input="handleInputChange" />
                         </td>
-                        <td class="border border-black px-2 py-1"></td>
-                        <td class="border border-black px-2 py-1"></td>
-                        <td class="border border-black px-2 py-1"></td>
+                        <td class="border border-gray-300 px-4 py-2"></td>
+                        <td class="border border-gray-300 px-4 py-2"></td>
+                        <td class="border border-gray-300 px-4 py-2"></td>
                     </tr>
 
                     <tr>
-                        <td class="border border-black px-2 py-1 font-bold">无形资产及递延资产：</td>
-                        <td class="border border-black px-2 py-1"></td>
-                        <td class="border border-black px-2 py-1"></td>
-                        <td class="border border-black px-2 py-1 font-bold">负债合计</td>
-                        <td class="border border-black px-2 py-1 text-right font-bold">
+                        <td class="border border-gray-300 px-4 py-2 font-bold">无形资产及递延资产：</td>
+                        <td class="border border-gray-300 px-4 py-2"></td>
+                        <td class="border border-gray-300 px-4 py-2"></td>
+                        <td class="border border-gray-300 px-4 py-2 font-bold">负债合计</td>
+                        <td class="border border-gray-300 px-4 py-2 text-right font-bold">
                             <input v-model="balanceSheetData.liabilities_total_beginning" type="number"
-                                class="w-full text-right border-0 p-0 font-bold" step="0.01" />
+                                class="w-full text-right px-2 py-1 border rounded font-bold" step="0.01" />
                         </td>
-                        <td class="border border-black px-2 py-1 text-right font-bold bg-gray-50">
-                            {{ getCumulativeValue('liabilities_total_ending').toLocaleString() }}
+                        <td class="border border-gray-300 px-4 py-2 text-right font-bold">
+                            <input v-model.number="balanceSheetData.liabilities_total_ending" type="number"
+                                class="w-full text-right px-2 py-1 border rounded font-bold" step="0.01" placeholder="期初余额"
+                                data-field="liabilities_total_ending" @input="handleInputChange" />
                         </td>
                     </tr>
 
                     <tr>
-                        <td class="border border-black px-2 py-1 pl-4">无形资产</td>
-                        <td class="border border-black px-2 py-1 text-right">
+                        <td class="border border-gray-300 px-4 py-2 pl-4">无形资产</td>
+                        <td class="border border-gray-300 px-4 py-2 text-right">
                             <input v-model="balanceSheetData.intangible_assets_beginning" type="number"
-                                class="w-full text-right border-0 p-0" step="0.01" />
+                                class="w-full text-right px-2 py-1 border rounded" step="0.01" />
                         </td>
-                        <td class="border border-black px-2 py-1 text-right bg-gray-50">
-                            {{ getCumulativeValue('intangible_assets_ending').toLocaleString() }}
+                        <td class="border border-gray-300 px-4 py-2 text-right">
+                            <input v-model.number="balanceSheetData.intangible_assets_ending" type="number"
+                                class="w-full text-right px-2 py-1 border rounded" step="0.01" placeholder="期初余额"
+                                data-field="intangible_assets_ending" @input="handleInputChange" />
                         </td>
-                        <td class="border border-black px-2 py-1 font-bold">所有者权益</td>
-                        <td class="border border-black px-2 py-1"></td>
-                        <td class="border border-black px-2 py-1"></td>
+                        <td class="border border-gray-300 px-4 py-2 font-bold">所有者权益</td>
+                        <td class="border border-gray-300 px-4 py-2"></td>
+                        <td class="border border-gray-300 px-4 py-2"></td>
                     </tr>
 
                     <tr>
-                        <td class="border border-black px-2 py-1 pl-4">递延资产</td>
-                        <td class="border border-black px-2 py-1 text-right">
+                        <td class="border border-gray-300 px-4 py-2 pl-4">递延资产</td>
+                        <td class="border border-gray-300 px-4 py-2 text-right">
                             <input v-model="balanceSheetData.deferred_assets_beginning" type="number"
-                                class="w-full text-right border-0 p-0" step="0.01" />
+                                class="w-full text-right px-2 py-1 border rounded" step="0.01" />
                         </td>
-                        <td class="border border-black px-2 py-1 text-right bg-gray-50">
-                            {{ getCumulativeValue('deferred_assets_ending').toLocaleString() }}
+                        <td class="border border-gray-300 px-4 py-2 text-right">
+                            <input v-model.number="balanceSheetData.deferred_assets_ending" type="number"
+                                class="w-full text-right px-2 py-1 border rounded" step="0.01" placeholder="期初余额"
+                                data-field="deferred_assets_ending" @input="handleInputChange" />
                         </td>
-                        <td class="border border-black px-2 py-1 pl-4">实收资本</td>
-                        <td class="border border-black px-2 py-1 text-right">
+                        <td class="border border-gray-300 px-4 py-2 pl-4">实收资本</td>
+                        <td class="border border-gray-300 px-4 py-2 text-right">
                             <input v-model="balanceSheetData.paid_in_capital_beginning" type="number"
-                                class="w-full text-right border-0 p-0" step="0.01" />
+                                class="w-full text-right px-2 py-1 border rounded" step="0.01" />
                         </td>
-                        <td class="border border-black px-2 py-1 text-right bg-gray-50">
-                            {{ getCumulativeValue('paid_in_capital_ending').toLocaleString() }}
+                        <td class="border border-gray-300 px-4 py-2 text-right">
+                            <input v-model.number="balanceSheetData.paid_in_capital_ending" type="number"
+                                class="w-full text-right px-2 py-1 border rounded" step="0.01" placeholder="期初余额"
+                                data-field="paid_in_capital_ending" @input="handleInputChange" />
                         </td>
                     </tr>
 
                     <tr>
-                        <td class="border border-black px-2 py-1"></td>
-                        <td class="border border-black px-2 py-1"></td>
-                        <td class="border border-black px-2 py-1"></td>
-                        <td class="border border-black px-2 py-1 pl-4">资本公积</td>
-                        <td class="border border-black px-2 py-1 text-right">
+                        <td class="border border-gray-300 px-4 py-2"></td>
+                        <td class="border border-gray-300 px-4 py-2"></td>
+                        <td class="border border-gray-300 px-4 py-2"></td>
+                        <td class="border border-gray-300 px-4 py-2 pl-4">资本公积</td>
+                        <td class="border border-gray-300 px-4 py-2 text-right">
                             <input v-model="balanceSheetData.capital_reserve_beginning" type="number"
-                                class="w-full text-right border-0 p-0" step="0.01" />
+                                class="w-full text-right px-2 py-1 border rounded" step="0.01" />
                         </td>
-                        <td class="border border-black px-2 py-1 text-right bg-gray-50">
-                            {{ getCumulativeValue('capital_reserve_ending').toLocaleString() }}
+                        <td class="border border-gray-300 px-4 py-2 text-right">
+                            <input v-model.number="balanceSheetData.capital_reserve_ending" type="number"
+                                class="w-full text-right px-2 py-1 border rounded" step="0.01" placeholder="期初余额"
+                                data-field="capital_reserve_ending" @input="handleInputChange" />
                         </td>
                     </tr>
 
                     <tr>
-                        <td class="border border-black px-2 py-1 font-bold">无形及递延资产合计</td>
-                        <td class="border border-black px-2 py-1 text-right font-bold">
+                        <td class="border border-gray-300 px-4 py-2 font-bold">无形及递延资产合计</td>
+                        <td class="border border-gray-300 px-4 py-2 text-right font-bold">
                             <input v-model="balanceSheetData.intangible_deferred_total_beginning" type="number"
-                                class="w-full text-right border-0 p-0 font-bold" step="0.01" />
+                                class="w-full text-right px-2 py-1 border rounded font-bold" step="0.01" />
                         </td>
-                        <td class="border border-black px-2 py-1 text-right font-bold bg-gray-50">
-                            {{ getCumulativeValue('intangible_deferred_total_ending').toLocaleString() }}
+                        <td class="border border-gray-300 px-4 py-2 text-right font-bold">
+                            <input v-model.number="balanceSheetData.intangible_deferred_total_ending" type="number"
+                                class="w-full text-right px-2 py-1 border rounded font-bold" step="0.01" placeholder="期初余额"
+                                data-field="intangible_deferred_total_ending" @input="handleInputChange" />
                         </td>
-                        <td class="border border-black px-2 py-1 pl-4">盈余公积</td>
-                        <td class="border border-black px-2 py-1 text-right">
+                        <td class="border border-gray-300 px-4 py-2 pl-4">盈余公积</td>
+                        <td class="border border-gray-300 px-4 py-2 text-right">
                             <input v-model="balanceSheetData.surplus_reserve_beginning" type="number"
-                                class="w-full text-right border-0 p-0" step="0.01" />
+                                class="w-full text-right px-2 py-1 border rounded" step="0.01" />
                         </td>
-                        <td class="border border-black px-2 py-1 text-right bg-gray-50">
-                            {{ getCumulativeValue('surplus_reserve_ending').toLocaleString() }}
+                        <td class="border border-gray-300 px-4 py-2 text-right">
+                            <input v-model.number="balanceSheetData.surplus_reserve_ending" type="number"
+                                class="w-full text-right px-2 py-1 border rounded" step="0.01" placeholder="期初余额"
+                                data-field="surplus_reserve_ending" @input="handleInputChange" />
                         </td>
                     </tr>
 
                     <tr>
-                        <td class="border border-black px-2 py-1 pl-4">其他长期资产</td>
-                        <td class="border border-black px-2 py-1"></td>
-                        <td class="border border-black px-2 py-1"></td>
-                        <td class="border border-black px-2 py-1 pl-6">其中：公益金</td>
-                        <td class="border border-black px-2 py-1 text-right">
+                        <td class="border border-gray-300 px-4 py-2 pl-4">其他长期资产</td>
+                        <td class="border border-gray-300 px-4 py-2"></td>
+                        <td class="border border-gray-300 px-4 py-2"></td>
+                        <td class="border border-gray-300 px-4 py-2 pl-6">其中：公益金</td>
+                        <td class="border border-gray-300 px-4 py-2 text-right">
                             <input v-model="balanceSheetData.public_welfare_fund_beginning" type="number"
-                                class="w-full text-right border-0 p-0" step="0.01" />
+                                class="w-full text-right px-2 py-1 border rounded" step="0.01" />
                         </td>
-                        <td class="border border-black px-2 py-1 text-right bg-gray-50">
-                            {{ getCumulativeValue('public_welfare_fund_ending').toLocaleString() }}
+                        <td class="border border-gray-300 px-4 py-2 text-right">
+                            <input v-model.number="balanceSheetData.public_welfare_fund_ending" type="number"
+                                class="w-full text-right px-2 py-1 border rounded" step="0.01" placeholder="期初余额"
+                                data-field="public_welfare_fund_ending" @input="handleInputChange" />
                         </td>
                     </tr>
 
                     <tr>
-                        <td class="border border-black px-2 py-1 pl-4">递延税项：</td>
-                        <td class="border border-black px-2 py-1"></td>
-                        <td class="border border-black px-2 py-1"></td>
-                        <td class="border border-black px-2 py-1 pl-4">未分配利润</td>
-                        <td class="border border-black px-2 py-1 text-right">
+                        <td class="border border-gray-300 px-4 py-2 pl-4">递延税项：</td>
+                        <td class="border border-gray-300 px-4 py-2"></td>
+                        <td class="border border-gray-300 px-4 py-2"></td>
+                        <td class="border border-gray-300 px-4 py-2 pl-4">未分配利润</td>
+                        <td class="border border-gray-300 px-4 py-2 text-right">
                             <input v-model="balanceSheetData.retained_earnings_beginning" type="number"
-                                class="w-full text-right border-0 p-0" step="0.01" />
+                                class="w-full text-right px-2 py-1 border rounded" step="0.01" />
                         </td>
-                        <td class="border border-black px-2 py-1 text-right bg-gray-50">
-                            {{ getCumulativeValue('retained_earnings_ending').toLocaleString() }}
+                        <td class="border border-gray-300 px-4 py-2 text-right">
+                            <input v-model.number="balanceSheetData.retained_earnings_ending" type="number"
+                                class="w-full text-right px-2 py-1 border rounded" step="0.01" placeholder="期初余额"
+                                data-field="retained_earnings_ending" @input="handleInputChange" />
                         </td>
                     </tr>
 
                     <tr>
-                        <td class="border border-black px-2 py-1 pl-4">递延税项借项</td>
-                        <td class="border border-black px-2 py-1"></td>
-                        <td class="border border-black px-2 py-1"></td>
-                        <td class="border border-black px-2 py-1 font-bold">所有者权益合计</td>
-                        <td class="border border-black px-2 py-1 text-right font-bold">
+                        <td class="border border-gray-300 px-4 py-2 pl-4">递延税项借项</td>
+                        <td class="border border-gray-300 px-4 py-2"></td>
+                        <td class="border border-gray-300 px-4 py-2"></td>
+                        <td class="border border-gray-300 px-4 py-2 font-bold">所有者权益合计</td>
+                        <td class="border border-gray-300 px-4 py-2 text-right font-bold">
                             <input v-model="balanceSheetData.owners_equity_total_beginning" type="number"
-                                class="w-full text-right border-0 p-0 font-bold" step="0.01" />
+                                class="w-full text-right px-2 py-1 border rounded font-bold" step="0.01" />
                         </td>
-                        <td class="border border-black px-2 py-1 text-right font-bold bg-gray-50">
-                            {{ getCumulativeValue('owners_equity_total_ending').toLocaleString() }}
+                        <td class="border border-gray-300 px-4 py-2 text-right font-bold">
+                            <input v-model.number="balanceSheetData.owners_equity_total_ending" type="number"
+                                class="w-full text-right px-2 py-1 border rounded font-bold" step="0.01" placeholder="期初余额"
+                                data-field="owners_equity_total_ending" @input="handleInputChange" />
                         </td>
                     </tr>
 
 
 
                     <tr>
-                        <td class="border border-black px-2 py-1 font-bold">资产总计</td>
-                        <td class="border border-black px-2 py-1 text-right font-bold">
+                        <td class="border border-gray-300 px-4 py-2 font-bold">资产总计</td>
+                        <td class="border border-gray-300 px-4 py-2 text-right font-bold">
                             <input v-model="balanceSheetData.assets_total_beginning" type="number"
-                                class="w-full text-right border-0 p-0 font-bold" step="0.01" />
+                                class="w-full text-right px-2 py-1 border rounded font-bold" step="0.01" />
                         </td>
-                        <td class="border border-black px-2 py-1 text-right font-bold bg-gray-50">
-                            {{ getCumulativeValue('assets_total_ending').toLocaleString() }}
+                        <td class="border border-gray-300 px-4 py-2 text-right font-bold">
+                            <input v-model.number="balanceSheetData.assets_total_ending" type="number"
+                                class="w-full text-right px-2 py-1 border rounded font-bold" step="0.01" placeholder="期初余额"
+                                data-field="assets_total_ending" @input="handleInputChange" />
                         </td>
-                        <td class="border border-black px-2 py-1 font-bold">负债和所有者权益合计</td>
-                        <td class="border border-black px-2 py-1 text-right font-bold">
+                        <td class="border border-gray-300 px-4 py-2 font-bold">负债和所有者权益合计</td>
+                        <td class="border border-gray-300 px-4 py-2 text-right font-bold">
                             <input v-model="balanceSheetData.liabilities_and_equity_total_beginning" type="number"
-                                class="w-full text-right border-0 p-0 font-bold" step="0.01" />
+                                class="w-full text-right px-2 py-1 border rounded font-bold" step="0.01" />
                         </td>
-                        <td class="border border-black px-2 py-1 text-right font-bold bg-gray-50">
-                            {{ getCumulativeValue('liabilities_and_equity_total_ending').toLocaleString() }}
+                        <td class="border border-gray-300 px-4 py-2 text-right font-bold">
+                            <input v-model.number="balanceSheetData.liabilities_and_equity_total_ending" type="number"
+                                class="w-full text-right px-2 py-1 border rounded font-bold" step="0.01" placeholder="期初余额"
+                                data-field="liabilities_and_equity_total_ending" @input="handleInputChange" />
                         </td>
                     </tr>
 
                     <tr>
-                        <td class="border border-black px-2 py-1 pl-4">商品进销差价余额</td>
-                        <td class="border border-black px-2 py-1"></td>
-                        <td class="border border-black px-2 py-1"></td>
-                        <td class="border border-black px-2 py-1 pl-4">长期投资减值准备余额</td>
-                        <td class="border border-black px-2 py-1"></td>
-                        <td class="border border-black px-2 py-1"></td>
+                        <td class="border border-gray-300 px-4 py-2 pl-4">商品进销差价余额</td>
+                        <td class="border border-gray-300 px-4 py-2"></td>
+                        <td class="border border-gray-300 px-4 py-2"></td>
+                        <td class="border border-gray-300 px-4 py-2 pl-4">长期投资减值准备余额</td>
+                        <td class="border border-gray-300 px-4 py-2"></td>
+                        <td class="border border-gray-300 px-4 py-2"></td>
                     </tr>
 
                     <tr>
-                        <td class="border border-black px-2 py-1 pl-4">坏账准备余额</td>
-                        <td class="border border-black px-2 py-1"></td>
-                        <td class="border border-black px-2 py-1"></td>
-                        <td class="border border-black px-2 py-1 pl-4">固定资产减值准备余额</td>
-                        <td class="border border-black px-2 py-1"></td>
-                        <td class="border border-black px-2 py-1"></td>
+                        <td class="border border-gray-300 px-4 py-2 pl-4">坏账准备余额</td>
+                        <td class="border border-gray-300 px-4 py-2"></td>
+                        <td class="border border-gray-300 px-4 py-2"></td>
+                        <td class="border border-gray-300 px-4 py-2 pl-4">固定资产减值准备余额</td>
+                        <td class="border border-gray-300 px-4 py-2"></td>
+                        <td class="border border-gray-300 px-4 py-2"></td>
                     </tr>
 
                     <tr>
-                        <td class="border border-black px-2 py-1 pl-4">存货跌价准备余额</td>
-                        <td class="border border-black px-2 py-1"></td>
-                        <td class="border border-black px-2 py-1"></td>
-                        <td class="border border-black px-2 py-1 pl-4">无形资产减值准备余额</td>
-                        <td class="border border-black px-2 py-1"></td>
-                        <td class="border border-black px-2 py-1"></td>
+                        <td class="border border-gray-300 px-4 py-2 pl-4">存货跌价准备余额</td>
+                        <td class="border border-gray-300 px-4 py-2"></td>
+                        <td class="border border-gray-300 px-4 py-2"></td>
+                        <td class="border border-gray-300 px-4 py-2 pl-4">无形资产减值准备余额</td>
+                        <td class="border border-gray-300 px-4 py-2"></td>
+                        <td class="border border-gray-300 px-4 py-2"></td>
                     </tr>
 
                     <tr>
-                        <td class="border border-black px-2 py-1 pl-4">短期投资减值准备余额</td>
-                        <td class="border border-black px-2 py-1"></td>
-                        <td class="border border-black px-2 py-1"></td>
-                        <td class="border border-black px-2 py-1 pl-4">在建工程减值准备余额</td>
-                        <td class="border border-black px-2 py-1"></td>
-                        <td class="border border-black px-2 py-1"></td>
+                        <td class="border border-gray-300 px-4 py-2 pl-4">短期投资减值准备余额</td>
+                        <td class="border border-gray-300 px-4 py-2"></td>
+                        <td class="border border-gray-300 px-4 py-2"></td>
+                        <td class="border border-gray-300 px-4 py-2 pl-4">在建工程减值准备余额</td>
+                        <td class="border border-gray-300 px-4 py-2"></td>
+                        <td class="border border-gray-300 px-4 py-2"></td>
                     </tr>
                 </tbody>
             </table>
         </div>
 
-        <div class="mt-6 flex justify-end space-x-4">
-            <button @click="runInputDiagnostics" class="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600">
-                🔍 诊断输入字段
-            </button>
-            <button @click="fixAllInputs" class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">
-                🔧 修复输入字段
-            </button>
-            <button @click="handleSave" class="px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
-                保存
-            </button>
-        </div>
+      <!-- 操作按钮 -->
+      <div class="mt-4 flex justify-end space-x-4">
+        <button @click="handleSave" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+          保存
+        </button>
+        <button @click="handleReset" class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600">
+          重置
+        </button>
+      </div>
 
-        <!-- 附件和备注组件 -->
-        <FormAttachmentAndRemarks :module-id="moduleId" :period="period" v-model:remarks="remarks"
-            v-model:suggestions="suggestions" />
+      <!-- 附件和备注组件 -->
+      <FormAttachmentAndRemarks :module-id="moduleId" :period="period" v-model:remarks="remarks"
+          v-model:suggestions="suggestions" />
     </div>
+  </div>
 </template>
 
 <script lang="ts" setup>
@@ -1143,6 +1223,26 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+@media print {
+  .bg-gray-100 {
+    background: white;
+  }
+  
+  button {
+    display: none;
+  }
+}
+
+table {
+  font-size: 14px;
+}
+
+@media (max-width: 1200px) {
+  .grid-cols-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
 input[type="number"] {
     -webkit-appearance: none;
     -moz-appearance: textfield;
@@ -1152,15 +1252,6 @@ input[type="number"]::-webkit-outer-spin-button,
 input[type="number"]::-webkit-inner-spin-button {
     -webkit-appearance: none;
     margin: 0;
-}
-
-table {
-    font-size: 12px;
-}
-
-td input {
-    font-size: 12px;
-    background: transparent;
 }
 
 .font-bold input {

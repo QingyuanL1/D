@@ -3,7 +3,7 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="mb-8">
         <h1 class="text-3xl font-bold text-gray-900">毛利率分析</h1>
-        <p class="mt-2 text-gray-600">主营业务毛利率趋势分析与板块对比（含自建项目）</p>
+        <p class="mt-2 text-gray-600">主营业务毛利率趋势分析与板块对比（含自接项目）</p>
       </div>
 
       <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
@@ -57,7 +57,7 @@ const customerData = ref([
   { name: '苏州项目', plan: 6.00, actual: 0, rate: 0 },
   { name: '抢修', plan: 33.52, actual: 0, rate: 0 },
   { name: '运检项目', plan: 13.60, actual: 0, rate: 0 },
-  { name: '自建项目', plan: 0, actual: 0, rate: 0 }
+  { name: '自接项目', plan: 0, actual: 0, rate: 0 }
 ])
 
 const formatNumber = (num: number) => {
@@ -84,7 +84,7 @@ const fetchNanhuaProfitMarginData = async () => {
             { name: '苏州项目', plan: 6.00, actual: 0, rate: 0 },
             { name: '抢修', plan: 33.52, actual: 0, rate: 0 },
             { name: '运检项目', plan: 13.60, actual: 0, rate: 0 },
-            { name: '自建项目', plan: 0, actual: 0, rate: 0 }
+            { name: '自接项目', plan: 0, actual: 0, rate: 0 }
           ]
         } else {
           months.value = result.data.months || []
@@ -113,7 +113,7 @@ const fetchNanhuaProfitMarginData = async () => {
           { name: '苏州项目', plan: 6.00, actual: 0, rate: 0 },
           { name: '抢修', plan: 33.52, actual: 0, rate: 0 },
           { name: '运检项目', plan: 13.60, actual: 0, rate: 0 },
-          { name: '自建项目', plan: 0, actual: 0, rate: 0 }
+          { name: '自接项目', plan: 0, actual: 0, rate: 0 }
         ]
       }
     } else {
@@ -129,7 +129,7 @@ const fetchNanhuaProfitMarginData = async () => {
         { name: '苏州项目', plan: 6.00, actual: 0, rate: 0 },
         { name: '抢修', plan: 33.52, actual: 0, rate: 0 },
         { name: '运检项目', plan: 13.60, actual: 0, rate: 0 },
-        { name: '自建项目', plan: 0, actual: 0, rate: 0 }
+        { name: '自接项目', plan: 0, actual: 0, rate: 0 }
       ]
     }
   } catch (error) {
@@ -146,7 +146,7 @@ const fetchNanhuaProfitMarginData = async () => {
       { name: '苏州项目', plan: 6.00, actual: 0, rate: 0 },
       { name: '抢修', plan: 33.52, actual: 0, rate: 0 },
       { name: '运检项目', plan: 13.60, actual: 0, rate: 0 },
-      { name: '自建项目', plan: 0, actual: 0, rate: 0 }
+      { name: '自接项目', plan: 0, actual: 0, rate: 0 }
     ]
   }
 }

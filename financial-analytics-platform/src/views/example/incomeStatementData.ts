@@ -502,7 +502,7 @@ export const useIncomeStatementData = () => {
         }
     ])
 
-    // 计算合计值的函数 - 只计算当期金额，累计值由后端计算
+    // 计算合计值的函数 - 计算当期金额和本年累计
     const calculateTotals = () => {
         const data = incomeStatementData.value
 
@@ -512,6 +512,7 @@ export const useIncomeStatementData = () => {
         const otherBusinessRevenueItem = data[0].items[2]
         
         totalRevenueItem.currentAmount = (mainBusinessRevenueItem.currentAmount || 0) + (otherBusinessRevenueItem.currentAmount || 0)
+        totalRevenueItem.yearAmount = (mainBusinessRevenueItem.yearAmount || 0) + (otherBusinessRevenueItem.yearAmount || 0)
 
         // 计算营业成本
         const operatingCostItem = data[1].items[1]
@@ -519,12 +520,26 @@ export const useIncomeStatementData = () => {
         const otherBusinessCostItem = data[1].items[3]
         
         operatingCostItem.currentAmount = (mainBusinessCostItem.currentAmount || 0) + (otherBusinessCostItem.currentAmount || 0)
+        operatingCostItem.yearAmount = (mainBusinessCostItem.yearAmount || 0) + (otherBusinessCostItem.yearAmount || 0)
 
         // 计算营业总成本
         const totalCostItem = data[1].items[0]
-        const costItems = data[1].items.slice(1, -4) // 排除最后4个子项目
+        const operatingCost = data[1].items[1].currentAmount || 0
+        const taxesAndSurcharges = data[1].items[4].currentAmount || 0
+        const sellingExpenses = data[1].items[5].currentAmount || 0
+        const managementExpenses = data[1].items[6].currentAmount || 0
+        const researchExpenses = data[1].items[7].currentAmount || 0
+        const financialExpenses = data[1].items[8].currentAmount || 0
         
-        totalCostItem.currentAmount = costItems.reduce((sum, item) => sum + (item.currentAmount || 0), 0)
+        const operatingCostYear = data[1].items[1].yearAmount || 0
+        const taxesAndSurchargesYear = data[1].items[4].yearAmount || 0
+        const sellingExpensesYear = data[1].items[5].yearAmount || 0
+        const managementExpensesYear = data[1].items[6].yearAmount || 0
+        const researchExpensesYear = data[1].items[7].yearAmount || 0
+        const financialExpensesYear = data[1].items[8].yearAmount || 0
+        
+        totalCostItem.currentAmount = operatingCost + taxesAndSurcharges + sellingExpenses + managementExpenses + researchExpenses + financialExpenses
+        totalCostItem.yearAmount = operatingCostYear + taxesAndSurchargesYear + sellingExpensesYear + managementExpensesYear + researchExpensesYear + financialExpensesYear
 
         // 计算营业利润
         const operatingProfitItem = data.find(section => section.title === '三、营业利润')?.items[0]
@@ -538,7 +553,17 @@ export const useIncomeStatementData = () => {
             const assetLoss = data.find(section => section.title === '资产减值损失')?.items[0]?.currentAmount || 0
             const assetDisposalIncome = data.find(section => section.title === '资产处置收益')?.items[0]?.currentAmount || 0
 
+            const totalRevenueYear = totalRevenueItem.yearAmount || 0
+            const totalCostYear = totalCostItem.yearAmount || 0
+            const otherIncomeYear = data.find(section => section.title === '加：其他收益')?.items[0]?.yearAmount || 0
+            const investmentIncomeYear = data.find(section => section.title === '投资收益')?.items[0]?.yearAmount || 0
+            const fairValueIncomeYear = data.find(section => section.title === '公允价值变动收益')?.items[0]?.yearAmount || 0
+            const creditLossYear = data.find(section => section.title === '信用减值损失')?.items[0]?.yearAmount || 0
+            const assetLossYear = data.find(section => section.title === '资产减值损失')?.items[0]?.yearAmount || 0
+            const assetDisposalIncomeYear = data.find(section => section.title === '资产处置收益')?.items[0]?.yearAmount || 0
+
             operatingProfitItem.currentAmount = totalRevenue - totalCost + otherIncome + investmentIncome + fairValueIncome + creditLoss + assetLoss + assetDisposalIncome
+            operatingProfitItem.yearAmount = totalRevenueYear - totalCostYear + otherIncomeYear + investmentIncomeYear + fairValueIncomeYear + creditLossYear + assetLossYear + assetDisposalIncomeYear
         }
 
         // 计算利润总额
@@ -546,22 +571,29 @@ export const useIncomeStatementData = () => {
         if (totalProfitItem && operatingProfitItem) {
             const nonOperatingIncome = data.find(section => section.title === '加：营业外收入')?.items[0]?.currentAmount || 0
             const nonOperatingExpenses = data.find(section => section.title === '减：营业外支出')?.items[0]?.currentAmount || 0
+            const nonOperatingIncomeYear = data.find(section => section.title === '加：营业外收入')?.items[0]?.yearAmount || 0
+            const nonOperatingExpensesYear = data.find(section => section.title === '减：营业外支出')?.items[0]?.yearAmount || 0
 
             totalProfitItem.currentAmount = (operatingProfitItem.currentAmount || 0) + nonOperatingIncome - nonOperatingExpenses
+            totalProfitItem.yearAmount = (operatingProfitItem.yearAmount || 0) + nonOperatingIncomeYear - nonOperatingExpensesYear
         }
 
         // 计算净利润
         const netProfitItem = data.find(section => section.title === '五、净利润')?.items[0]
         if (netProfitItem && totalProfitItem) {
             const incomeTaxExpense = data.find(section => section.title === '减：所得税费用')?.items[0]?.currentAmount || 0
+            const incomeTaxExpenseYear = data.find(section => section.title === '减：所得税费用')?.items[0]?.yearAmount || 0
             netProfitItem.currentAmount = (totalProfitItem.currentAmount || 0) - incomeTaxExpense
+            netProfitItem.yearAmount = (totalProfitItem.yearAmount || 0) - incomeTaxExpenseYear
         }
 
         // 计算综合收益总额
         const totalComprehensiveIncomeItem = data.find(section => section.title === '七、综合收益总额')?.items[0]
         if (totalComprehensiveIncomeItem && netProfitItem) {
             const otherComprehensiveIncome = data.find(section => section.title === '六、其他综合收益的税后净额')?.items[0]?.currentAmount || 0
+            const otherComprehensiveIncomeYear = data.find(section => section.title === '六、其他综合收益的税后净额')?.items[0]?.yearAmount || 0
             totalComprehensiveIncomeItem.currentAmount = (netProfitItem.currentAmount || 0) + otherComprehensiveIncome
+            totalComprehensiveIncomeItem.yearAmount = (netProfitItem.yearAmount || 0) + otherComprehensiveIncomeYear
         }
     }
 

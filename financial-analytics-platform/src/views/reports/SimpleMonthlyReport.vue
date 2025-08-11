@@ -35,6 +35,7 @@
             type="basic"
           />
           <IndicatorCard
+            v-if="props.companyKey === 'shanghai-industry'"
             title="●净利润指标："
             :data="keyIndicators.netProfit"
             type="basic"
@@ -69,24 +70,16 @@
             type="percentage"
           />
           <IndicatorCard
+            v-if="props.companyKey === 'shanghai-industry'"
             title="●净资产收益率指标（年化）："
             :data="qualityIndicators.roe"
             type="percentage"
           />
           <IndicatorCard
+            v-if="props.companyKey === 'shanghai-industry'"
             title="●资产负债率指标："
             :data="qualityIndicators.assetLiabilityRatio"
             type="percentage"
-          />
-          <IndicatorCard
-            title="●应收账款指标："
-            :data="qualityIndicators.receivables"
-            type="amount-with-fluctuation"
-          />
-          <IndicatorCard
-            title="●存量指标："
-            :data="qualityIndicators.inventory"
-            type="amount-with-fluctuation"
           />
         </div>
       </div>
@@ -283,20 +276,18 @@ const isLoading = ref(false)
 // 关键指标数据
 const keyIndicators = ref({
   newOrders: { yearlyPlan: 0, cumulative: 0, completionRate: 0 },
-  mainRevenue: { yearlyPlan: 30000, cumulative: 1000, completionRate: 3.33 },
-  netProfit: { yearlyPlan: 2000, cumulative: 5, completionRate: 0.25 },
-  costCenter: { yearlyPlan: 4500, cumulative: 250, ratio: 25.00, executionRate: 5.55 }
+  mainRevenue: { yearlyPlan: 0, cumulative: 0, completionRate: 0 },
+  netProfit: { yearlyPlan: 0, cumulative: 0, completionRate: 0 },
+  costCenter: { yearlyPlan: 0, cumulative: 0, ratio: 0, executionRate: 0 }
 })
 
-// 质量指标数据 - 使用静态数据
+// 质量指标数据 - 从各个南华API获取动态数据
 const qualityIndicators = ref({
-  marginContribution: { yearlyPlan: 20.00, current: 18.50 },
-  grossMargin: { yearlyPlan: 22.00, current: 19.00 },
-  netMargin: { yearlyPlan: 6.00, current: 0.02 },
-  roe: { yearlyPlan: 20.00, current: 0.05 },
-  assetLiabilityRatio: { yearlyPlan: 75.00, current: 79.00 },
-  receivables: { initial: 18000, current: 22000, fluctuation: 22.22 },
-  inventory: { initial: 120000, current: 125000, fluctuation: 4.17 }
+  marginContribution: { yearlyPlan: 0, current: 0 },
+  grossMargin: { yearlyPlan: 0, current: 0 },
+  netMargin: { yearlyPlan: 0, current: 0 },
+  roe: { yearlyPlan: 0, current: 0 },
+  assetLiabilityRatio: { yearlyPlan: 0, current: 0 }
 })
 
 // 风险提示数据
@@ -321,25 +312,61 @@ const riskAlertsArray = computed(() => [
 
 // 日期格式化函数
 const formatPeriod = (period) => {
-  const [year, month] = period.split('-')
+  if (!period || typeof period !== 'string') {
+    console.warn('formatPeriod received invalid period:', period)
+    return '未知期间'
+  }
+  const parts = period.split('-')
+  if (parts.length !== 2) {
+    console.warn('formatPeriod received invalid period format:', period)
+    return period
+  }
+  const [year, month] = parts
   return `${year}年${month}月`
 }
 
-// 加载南华新签订单数据
+// 加载新签订单数据
 const loadNewOrdersData = async (period: string) => {
-  if (props.companyKey !== 'nanhua') {
-    return
+  if (props.companyKey === 'shanghai-industry') {
+    await loadNanhuaNewOrdersData(period)
+  } else if (props.companyKey === 'changzhou') {
+    await loadTuoyuanNewOrdersData(period)
   }
+}
+
+// 加载南华新签订单数据
+const loadNanhuaNewOrdersData = async (period: string) => {
   
   try {
-    const response = await getNanhuaNewOrders(period)
+    console.log('开始加载南华新签订单数据，期间:', period)
     
+    // 添加超时处理
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('新签订单API调用超时')), 10000)
+    })
+    
+    const response = await Promise.race([
+      getNanhuaNewOrders(period),
+      timeoutPromise
+    ])
+    
+    // 检查响应数据结构
+    console.log('南华新签订单数据响应:', response.data)
+    
+    let engineeringData = null
     if (response.data?.success && response.data?.data?.engineering) {
-      const engineeringData = response.data.data.engineering
+      // 标准响应格式
+      engineeringData = response.data.data.engineering
+    } else if (response.data?.engineering && Array.isArray(response.data.engineering)) {
+      // 直接响应格式
+      engineeringData = response.data.engineering
+    }
+    
+    if (engineeringData && Array.isArray(engineeringData)) {
       
       // 计算总的年度计划和累计金额
-      const totalYearlyPlan = engineeringData.reduce((sum: number, item: any) => sum + (item.yearlyPlan || 0), 0)
-      const totalAccumulated = engineeringData.reduce((sum: number, item: any) => sum + (item.accumulated || 0), 0)
+      const totalYearlyPlan = engineeringData.reduce((sum: number, item: any) => sum + (item.yearlyPlan || item.yearlyPlannedIncome || 0), 0)
+      const totalAccumulated = engineeringData.reduce((sum: number, item: any) => sum + (item.accumulated || item.accumulatedIncome || 0), 0)
       
       // 计算完成率
       const completionRate = totalYearlyPlan > 0 ? (totalAccumulated / totalYearlyPlan) * 100 : 0
@@ -350,69 +377,1020 @@ const loadNewOrdersData = async (period: string) => {
         cumulative: totalAccumulated,
         completionRate: parseFloat(completionRate.toFixed(2))
       }
+      console.log('南华新签订单数据加载成功:', keyIndicators.value.newOrders)
+    } else {
+      console.log('南华新签订单数据响应无效:', response.data)
+      // 设置默认值
+      keyIndicators.value.newOrders = {
+        yearlyPlan: 0,
+        cumulative: 0,
+        completionRate: 0
+      }
     }
   } catch (error) {
     console.error('加载南华新签订单数据失败:', error)
+    // 设置默认值
+    keyIndicators.value.newOrders = {
+      yearlyPlan: 0,
+      cumulative: 0,
+      completionRate: 0
+    }
+  }
+}
+
+// 加载拓源新签订单数据
+const loadTuoyuanNewOrdersData = async (period: string) => {
+  try {
+    console.log('开始加载拓源新签订单数据，期间:', period)
+    
+    // 添加超时处理
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('拓源新签订单API调用超时')), 10000)
+    })
+    
+    const response = await Promise.race([
+      fetch(`http://47.111.95.19:3000/tuoyuan-new-order-structure/${period}`),
+      timeoutPromise
+    ])
+    
+    // 检查响应数据结构
+    console.log('拓源新签订单数据响应状态:', response.ok)
+    
+    if (response.ok) {
+      const result = await response.json()
+      console.log('拓源新签订单数据响应:', result)
+      
+      let totalYearlyPlan = 0
+      let totalCumulative = 0
+      
+      if (result.data && result.data.items && Array.isArray(result.data.items)) {
+        // 计算总的年度计划和当期累计
+        result.data.items.forEach((item: any) => {
+          totalYearlyPlan += item.annualPlan || 0
+          totalCumulative += item.currentCumulative || 0
+        })
+      }
+      
+      // 计算完成率
+      const completionRate = totalYearlyPlan > 0 ? (totalCumulative / totalYearlyPlan) * 100 : 0
+      
+      // 更新新签订单指标
+      keyIndicators.value.newOrders = {
+        yearlyPlan: parseFloat(totalYearlyPlan.toFixed(2)),
+        cumulative: parseFloat(totalCumulative.toFixed(2)),
+        completionRate: parseFloat(completionRate.toFixed(2))
+      }
+      console.log('拓源新签订单数据加载成功:', keyIndicators.value.newOrders)
+    } else {
+      console.log('拓源新签订单数据响应失败:', response.status)
+      // 设置默认值
+      keyIndicators.value.newOrders = {
+        yearlyPlan: 0,
+        cumulative: 0,
+        completionRate: 0
+      }
+    }
+  } catch (error) {
+    console.error('加载拓源新签订单数据失败:', error)
+    // 设置默认值
+    keyIndicators.value.newOrders = {
+      yearlyPlan: 0,
+      cumulative: 0,
+      completionRate: 0
+    }
+  }
+}
+
+// 加载成本中心数据
+const loadCostCenterData = async (period: string) => {
+  if (props.companyKey === 'shanghai-industry') {
+    await loadNanhuaCostCenterData(period)
+  } else if (props.companyKey === 'changzhou') {
+    await loadTuoyuanCostCenterData(period)
   }
 }
 
 // 加载南华成本中心数据
-const loadCostCenterData = async (period: string) => {
-  if (props.companyKey !== 'nanhua') {
-    return
-  }
+const loadNanhuaCostCenterData = async (period: string) => {
   
   try {
-    const response = await getNanhuaCostCenterStructure(period)
+    console.log('开始加载南华成本中心数据，期间:', period)
+    
+    // 添加超时处理
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('成本中心API调用超时')), 10000)
+    })
+    
+    const response = await Promise.race([
+      getNanhuaCostCenterStructure(period),
+      timeoutPromise
+    ])
+    
+    // 检查响应数据结构
+    console.log('南华成本中心数据响应:', response.data)
+    
+    let engineering = null
+    let nonMainBusiness = null
     
     if (response.data?.success && response.data?.data) {
-      const { engineering, nonMainBusiness } = response.data.data
+      // 标准响应格式
+      engineering = response.data.data.engineering
+      nonMainBusiness = response.data.data.nonMainBusiness
+    } else if (response.data?.engineering && response.data?.nonMainBusiness) {
+      // 直接响应格式
+      engineering = response.data.engineering
+      nonMainBusiness = response.data.nonMainBusiness
+    }
+    
+    if (engineering && nonMainBusiness && Array.isArray(engineering) && Array.isArray(nonMainBusiness)) {
       
-      // 计算工程项目总计
+      // 计算工程项目总计（使用当期数据）
       const engineeringYearlyPlan = engineering.reduce((sum: number, item: any) => sum + (item.yearlyPlannedIncome || 0), 0)
-      const engineeringAccumulated = engineering.reduce((sum: number, item: any) => sum + (item.accumulatedIncome || 0), 0)
+      const engineeringCurrent = engineering.reduce((sum: number, item: any) => sum + (item.currentIncome || 0), 0)
       
-      // 计算非主营业务总计
+      // 计算非主营业务总计（使用当期数据）
       const nonMainYearlyPlan = nonMainBusiness.reduce((sum: number, item: any) => sum + (item.yearlyPlannedIncome || 0), 0)
-      const nonMainAccumulated = nonMainBusiness.reduce((sum: number, item: any) => sum + (item.accumulatedIncome || 0), 0)
+      const nonMainCurrent = nonMainBusiness.reduce((sum: number, item: any) => sum + (item.currentIncome || 0), 0)
       
-      // 总的年度计划和累计金额
+      // 总的年度计划和当期金额
       const totalYearlyPlan = engineeringYearlyPlan + nonMainYearlyPlan
-      const totalAccumulated = engineeringAccumulated + nonMainAccumulated
+      const totalCurrent = engineeringCurrent + nonMainCurrent
       
-      // 计算成本中心损益占比 (累计/年度计划)
-      const ratio = totalYearlyPlan > 0 ? (totalAccumulated / totalYearlyPlan) * 100 : 0
+      // 计算成本中心损益占比 (当期/年度计划)
+      const ratio = totalYearlyPlan > 0 ? (totalCurrent / totalYearlyPlan) * 100 : 0
       
       // 计算执行率 (与年度计划的比较)
-      const executionRate = totalYearlyPlan > 0 ? (totalAccumulated / totalYearlyPlan) * 100 : 0
+      const executionRate = totalYearlyPlan > 0 ? (totalCurrent / totalYearlyPlan) * 100 : 0
       
       // 更新成本中心指标
       keyIndicators.value.costCenter = {
         yearlyPlan: parseFloat(totalYearlyPlan.toFixed(2)),
-        cumulative: parseFloat(totalAccumulated.toFixed(2)),
+        cumulative: parseFloat(totalCurrent.toFixed(2)), // 这里改为显示当期数据
         ratio: parseFloat(ratio.toFixed(2)),
         executionRate: parseFloat(executionRate.toFixed(2))
+      }
+      console.log('南华成本中心数据加载成功:', keyIndicators.value.costCenter)
+    } else {
+      console.log('南华成本中心数据响应无效:', response.data)
+      // 设置默认值
+      keyIndicators.value.costCenter = {
+        yearlyPlan: 0,
+        cumulative: 0,
+        ratio: 0,
+        executionRate: 0
       }
     }
   } catch (error) {
     console.error('加载南华成本中心数据失败:', error)
+    // 设置默认值
+    keyIndicators.value.costCenter = {
+      yearlyPlan: 0,
+      cumulative: 0,
+      ratio: 0,
+      executionRate: 0
+    }
   }
 }
 
-// 加载南华所有数据
-const loadNanhuaData = async (period: string) => {
-  if (props.companyKey !== 'nanhua') {
+// 加载拓源成本中心数据
+const loadTuoyuanCostCenterData = async (period: string) => {
+  try {
+    console.log('开始加载拓源成本中心数据，期间:', period)
+    
+    // 添加超时处理
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('拓源成本中心API调用超时')), 10000)
+    })
+    
+    const response = await Promise.race([
+      fetch(`http://47.111.95.19:3000/tuoyuan-cost-center-profit-loss/${period}`),
+      timeoutPromise
+    ])
+    
+    // 检查响应数据结构
+    console.log('拓源成本中心数据响应状态:', response.ok)
+    
+    if (response.ok) {
+      const result = await response.json()
+      console.log('拓源成本中心数据响应:', result)
+      
+      let totalYearlyPlan = 0
+      let totalCurrent = 0
+      
+      if (result.data && result.data.items && Array.isArray(result.data.items)) {
+        // 计算总的年度预算和当期金额
+        result.data.items.forEach((item: any) => {
+          totalYearlyPlan += item.annualBudget || 0
+          totalCurrent += item.currentPeriod || 0
+        })
+      }
+      
+      // 计算成本中心损益占比和执行率
+      const ratio = totalYearlyPlan > 0 ? (totalCurrent / totalYearlyPlan) * 100 : 0
+      const executionRate = totalYearlyPlan > 0 ? (totalCurrent / totalYearlyPlan) * 100 : 0
+      
+      // 更新成本中心指标
+      keyIndicators.value.costCenter = {
+        yearlyPlan: parseFloat(totalYearlyPlan.toFixed(2)),
+        cumulative: parseFloat(totalCurrent.toFixed(2)), // 这里显示当期数据
+        ratio: parseFloat(ratio.toFixed(2)),
+        executionRate: parseFloat(executionRate.toFixed(2))
+      }
+      console.log('拓源成本中心数据加载成功:', keyIndicators.value.costCenter)
+    } else {
+      console.log('拓源成本中心数据响应失败:', response.status)
+      // 设置默认值
+      keyIndicators.value.costCenter = {
+        yearlyPlan: 0,
+        cumulative: 0,
+        ratio: 0,
+        executionRate: 0
+      }
+    }
+  } catch (error) {
+    console.error('加载拓源成本中心数据失败:', error)
+    // 设置默认值
+    keyIndicators.value.costCenter = {
+      yearlyPlan: 0,
+      cumulative: 0,
+      ratio: 0,
+      executionRate: 0
+    }
+  }
+}
+
+// 加载主营业务收入数据
+const loadBusinessIncomeData = async (period: string) => {
+  if (props.companyKey === 'shanghai-industry') {
+    await loadNanhuaBusinessIncomeData(period)
+  } else if (props.companyKey === 'changzhou') {
+    await loadTuoyuanBusinessIncomeData(period)
+  }
+}
+
+// 加载南华主营业务收入数据
+const loadNanhuaBusinessIncomeData = async (period: string) => {
+  
+  try {
+    console.log('开始加载南华主营业务收入数据，期间:', period)
+    
+    // 添加超时处理
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('主营业务收入API调用超时')), 10000)
+    })
+    
+    const response = await Promise.race([
+      fetch(`http://47.111.95.19:3000/nanhua-business-income/${period}`),
+      timeoutPromise
+    ])
+    
+    // 检查响应数据结构
+    console.log('南华主营业务收入数据响应状态:', response.ok)
+    
+    if (response.ok) {
+      const result = await response.json()
+      console.log('南华主营业务收入数据响应:', result)
+      
+      let totalYearlyPlan = 0
+      let totalCumulative = 0
+      
+      if (result.data && result.data.customers && Array.isArray(result.data.customers)) {
+        // 计算主营业务总计
+        result.data.customers.forEach((item: any) => {
+          totalYearlyPlan += item.yearlyPlan || item.yearlyPlannedIncome || 0
+          totalCumulative += item.accumulated || item.accumulatedIncome || 0
+        })
+      }
+      
+      // 计算完成率
+      const completionRate = totalYearlyPlan > 0 ? (totalCumulative / totalYearlyPlan) * 100 : 0
+      
+      // 更新主营业务收入指标
+      keyIndicators.value.mainRevenue = {
+        yearlyPlan: parseFloat(totalYearlyPlan.toFixed(2)),
+        cumulative: parseFloat(totalCumulative.toFixed(2)),
+        completionRate: parseFloat(completionRate.toFixed(2))
+      }
+      console.log('南华主营业务收入数据加载成功:', keyIndicators.value.mainRevenue)
+    } else {
+      console.log('南华主营业务收入数据响应失败:', response.status)
+      // 设置默认值
+      keyIndicators.value.mainRevenue = {
+        yearlyPlan: 0,
+        cumulative: 0,
+        completionRate: 0
+      }
+    }
+  } catch (error) {
+    console.error('加载南华主营业务收入数据失败:', error)
+    // 设置默认值
+    keyIndicators.value.mainRevenue = {
+      yearlyPlan: 0,
+      cumulative: 0,
+      completionRate: 0
+    }
+  }
+}
+
+// 加载拓源主营业务收入数据
+const loadTuoyuanBusinessIncomeData = async (period: string) => {
+  try {
+    console.log('开始加载拓源主营业务收入数据，期间:', period)
+    
+    // 添加超时处理
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('拓源主营业务收入API调用超时')), 10000)
+    })
+    
+    const response = await Promise.race([
+      fetch(`http://47.111.95.19:3000/tuoyuan-main-business-income-breakdown/${period}`),
+      timeoutPromise
+    ])
+    
+    // 检查响应数据结构
+    console.log('拓源主营业务收入数据响应状态:', response.ok)
+    
+    if (response.ok) {
+      const result = await response.json()
+      console.log('拓源主营业务收入数据响应:', result)
+      
+      let totalYearlyPlan = 0
+      let totalCumulative = 0
+      
+      if (result.data && result.data.items && Array.isArray(result.data.items)) {
+        // 计算主营业务总计
+        result.data.items.forEach((item: any) => {
+          totalYearlyPlan += item.annualPlan || 0
+          totalCumulative += item.currentCumulative || 0
+        })
+      }
+      
+      // 计算完成率
+      const completionRate = totalYearlyPlan > 0 ? (totalCumulative / totalYearlyPlan) * 100 : 0
+      
+      // 更新主营业务收入指标
+      keyIndicators.value.mainRevenue = {
+        yearlyPlan: parseFloat(totalYearlyPlan.toFixed(2)),
+        cumulative: parseFloat(totalCumulative.toFixed(2)),
+        completionRate: parseFloat(completionRate.toFixed(2))
+      }
+      console.log('拓源主营业务收入数据加载成功:', keyIndicators.value.mainRevenue)
+    } else {
+      console.log('拓源主营业务收入数据响应失败:', response.status)
+      // 设置默认值
+      keyIndicators.value.mainRevenue = {
+        yearlyPlan: 0,
+        cumulative: 0,
+        completionRate: 0
+      }
+    }
+  } catch (error) {
+    console.error('加载拓源主营业务收入数据失败:', error)
+    // 设置默认值
+    keyIndicators.value.mainRevenue = {
+      yearlyPlan: 0,
+      cumulative: 0,
+      completionRate: 0
+    }
+  }
+}
+
+// 加载净利润数据
+const loadNetProfitData = async (period: string) => {
+  if (props.companyKey === 'shanghai-industry') {
+    await loadNanhuaNetProfitData(period)
+  } else if (props.companyKey === 'changzhou') {
+    // 拓源没有净利润指标，设置默认值
+    keyIndicators.value.netProfit = {
+      yearlyPlan: 0,
+      cumulative: 0,
+      completionRate: 0
+    }
+    console.log('拓源公司没有净利润指标，设置默认值')
+  }
+}
+
+// 加载南华净利润数据
+const loadNanhuaNetProfitData = async (period: string) => {
+  
+  try {
+    console.log('开始加载南华净利润数据，期间:', period)
+    
+    // 添加超时处理
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('净利润API调用超时')), 10000)
+    })
+    
+    const response = await Promise.race([
+      fetch(`http://47.111.95.19:3000/nanhua-net-profit-structure/${period}`),
+      timeoutPromise
+    ])
+    
+    // 检查响应数据结构
+    console.log('南华净利润数据响应状态:', response.ok)
+    
+    if (response.ok) {
+      const result = await response.json()
+      console.log('南华净利润数据响应:', result)
+      
+      let totalPlan = 0
+      let totalCumulative = 0
+      
+      if (result.success && result.data) {
+        // 从汇总数据中获取总计
+        if (result.data.total) {
+          totalPlan = parseFloat(result.data.total.plan) || 0
+          totalCumulative = parseFloat(result.data.total.cumulative) || 0
+        }
+      }
+      
+      // 计算完成率
+      const completionRate = totalPlan > 0 ? (totalCumulative / totalPlan) * 100 : 0
+      
+      // 更新净利润指标
+      keyIndicators.value.netProfit = {
+        yearlyPlan: parseFloat(totalPlan.toFixed(2)),
+        cumulative: parseFloat(totalCumulative.toFixed(2)),
+        completionRate: parseFloat(completionRate.toFixed(2))
+      }
+      console.log('南华净利润数据加载成功:', keyIndicators.value.netProfit)
+    } else {
+      console.log('南华净利润数据响应失败:', response.status)
+      // 设置默认值
+      keyIndicators.value.netProfit = {
+        yearlyPlan: 0,
+        cumulative: 0,
+        completionRate: 0
+      }
+    }
+  } catch (error) {
+    console.error('加载南华净利润数据失败:', error)
+    // 设置默认值
+    keyIndicators.value.netProfit = {
+      yearlyPlan: 0,
+      cumulative: 0,
+      completionRate: 0
+    }
+  }
+}
+
+// 加载边际贡献率数据
+const loadMarginContributionData = async (period: string) => {
+  if (props.companyKey === 'shanghai-industry') {
+    await loadNanhuaMarginContributionData(period)
+  } else if (props.companyKey === 'changzhou') {
+    await loadTuoyuanMarginContributionData(period)
+  } else {
+    qualityIndicators.value.marginContribution = { yearlyPlan: 0, current: 0 }
+  }
+}
+
+// 加载南华边际贡献率数据
+const loadNanhuaMarginContributionData = async (period: string) => {
+  
+  try {
+    console.log('开始加载南华边际贡献率数据，期间:', period)
+    
+    // 获取当前月份的边际贡献率数据
+    const response = await fetch(`http://47.111.95.19:3000/nanhua-business-contribution-with-self-built/${period}`)
+    
+    if (response.ok) {
+      const result = await response.json()
+      console.log('南华边际贡献率数据响应:', result)
+      
+      let currentRate = 0
+      const yearlyPlan = 25.0 // 目标值
+      
+      if (result.success && result.data && result.data.customers) {
+        // 计算当月加权平均边际贡献率
+        const validCustomers = result.data.customers
+          .filter((customer: any) => {
+            const rate = customer.current
+            // 只过滤掉明显异常的0值，保留其他所有有效值
+            return rate > 0
+          })
+        
+        if (validCustomers.length > 0) {
+          // 计算加权平均，使用yearlyPlan作为权重
+          let totalWeightedRate = 0
+          let totalWeight = 0
+          
+          validCustomers.forEach((customer: any) => {
+            const rate = customer.current
+            const weight = customer.yearlyPlan || 1
+            totalWeightedRate += rate * weight
+            totalWeight += weight
+          })
+          
+          if (totalWeight > 0) {
+            currentRate = totalWeightedRate / totalWeight
+          }
+        }
+      }
+      
+      // 更新边际贡献率指标
+      qualityIndicators.value.marginContribution = {
+        yearlyPlan: parseFloat(yearlyPlan.toFixed(2)),
+        current: parseFloat(currentRate.toFixed(2))
+      }
+      console.log('南华边际贡献率数据加载成功:', qualityIndicators.value.marginContribution)
+    } else {
+      console.log('南华边际贡献率数据响应失败:', response.status)
+      qualityIndicators.value.marginContribution = { yearlyPlan: 25.0, current: 0 }
+    }
+  } catch (error) {
+    console.error('加载南华边际贡献率数据失败:', error)
+    qualityIndicators.value.marginContribution = { yearlyPlan: 25.0, current: 0 }
+  }
+}
+
+// 加载拓源边际贡献率数据
+const loadTuoyuanMarginContributionData = async (period: string) => {
+  try {
+    console.log('开始加载拓源边际贡献率数据，期间:', period)
+    
+    // 获取拓源边际贡献率数据
+    const response = await fetch(`http://47.111.95.19:3000/tuoyuan-main-business-contribution-rate/${period}`)
+    
+    if (response.ok) {
+      const result = await response.json()
+      console.log('拓源边际贡献率数据响应:', result)
+      
+      let totalYearlyPlan = 0
+      let totalCurrentActual = 0
+      let totalWeightPlan = 0
+      let totalWeightActual = 0
+      
+      if (result.data && result.data.items && Array.isArray(result.data.items)) {
+        // 计算加权平均边际贡献率
+        result.data.items.forEach((item: any) => {
+          const planRate = item.yearlyPlan || 0
+          const actualRate = item.currentActual || 0
+          const weight = Math.max(planRate, 1) // 使用计划值作为权重
+          
+          totalYearlyPlan += planRate * weight
+          totalCurrentActual += actualRate * weight
+          totalWeightPlan += weight
+          totalWeightActual += weight
+        })
+        
+        // 计算加权平均
+        const avgYearlyPlan = totalWeightPlan > 0 ? totalYearlyPlan / totalWeightPlan : 0
+        const avgCurrentActual = totalWeightActual > 0 ? totalCurrentActual / totalWeightActual : 0
+        
+        // 更新边际贡献率指标
+        qualityIndicators.value.marginContribution = {
+          yearlyPlan: parseFloat(avgYearlyPlan.toFixed(2)),
+          current: parseFloat(avgCurrentActual.toFixed(2))
+        }
+      } else {
+        // 设置默认值
+        qualityIndicators.value.marginContribution = { yearlyPlan: 0, current: 0 }
+      }
+      
+      console.log('拓源边际贡献率数据加载成功:', qualityIndicators.value.marginContribution)
+    } else {
+      console.log('拓源边际贡献率数据响应失败:', response.status)
+      qualityIndicators.value.marginContribution = { yearlyPlan: 0, current: 0 }
+    }
+  } catch (error) {
+    console.error('加载拓源边际贡献率数据失败:', error)
+    qualityIndicators.value.marginContribution = { yearlyPlan: 0, current: 0 }
+  }
+}
+
+// 加载毛利率数据
+const loadGrossMarginData = async (period: string) => {
+  if (props.companyKey === 'shanghai-industry') {
+    await loadNanhuaGrossMarginData(period)
+  } else if (props.companyKey === 'changzhou') {
+    await loadTuoyuanGrossMarginData(period)
+  } else {
+    qualityIndicators.value.grossMargin = { yearlyPlan: 0, current: 0 }
+  }
+}
+
+// 加载南华毛利率数据（使用当期数据，不是累计）
+const loadNanhuaGrossMarginData = async (period: string) => {
+  
+  try {
+    console.log('开始加载南华毛利率数据，期间:', period)
+    
+    // 尝试使用单月毛利率API获取当期数据
+    const response = await fetch(`http://47.111.95.19:3000/nanhua-business-profit-margin-with-self-built/${period}`)
+    
+    if (response.ok) {
+      const result = await response.json()
+      console.log('南华单月毛利率数据响应:', result)
+      
+      let currentRate = 0
+      const yearlyPlan = 24.0 // 目标值
+      
+      if (result.success && result.data && result.data.customers) {
+        // 计算当期毛利率，使用加权平均
+        const validCustomers = result.data.customers.filter((customer: any) => {
+          return customer.current > 0 && customer.yearlyPlan > 0
+        })
+        
+        if (validCustomers.length > 0) {
+          let totalWeightedRate = 0
+          let totalWeight = 0
+          
+          validCustomers.forEach((customer: any) => {
+            const rate = customer.current || 0
+            const weight = customer.yearlyPlan || 1
+            totalWeightedRate += rate * weight
+            totalWeight += weight
+          })
+          
+          if (totalWeight > 0) {
+            currentRate = totalWeightedRate / totalWeight
+          }
+        }
+      }
+      
+      // 更新毛利率指标
+      qualityIndicators.value.grossMargin = {
+        yearlyPlan: parseFloat(yearlyPlan.toFixed(2)),
+        current: parseFloat(currentRate.toFixed(2))
+      }
+      console.log('南华毛利率数据加载成功:', qualityIndicators.value.grossMargin)
+    } else {
+      console.log('南华单月毛利率API不可用，尝试年度API:', response.status)
+      // 如果单月API不可用，回退到从年度API提取对应月份数据
+      await loadGrossMarginFromYearlyData(period)
+    }
+  } catch (error) {
+    console.error('加载南华毛利率数据失败:', error)
+    // 回退到年度API
+    await loadGrossMarginFromYearlyData(period)
+  }
+}
+
+// 从年度毛利率API获取对应月份的数据
+const loadGrossMarginFromYearlyData = async (period: string) => {
+  try {
+    const [year, month] = period.split('-')
+    const response = await fetch(`http://47.111.95.19:3000/analytics/nanhua-profit-margin/${year}`)
+    
+    if (response.ok) {
+      const result = await response.json()
+      console.log('南华年度毛利率数据响应:', result)
+      
+      let currentRate = 0
+      const yearlyPlan = 24.0 // 目标值
+      
+      if (result.success && result.data && !result.data.hasData === false) {
+        const monthNames = result.data.months || []
+        const monthlyData = result.data.monthlyData || []
+        
+        // 找到对应月份的数据
+        const targetMonth = `${month}月`
+        const monthIndex = monthNames.findIndex((m: string) => m === targetMonth)
+        
+        if (monthIndex >= 0 && monthlyData[monthIndex] !== undefined) {
+          currentRate = monthlyData[monthIndex]
+          console.log(`找到${targetMonth}的毛利率数据:`, currentRate)
+        } else {
+          console.log(`未找到${targetMonth}的数据，使用当前毛利率:`, result.data.currentRate)
+          currentRate = result.data.currentRate || 0
+        }
+      }
+      
+      // 更新毛利率指标
+      qualityIndicators.value.grossMargin = {
+        yearlyPlan: parseFloat(yearlyPlan.toFixed(2)),
+        current: parseFloat(currentRate.toFixed(2))
+      }
+      console.log('南华毛利率数据加载成功:', qualityIndicators.value.grossMargin)
+    } else {
+      console.log('南华年度毛利率数据响应失败:', response.status)
+      qualityIndicators.value.grossMargin = { yearlyPlan: 24.0, current: 0 }
+    }
+  } catch (error) {
+    console.error('从年度数据加载毛利率失败:', error)
+    qualityIndicators.value.grossMargin = { yearlyPlan: 24.0, current: 0 }
+  }
+}
+
+// 加载拓源毛利率数据
+const loadTuoyuanGrossMarginData = async (period: string) => {
+  try {
+    console.log('开始加载拓源毛利率数据，期间:', period)
+    
+    // 获取拓源毛利率数据
+    const response = await fetch(`http://47.111.95.19:3000/tuoyuan-main-business-profit-margin/${period}`)
+    
+    if (response.ok) {
+      const result = await response.json()
+      console.log('拓源毛利率数据响应:', result)
+      
+      let totalYearlyPlan = 0
+      let totalCurrentActual = 0
+      let totalWeightPlan = 0
+      let totalWeightActual = 0
+      
+      if (result.data && result.data.items && Array.isArray(result.data.items)) {
+        // 计算加权平均毛利率
+        result.data.items.forEach((item: any) => {
+          const planRate = item.yearlyPlan || 0
+          const actualRate = item.currentActual || 0
+          const weight = Math.max(planRate, 1) // 使用计划值作为权重
+          
+          totalYearlyPlan += planRate * weight
+          totalCurrentActual += actualRate * weight
+          totalWeightPlan += weight
+          totalWeightActual += weight
+        })
+        
+        // 计算加权平均
+        const avgYearlyPlan = totalWeightPlan > 0 ? totalYearlyPlan / totalWeightPlan : 0
+        const avgCurrentActual = totalWeightActual > 0 ? totalCurrentActual / totalWeightActual : 0
+        
+        // 更新毛利率指标
+        qualityIndicators.value.grossMargin = {
+          yearlyPlan: parseFloat(avgYearlyPlan.toFixed(2)),
+          current: parseFloat(avgCurrentActual.toFixed(2))
+        }
+      } else {
+        // 设置默认值
+        qualityIndicators.value.grossMargin = { yearlyPlan: 0, current: 0 }
+      }
+      
+      console.log('拓源毛利率数据加载成功:', qualityIndicators.value.grossMargin)
+    } else {
+      console.log('拓源毛利率数据响应失败:', response.status)
+      qualityIndicators.value.grossMargin = { yearlyPlan: 0, current: 0 }
+    }
+  } catch (error) {
+    console.error('加载拓源毛利率数据失败:', error)
+    qualityIndicators.value.grossMargin = { yearlyPlan: 0, current: 0 }
+  }
+}
+
+// 加载净利率数据
+const loadNetMarginData = async (period: string) => {
+  if (props.companyKey === 'shanghai-industry') {
+    await loadNanhuaNetMarginData(period)
+  } else if (props.companyKey === 'changzhou') {
+    await loadTuoyuanNetMarginData(period)
+  } else {
+    qualityIndicators.value.netMargin = { yearlyPlan: 0, current: 0 }
+  }
+}
+
+// 加载南华净利率数据（从净利润数据计算）
+const loadNanhuaNetMarginData = async (period: string) => {
+  
+  try {
+    console.log('开始加载南华净利率数据，期间:', period)
+    
+    // 获取净利润数据和主营业务收入数据来计算净利率
+    const [netProfitResponse, revenueResponse] = await Promise.all([
+      fetch(`http://47.111.95.19:3000/nanhua-net-profit-structure/${period}`),
+      fetch(`http://47.111.95.19:3000/nanhua-business-income/${period}`)
+    ])
+    
+    let currentNetMargin = 0
+    const yearlyPlan = 6.85 // 目标值
+    
+    if (netProfitResponse.ok && revenueResponse.ok) {
+      const netProfitResult = await netProfitResponse.json()
+      const revenueResult = await revenueResponse.json()
+      
+      console.log('南华净利润数据:', netProfitResult)
+      console.log('南华主营业务收入数据:', revenueResult)
+      
+      let currentNetProfit = 0
+      let currentRevenue = 0
+      
+      // 获取当期净利润
+      if (netProfitResult.success && netProfitResult.data && netProfitResult.data.total) {
+        currentNetProfit = parseFloat(netProfitResult.data.total.current) || 0
+      }
+      
+      // 获取当期主营业务收入
+      if (revenueResult.data && revenueResult.data.customers) {
+        currentRevenue = revenueResult.data.customers.reduce((sum: number, customer: any) => {
+          return sum + (customer.current || 0)
+        }, 0)
+      }
+      
+      // 计算净利率
+      if (currentRevenue > 0) {
+        currentNetMargin = (currentNetProfit / currentRevenue) * 100
+      }
+    }
+    
+    // 更新净利率指标
+    qualityIndicators.value.netMargin = {
+      yearlyPlan: parseFloat(yearlyPlan.toFixed(2)),
+      current: parseFloat(currentNetMargin.toFixed(2))
+    }
+    console.log('南华净利率数据加载成功:', qualityIndicators.value.netMargin)
+  } catch (error) {
+    console.error('加载南华净利率数据失败:', error)
+    qualityIndicators.value.netMargin = { yearlyPlan: 6.85, current: 0 }
+  }
+}
+
+// 加载拓源净利率数据（从净利润贡献数据计算）
+const loadTuoyuanNetMarginData = async (period: string) => {
+  try {
+    console.log('开始加载拓源净利率数据，期间:', period)
+    
+    // 获取拓源净利润贡献数据
+    const response = await fetch(`http://47.111.95.19:3000/tuoyuan-main-business-net-profit-contribution/${period}`)
+    
+    if (response.ok) {
+      const result = await response.json()
+      console.log('拓源净利润贡献数据响应:', result)
+      
+      let totalAnnualBudget = 0
+      let totalCurrentPeriod = 0
+      
+      if (result.data && result.data.items && Array.isArray(result.data.items)) {
+        // 计算总的年度预算和当期净利润
+        result.data.items.forEach((item: any) => {
+          // 只计算主营业务的净利润
+          if (item.businessType === '主营业务') {
+            totalAnnualBudget += item.annualBudget || 0
+            totalCurrentPeriod += item.currentPeriod || 0
+          }
+        })
+        
+        // 获取主营业务收入数据来计算净利率
+        const revenueResponse = await fetch(`http://47.111.95.19:3000/tuoyuan-main-business-income-breakdown/${period}`)
+        let totalRevenuePlan = 0
+        let totalRevenueCurrent = 0
+        
+        if (revenueResponse.ok) {
+          const revenueResult = await revenueResponse.json()
+          if (revenueResult.data && revenueResult.data.items) {
+            revenueResult.data.items.forEach((item: any) => {
+              totalRevenuePlan += item.annualPlan || 0
+              totalRevenueCurrent += item.currentPeriod || 0 // 使用当期收入而不是累计
+            })
+          }
+        }
+        
+        // 计算净利率 = 净利润 / 主营业务收入 * 100
+        const planNetMargin = totalRevenuePlan > 0 ? (totalAnnualBudget / totalRevenuePlan) * 100 : 0
+        const currentNetMargin = totalRevenueCurrent > 0 ? (totalCurrentPeriod / totalRevenueCurrent) * 100 : 0
+        
+        // 更新净利率指标
+        qualityIndicators.value.netMargin = {
+          yearlyPlan: parseFloat(planNetMargin.toFixed(2)),
+          current: parseFloat(currentNetMargin.toFixed(2))
+        }
+      } else {
+        // 设置默认值
+        qualityIndicators.value.netMargin = { yearlyPlan: 0, current: 0 }
+      }
+      
+      console.log('拓源净利率数据加载成功:', qualityIndicators.value.netMargin)
+    } else {
+      console.log('拓源净利润贡献数据响应失败:', response.status)
+      qualityIndicators.value.netMargin = { yearlyPlan: 0, current: 0 }
+    }
+  } catch (error) {
+    console.error('加载拓源净利率数据失败:', error)
+    qualityIndicators.value.netMargin = { yearlyPlan: 0, current: 0 }
+  }
+}
+
+// 加载净资产收益率数据
+const loadROEData = async (period: string) => {
+  if (props.companyKey === 'shanghai-industry') {
+    await loadNanhuaROEData(period)
+  } else {
+    // 拓源公司暂时不需要这个指标，设置默认值
+    qualityIndicators.value.roe = { yearlyPlan: 0, current: 0 }
+  }
+}
+
+// 加载南华净资产收益率数据
+const loadNanhuaROEData = async (period: string) => {
+  
+  try {
+    console.log('开始加载净资产收益率数据，期间:', period)
+    
+    const [year] = period.split('-')
+    const response = await fetch(`http://47.111.95.19:3000/analytics/roe/${year}?company=shanghai-industry`)
+    
+    if (response.ok) {
+      const result = await response.json()
+      console.log('净资产收益率数据响应:', result)
+      
+      let currentROE = 0
+      const yearlyPlan = 21.18 // 目标值
+      
+      if (result.success && result.data && result.data.currentRate) {
+        currentROE = parseFloat(result.data.currentRate) || 0
+      }
+      
+      // 更新净资产收益率指标
+      qualityIndicators.value.roe = {
+        yearlyPlan: parseFloat(yearlyPlan.toFixed(2)),
+        current: parseFloat(currentROE.toFixed(2))
+      }
+      console.log('净资产收益率数据加载成功:', qualityIndicators.value.roe)
+    } else {
+      console.log('净资产收益率数据响应失败:', response.status)
+      qualityIndicators.value.roe = { yearlyPlan: 21.18, current: 0 }
+    }
+  } catch (error) {
+    console.error('加载净资产收益率数据失败:', error)
+    qualityIndicators.value.roe = { yearlyPlan: 21.18, current: 0 }
+  }
+}
+
+// 加载资产负债率数据
+const loadAssetLiabilityRatioData = async (period: string) => {
+  if (props.companyKey === 'shanghai-industry') {
+    await loadNanhuaAssetLiabilityRatioData(period)
+  } else {
+    // 拓源公司暂时不需要这个指标，设置默认值
+    qualityIndicators.value.assetLiabilityRatio = { yearlyPlan: 0, current: 0 }
+  }
+}
+
+// 加载南华资产负债率数据
+const loadNanhuaAssetLiabilityRatioData = async (period: string) => {
+  
+  try {
+    console.log('开始加载资产负债率数据，期间:', period)
+    
+    const [year] = period.split('-')
+    const response = await fetch(`http://47.111.95.19:3000/analytics/asset-liability-ratio/${year}?company=shanghai-industry`)
+    
+    if (response.ok) {
+      const result = await response.json()
+      console.log('资产负债率数据响应:', result)
+      
+      let currentRatio = 0
+      const yearlyPlan = 74.0 // 目标值
+      
+      if (result.success && result.data && result.data.currentRate) {
+        currentRatio = parseFloat(result.data.currentRate) || 0
+      }
+      
+      // 更新资产负债率指标
+      qualityIndicators.value.assetLiabilityRatio = {
+        yearlyPlan: parseFloat(yearlyPlan.toFixed(2)),
+        current: parseFloat(currentRatio.toFixed(2))
+      }
+      console.log('资产负债率数据加载成功:', qualityIndicators.value.assetLiabilityRatio)
+    } else {
+      console.log('资产负债率数据响应失败:', response.status)
+      qualityIndicators.value.assetLiabilityRatio = { yearlyPlan: 74.0, current: 0 }
+    }
+  } catch (error) {
+    console.error('加载资产负债率数据失败:', error)
+    qualityIndicators.value.assetLiabilityRatio = { yearlyPlan: 74.0, current: 0 }
+  }
+}
+
+// 加载所有数据
+const loadAllData = async (period: string) => {
+  if (props.companyKey !== 'shanghai-industry' && props.companyKey !== 'changzhou') {
+    console.log('不支持的公司类型，跳过数据加载:', props.companyKey)
+    return
+  }
+  
+  if (isLoading.value) {
+    console.log('正在加载中，跳过重复加载')
     return
   }
   
   try {
+    const companyName = props.companyKey === 'shanghai-industry' ? '南华' : '拓源'
+    console.log(`开始加载${companyName}所有数据，期间:`, period)
     isLoading.value = true
-    await Promise.all([
+    
+    // 使用Promise.allSettled代替Promise.all，避免一个失败导致全部失败
+    const results = await Promise.allSettled([
       loadNewOrdersData(period),
-      loadCostCenterData(period)
+      loadCostCenterData(period),
+      loadBusinessIncomeData(period),
+      loadNetProfitData(period),
+      loadMarginContributionData(period),
+      loadGrossMarginData(period),
+      loadNetMarginData(period),
+      loadROEData(period),
+      loadAssetLiabilityRatioData(period)
     ])
+    
+    // 检查结果
+    results.forEach((result, index) => {
+      if (result.status === 'rejected') {
+        console.error(`${companyName}数据加载失败 [${index}]:`, result.reason)
+      }
+    })
+    
+    console.log(`${companyName}所有数据加载完成`)
   } catch (error) {
-    console.error('加载南华数据失败:', error)
+    console.error(`加载${companyName}数据失败:`, error)
   } finally {
     isLoading.value = false
   }
@@ -420,9 +1398,19 @@ const loadNanhuaData = async (period: string) => {
 
 // 处理时间周期变化
 const handlePeriodChange = (newPeriod) => {
+  console.log('简化版报表期间变化:', newPeriod)
+  
+  if (!newPeriod || typeof newPeriod !== 'string') {
+    console.warn('handlePeriodChange收到无效期间:', newPeriod)
+    return
+  }
+  
   emit('period-change', newPeriod)
-  loadNanhuaData(newPeriod)
-  console.log('简化版报表期间已更改:', newPeriod)
+  
+  // 防止重复加载
+  if (newPeriod !== props.selectedPeriod && newPeriod.includes('-')) {
+    loadAllData(newPeriod)
+  }
 }
 
 // 生成PDF
@@ -452,11 +1440,20 @@ const generatePDF = async () => {
 
 onMounted(() => {
   console.log(`简化版月度报表已加载，公司: ${props.companyName}，期间: ${props.selectedPeriod}`)
-  loadNanhuaData(props.selectedPeriod)
+  if (props.selectedPeriod && typeof props.selectedPeriod === 'string' && props.selectedPeriod.includes('-')) {
+    loadAllData(props.selectedPeriod)
+  } else {
+    console.warn('onMounted收到无效期间:', props.selectedPeriod)
+  }
 })
 
 // 监听期间变化
-watch(() => props.selectedPeriod, (newPeriod) => {
-  loadNanhuaData(newPeriod)
+watch(() => props.selectedPeriod, (newPeriod, oldPeriod) => {
+  console.log('监听到期间变化:', oldPeriod, '->', newPeriod)
+  if (newPeriod !== oldPeriod && newPeriod && typeof newPeriod === 'string' && newPeriod.includes('-')) {
+    loadAllData(newPeriod)
+  } else if (!newPeriod || typeof newPeriod !== 'string') {
+    console.warn('收到无效的期间值:', newPeriod)
+  }
 })
 </script> 

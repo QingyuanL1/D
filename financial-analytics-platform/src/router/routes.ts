@@ -648,7 +648,7 @@ export const frameIn: Array<RouteRecordRaw> = [
         name: 'NanhuaBusinessContributionWithSelfBuilt',
         component: () => import('@/views/nanhua/BusinessIncomeWithSelfBuilt.vue'),
         meta: {
-          title: '上海南华实业公司-主营业务边际贡献率结构与质量（含自建项目）',
+          title: '上海南华实业公司-主营业务边际贡献率结构与质量（含自接项目）',
         },
       },
       {
@@ -656,7 +656,7 @@ export const frameIn: Array<RouteRecordRaw> = [
         name: 'NanhuaBusinessProfitMarginWithSelfBuilt',
         component: () => import('@/views/nanhua/BusinessProfitMarginWithSelfBuilt.vue'),
         meta: {
-          title: '上海南华实业公司-主营业务毛利率结构与质量（含自建项目）',
+          title: '上海南华实业公司-主营业务毛利率结构与质量（含自接项目）',
         },
       },
       {

@@ -1,57 +1,57 @@
 <template>
-    <div class="max-w-[1200px] mx-auto bg-white rounded-lg shadow-lg p-6">
-        <div class="flex justify-between items-center mb-6">
-            <h1 class="text-2xl font-bold">利润表(主表)（单位：万元）</h1>
+    <div class="max-w-[1200px] mx-auto bg-white rounded-lg shadow-lg p-3 sm:p-6">
+        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 sm:mb-6 space-y-3 sm:space-y-0">
+            <h1 class="text-lg sm:text-2xl font-bold">利润表(主表)（单位：万元）</h1>
             <div class="flex items-center space-x-4">
-                <input v-model="period" type="month" class="px-3 py-2 border rounded" @change="handlePeriodChange" />
+                <input v-model="period" type="month" class="px-3 py-2 border rounded text-sm sm:text-base" @change="handlePeriodChange" />
             </div>
         </div>
 
-        <div class="overflow-x-auto">
-            <table class="w-full border-collapse border border-gray-300">
-                <thead class="sticky top-0 bg-white">
+        <div class="overflow-x-auto -mx-3 sm:mx-0">
+            <table class="w-full border-collapse border border-gray-300 min-w-[600px]">
+                <thead class="sticky top-0 bg-white z-10">
                     <tr class="bg-gray-50">
-                        <th class="border border-gray-300 px-4 py-2">项目</th>
-                        <th class="border border-gray-300 px-4 py-2 w-40">本期金额</th>
-                        <th class="border border-gray-300 px-4 py-2 w-40">本年累计</th>
+                        <th class="border border-gray-300 px-2 sm:px-4 py-2 text-xs sm:text-sm font-medium">项目</th>
+                        <th class="border border-gray-300 px-2 sm:px-4 py-2 w-24 sm:w-40 text-xs sm:text-sm font-medium">本期金额</th>
+                        <th class="border border-gray-300 px-2 sm:px-4 py-2 w-24 sm:w-40 text-xs sm:text-sm font-medium">本年累计</th>
                     </tr>
                 </thead>
                 <tbody>
                     <template v-for="(section, sectionIndex) in incomeStatementData" :key="sectionIndex">
                         <tr>
-                            <td class="border border-gray-300 px-4 py-2 font-bold">
+                            <td class="border border-gray-300 px-2 sm:px-4 py-2 font-bold text-xs sm:text-sm">
                                 {{ section.title }}
                             </td>
-                            <td class="border border-gray-300 px-4 py-2"></td>
-                            <td class="border border-gray-300 px-4 py-2"></td>
+                            <td class="border border-gray-300 px-2 sm:px-4 py-2"></td>
+                            <td class="border border-gray-300 px-2 sm:px-4 py-2"></td>
                         </tr>
 
                         <template v-for="(item, itemIndex) in section.items" :key="`${sectionIndex}-${itemIndex}`">
                             <tr>
-                                <td :class="['border border-gray-300 px-4 py-2',
-                                    item.isSubItem ? 'pl-8' : '',
+                                <td :class="['border border-gray-300 px-2 sm:px-4 py-2 text-xs sm:text-sm',
+                                    item.isSubItem ? 'pl-4 sm:pl-8' : '',
                                     item.isBold ? 'font-bold' : '']">
                                     {{ item.name }}
                                 </td>
-                                <td class="border border-gray-300 px-4 py-2">
+                                <td class="border border-gray-300 px-1 sm:px-4 py-2">
                                     <input 
                                         v-if="!item.isCalculated" 
                                         v-model="item.currentAmount" 
                                         type="number"
-                                        class="w-full px-2 py-1 border rounded" 
+                                        class="w-full px-1 sm:px-2 py-1 border rounded text-xs sm:text-sm" 
                                         step="0.01" 
                                         :data-field="item.field" 
                                         @input="handleInputChange" />
                                     <span 
                                         v-else 
-                                        class="w-full px-2 py-1 bg-gray-100 rounded inline-block font-semibold"
+                                        class="w-full px-1 sm:px-2 py-1 bg-gray-100 rounded inline-block font-semibold text-xs sm:text-sm"
                                         :class="{ 'text-blue-600': item.currentAmount !== null }">
                                         {{ item.currentAmount?.toFixed(2) || '0.00' }}
                                     </span>
                                 </td>
-                                <td class="border border-gray-300 px-4 py-2">
+                                <td class="border border-gray-300 px-1 sm:px-4 py-2">
                                     <span 
-                                        class="w-full px-2 py-1 bg-gray-100 rounded inline-block font-semibold"
+                                        class="w-full px-1 sm:px-2 py-1 bg-gray-100 rounded inline-block font-semibold text-xs sm:text-sm"
                                         :class="{ 'text-blue-600': item.yearAmount !== null }">
                                         {{ item.yearAmount?.toFixed(2) || '0.00' }}
                                     </span>
@@ -63,11 +63,11 @@
             </table>
         </div>
 
-        <div class="mt-4 flex justify-end space-x-4">
-            <button @click="handleSave" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+        <div class="mt-4 flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-4">
+            <button @click="handleSave" class="w-full sm:w-auto px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 text-sm sm:text-base">
                 保存
             </button>
-            <button @click="handleReset" class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600">
+            <button @click="handleReset" class="w-full sm:w-auto px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 text-sm sm:text-base">
                 重置
             </button>
         </div>
