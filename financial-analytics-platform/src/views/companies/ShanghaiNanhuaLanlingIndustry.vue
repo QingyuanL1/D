@@ -271,17 +271,17 @@
                 </svg>
               </div>
               <div class="text-right">
-                <div class="text-sm font-semibold text-blue-600">{{ Math.min(Math.max(nanhuaBusinessIncomeRate / 20843.54 * 100, 3), 100).toFixed(1) }}%</div>
+                <div class="text-sm font-semibold text-blue-600">{{ Math.min(Math.max(nanhuaBusinessIncomeRate / 20833.54 * 100, 3), 100).toFixed(1) }}%</div>
                 <div class="text-xs text-gray-500">完成度</div>
               </div>
             </div>
             <h4 class="text-lg font-medium text-gray-900 mb-2">南华营业收入分析</h4>
-            <p class="text-sm text-gray-600 mb-3 h-12">分析南华各客户营业收入结构与完成情况</p>
+            <p class="text-sm text-gray-600 mb-3 h-12">分析南华各客户累计收入与年度计划完成情况</p>
             <div class="mb-4">
               <div style="width: 100%; height: 8px; background-color: #e5e7eb; border-radius: 4px;">
                 <div
                   style="height: 8px; border-radius: 4px; background-color: #2563eb; transition: width 0.3s ease;"
-                  :style="`width: ${Math.min(Math.max(nanhuaBusinessIncomeRate / 20843.54 * 100, 3), 100)}%;`"
+                  :style="`width: ${Math.min(Math.max(nanhuaBusinessIncomeRate / 20833.54 * 100, 3), 100)}%;`"
                 ></div>
               </div>
             </div>
@@ -1044,11 +1044,11 @@ const fetchNanhuaBusinessIncomeData = async () => {
     
     const result = await response.json()
     if (result.success && result.data && result.data.customers) {
-      // 计算总当期收入（基于订单转收入的实时计算）
-      const totalCurrent = result.data.customers.reduce((sum: number, customer: any) => {
-        return sum + (customer.current || 0)
+      // 计算总累计收入（年初到当前月份的累计收入）
+      const totalAccumulated = result.data.customers.reduce((sum: number, customer: any) => {
+        return sum + (customer.accumulated || 0)
       }, 0)
-      nanhuaBusinessIncomeRate.value = totalCurrent
+      nanhuaBusinessIncomeRate.value = totalAccumulated
     } else {
       console.warn('南华营业收入数据获取失败:', result.message)
       nanhuaBusinessIncomeRate.value = 0

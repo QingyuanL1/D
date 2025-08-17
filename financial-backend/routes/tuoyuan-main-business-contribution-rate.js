@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { pool } = require('../config/database');
+const fetch = require('node-fetch');
 
 // 获取数据
 router.get('/:period', async (req, res) => {
@@ -42,11 +43,57 @@ router.get('/:period', async (req, res) => {
             deviation: parseFloat(row.deviation || 0)
         }));
 
+        // 计算合计数据
+        const totalData = calculateTotalData(items);
+
+        // 获取实际的收入和成本数据用于加权计算
+        let weightedData = null;
+        try {
+            const [incomeRows] = await pool.execute(`
+                SELECT 
+                    segment_attribute,
+                    customer_attribute,
+                    current_cumulative as cumulative_income
+                FROM tuoyuan_main_business_income_breakdown 
+                WHERE period = ?
+            `, [period]);
+
+            const [year, month] = period.split('-');
+            const targetYear = parseInt(year);
+            const targetMonth = parseInt(month);
+            
+            const [costRows] = await pool.execute(`
+                SELECT 
+                    category,
+                    customer_type,
+                    SUM(current_material_cost + current_labor_cost) as cumulative_direct_cost
+                FROM tuoyuan_main_business_cost_structure_quality 
+                WHERE SUBSTRING(period, 1, 4) = ? 
+                AND CAST(SUBSTRING(period, 6, 2) AS UNSIGNED) <= ?
+                GROUP BY category, customer_type
+            `, [targetYear, targetMonth]);
+
+            console.log(`找到${incomeRows.length}条收入数据，${costRows.length}条成本数据`);
+            
+            // 计算加权平均贡献率
+            weightedData = calculateWeightedContributionRate(incomeRows, costRows);
+        } catch (error) {
+            console.error('获取加权数据失败:', error);
+            weightedData = {
+                totalIncome: 0,
+                totalCost: 0,
+                weightedContributionRate: 0,
+                marginContribution: 0
+            };
+        }
+
         res.json({
             success: true,
             data: {
                 period: period,
-                items: items
+                items: items,
+                total: totalData,
+                weighted: weightedData
             }
         });
 
@@ -136,38 +183,84 @@ router.post('/calculate/:period', async (req, res) => {
         const { period } = req.params;
         console.log(`开始自动计算拓源公司${period}期间的边际贡献率`);
 
-        // 1. 获取拓源公司主营业务收入数据 - 使用当期累计数据
+        // 1. 获取拓源收入数据
         const [incomeRows] = await pool.execute(`
             SELECT 
                 segment_attribute,
                 customer_attribute,
-                current_cumulative as current_income
+                current_cumulative as cumulative_income
             FROM tuoyuan_main_business_income_breakdown 
             WHERE period = ?
-            ORDER BY segment_attribute, customer_attribute
         `, [period]);
 
-        console.log(`找到拓源公司收入数据: ${incomeRows.length}条记录`);
-
-        // 2. 获取拓源公司当期成本数据 - 使用当期数据
+        // 2. 获取拓源成本数据（材料成本 + 人工成本）
+        const [year, month] = period.split('-');
+        const targetYear = parseInt(year);
+        const targetMonth = parseInt(month);
+        
+        // 计算累计成本（从年初到当前月份）
         const [costRows] = await pool.execute(`
             SELECT 
-                category as segment_attribute,
-                customer_type as customer_attribute, 
-                current_material_cost as current_cost
+                category,
+                customer_type,
+                SUM(current_material_cost) as cumulative_material_cost,
+                SUM(current_labor_cost) as cumulative_labor_cost,
+                SUM(current_material_cost + current_labor_cost) as cumulative_direct_cost
             FROM tuoyuan_main_business_cost_structure_quality 
-            WHERE period = ?
-            ORDER BY category, customer_type
-        `, [period]);
+            WHERE SUBSTRING(period, 1, 4) = ? 
+            AND CAST(SUBSTRING(period, 6, 2) AS UNSIGNED) <= ?
+            GROUP BY category, customer_type
+        `, [targetYear, targetMonth]);
 
-        console.log(`找到拓源公司成本数据: ${costRows.length}条记录`);
-        console.log('收入数据:', incomeRows);
-        console.log('成本数据:', costRows);
+        console.log(`获取到${incomeRows.length}条收入数据，${costRows.length}条成本数据`);
 
-        // 3. 计算边际贡献率
-        const calculatedItems = calculateTuoyuanContributionRates(incomeRows, costRows);
+        // 3. 数据映射和计算
+        const incomeMap = {};
+        const costMap = {};
+        
+        // 收入数据映射
+        incomeRows.forEach(row => {
+            let customerAttr = row.customer_attribute;
+            // 数据兼容性处理：'电业项目' -> '申业项目'
+            if (customerAttr === '电业项目') {
+                customerAttr = '申业项目';
+            }
+            
+            let segmentAttr = row.segment_attribute;
+            // 对于代理工程和代理设计，归类到'其他'板块
+            if (customerAttr === '代理工程' || customerAttr === '代理设计') {
+                segmentAttr = '其他';
+            }
+            
+            const key = `${segmentAttr}-${customerAttr}`;
+            incomeMap[key] = parseFloat(row.cumulative_income) || 0;
+        });
 
-        // 4. 保存计算结果
+        // 成本数据映射
+        costRows.forEach(row => {
+            let customerAttr = row.customer_type;
+            // 数据兼容性处理：'电业项目' -> '申业项目'
+            if (customerAttr === '电业项目') {
+                customerAttr = '申业项目';
+            }
+            
+            let segmentAttr = row.category;
+            // 对于代理工程和代理设计，归类到'其他'板块
+            if (customerAttr === '代理工程' || customerAttr === '代理设计') {
+                segmentAttr = '其他';
+            }
+            
+            const key = `${segmentAttr}-${customerAttr}`;
+            costMap[key] = parseFloat(row.cumulative_direct_cost) || 0;
+        });
+
+        console.log('收入映射:', incomeMap);
+        console.log('成本映射:', costMap);
+
+        // 4. 计算边际贡献率
+        const calculatedItems = calculateTuoyuanContributionRatesNew(incomeMap, costMap);
+
+        // 5. 保存计算结果
         const connection = await pool.getConnection();
         await connection.beginTransaction();
 
@@ -204,7 +297,12 @@ router.post('/calculate/:period', async (req, res) => {
                 message: '拓源公司边际贡献率计算完成',
                 data: {
                     period: period,
-                    items: calculatedItems
+                    items: calculatedItems,
+                    summary: {
+                        totalIncome: Object.values(incomeMap).reduce((sum, val) => sum + val, 0),
+                        totalCost: Object.values(costMap).reduce((sum, val) => sum + val, 0),
+                        weightedContributionRate: calculateWeightedRateSimple(incomeMap, costMap)
+                    }
                 }
             });
 
@@ -224,8 +322,8 @@ router.post('/calculate/:period', async (req, res) => {
     }
 });
 
-// 计算拓源公司边际贡献率的核心函数
-function calculateTuoyuanContributionRates(incomeData, costData) {
+// 新的计算函数 - 使用完整成本（材料成本+人工成本）
+function calculateTuoyuanContributionRatesNew(incomeMap, costMap) {
     // 固定的年度计划数据
     const planData = [
         { segmentAttribute: '设备', customerAttribute: '申业项目', yearlyPlan: 15.47 },
@@ -236,67 +334,25 @@ function calculateTuoyuanContributionRates(incomeData, costData) {
         { segmentAttribute: '其他', customerAttribute: '代理设计', yearlyPlan: 100.00 }
     ];
 
-    // 收入数据映射 - 注意拓源公司用的是'申业项目'，但数据库可能存储为'电业项目'
-    const incomeMap = {};
-    if (Array.isArray(incomeData)) {
-        incomeData.forEach(item => {
-            let customerAttr = item.customer_attribute;
-            // 数据兼容性处理：'电业项目' -> '申业项目'
-            if (customerAttr === '电业项目') {
-                customerAttr = '申业项目';
-            }
-            
-            let segmentAttr = item.segment_attribute;
-            // 对于代理工程和代理设计，归类到'其他'板块
-            if (customerAttr === '代理工程' || customerAttr === '代理设计') {
-                segmentAttr = '其他';
-            }
-            
-            const key = `${segmentAttr}-${customerAttr}`;
-            incomeMap[key] = parseFloat(item.current_income) || 0;
-        });
-    }
-
-    // 成本数据映射
-    const costMap = {};
-    if (Array.isArray(costData)) {
-        costData.forEach(item => {
-            let customerAttr = item.customer_attribute;
-            // 数据兼容性处理：'电业项目' -> '申业项目'
-            if (customerAttr === '电业项目') {
-                customerAttr = '申业项目';
-            }
-            
-            let segmentAttr = item.segment_attribute;
-            // 对于代理工程和代理设计，归类到'其他'板块
-            if (customerAttr === '代理工程' || customerAttr === '代理设计') {
-                segmentAttr = '其他';
-            }
-            
-            const key = `${segmentAttr}-${customerAttr}`;
-            costMap[key] = parseFloat(item.current_cost) || 0;
-        });
-    }
-
-    console.log('收入映射:', incomeMap);
-    console.log('成本映射:', costMap);
-
     // 计算各项目的边际贡献率
     const calculatedItems = planData.map(planItem => {
         const key = `${planItem.segmentAttribute}-${planItem.customerAttribute}`;
         const income = incomeMap[key] || 0;
         const cost = costMap[key] || 0;
 
-        // 计算边际贡献率 = (收入 - 成本) / 收入 * 100
+        // 计算边际贡献率 = (累计收入 - 累计直接成本) / 累计收入 * 100
         let contributionRate = 0;
         if (income > 0) {
             contributionRate = ((income - cost) / income) * 100;
+        } else if (income === 0 && cost > 0) {
+            // 如果收入为0但成本大于0，边际贡献率为-100%
+            contributionRate = -100;
         }
 
         const currentActual = parseFloat(contributionRate.toFixed(2));
         const deviation = currentActual - planItem.yearlyPlan;
 
-        console.log(`${planItem.segmentAttribute}-${planItem.customerAttribute}: 收入=${income}, 成本=${cost}, 贡献率=${currentActual}%`);
+        console.log(`${planItem.segmentAttribute}-${planItem.customerAttribute}: 累计收入=${income}, 累计直接成本=${cost}, 贡献率=${currentActual}%`);
 
         return {
             segmentAttribute: planItem.segmentAttribute,
@@ -307,8 +363,97 @@ function calculateTuoyuanContributionRates(incomeData, costData) {
         };
     });
 
-    console.log('拓源公司边际贡献率计算结果:', calculatedItems);
+    console.log('拓源公司边际贡献率计算结果(基于完整成本):', calculatedItems);
     return calculatedItems;
+}
+
+// 计算合计数据
+function calculateTotalData(items) {
+    const total = {
+        yearlyPlan: 0,
+        currentActual: 0,
+        deviation: 0,
+        count: items.length
+    };
+    
+    // 简单平均
+    items.forEach(item => {
+        total.yearlyPlan += item.yearlyPlan || 0;
+        total.currentActual += item.currentActual || 0;
+    });
+    
+    total.deviation = total.currentActual - total.yearlyPlan;
+    
+    return {
+        yearlyPlan: parseFloat(total.yearlyPlan.toFixed(2)),
+        currentActual: parseFloat(total.currentActual.toFixed(2)),
+        deviation: parseFloat(total.deviation.toFixed(2)),
+        simpleAverage: parseFloat((total.currentActual / items.length).toFixed(2))
+    };
+}
+
+// 计算加权平均边际贡献率
+function calculateWeightedContributionRate(incomeRows, costRows) {
+    const incomeMap = {};
+    const costMap = {};
+    
+    // 收入数据映射
+    incomeRows.forEach(row => {
+        let customerAttr = row.customer_attribute;
+        if (customerAttr === '电业项目') {
+            customerAttr = '申业项目';
+        }
+        
+        let segmentAttr = row.segment_attribute;
+        if (customerAttr === '代理工程' || customerAttr === '代理设计') {
+            segmentAttr = '其他';
+        }
+        
+        const key = `${segmentAttr}-${customerAttr}`;
+        incomeMap[key] = parseFloat(row.cumulative_income) || 0;
+    });
+
+    // 成本数据映射
+    costRows.forEach(row => {
+        let customerAttr = row.customer_type;
+        if (customerAttr === '电业项目') {
+            customerAttr = '申业项目';
+        }
+        
+        let segmentAttr = row.category;
+        if (customerAttr === '代理工程' || customerAttr === '代理设计') {
+            segmentAttr = '其他';
+        }
+        
+        const key = `${segmentAttr}-${customerAttr}`;
+        costMap[key] = parseFloat(row.cumulative_direct_cost) || 0;
+    });
+
+    const totalIncome = Object.values(incomeMap).reduce((sum, val) => sum + val, 0);
+    const totalCost = Object.values(costMap).reduce((sum, val) => sum + val, 0);
+    
+    let weightedRate = 0;
+    if (totalIncome > 0) {
+        weightedRate = ((totalIncome - totalCost) / totalIncome) * 100;
+    }
+    
+    return {
+        totalIncome: parseFloat(totalIncome.toFixed(2)),
+        totalCost: parseFloat(totalCost.toFixed(2)),
+        weightedContributionRate: parseFloat(weightedRate.toFixed(2)),
+        marginContribution: parseFloat((totalIncome - totalCost).toFixed(2))
+    };
+}
+
+// 简单的加权计算函数（用于calculate接口）
+function calculateWeightedRateSimple(incomeMap, costMap) {
+    const totalIncome = Object.values(incomeMap).reduce((sum, val) => sum + val, 0);
+    const totalCost = Object.values(costMap).reduce((sum, val) => sum + val, 0);
+    
+    if (totalIncome > 0) {
+        return parseFloat(((totalIncome - totalCost) / totalIncome * 100).toFixed(2));
+    }
+    return 0;
 }
 
 module.exports = router;

@@ -1,5 +1,5 @@
 <template>
-    <div class="max-w-[1200px] mx-auto bg-white rounded-lg shadow-lg p-6">
+    <div class="max-w-[1600px] mx-auto bg-white rounded-lg shadow-lg p-6">
         <div class="flex justify-between items-center mb-6">
             <h1 class="text-2xl font-bold">上海南华兰陵实业有限公司现金流量表（单位：万元）</h1>
             <div class="flex items-center space-x-4">
@@ -164,6 +164,55 @@ const formatAmount = (amount: number | null): string => {
 const onCurrentAmountChange = (item: any) => {
   // 清除该项的计算标记
   item.isCalculated = false
+  
+  // 对于现金及现金等价物净增加情况部分的项目，当期金额 = 本年累计金额
+  if (['cash_ending_balance_final', 'cash_beginning_balance_final', 'cash_equivalents_ending_balance_final', 'cash_equivalents_beginning_balance_final'].includes(item.field)) {
+    item.yearAmount = item.currentAmount
+    calculateCashNetIncrease()
+  }
+}
+
+// 计算现金及现金等价物净增加额
+const calculateCashNetIncrease = () => {
+  // 获取相关金额
+  const cashEnding = getCashFlowItemValue('cash_ending_balance_final')
+  const cashBeginning = getCashFlowItemValue('cash_beginning_balance_final') 
+  const equivalentsEnding = getCashFlowItemValue('cash_equivalents_ending_balance_final')
+  const equivalentsBeginning = getCashFlowItemValue('cash_equivalents_beginning_balance_final')
+  
+  // 计算净增加额：期末现金 - 期初现金 + 期末现金等价物 - 期初现金等价物
+  const netIncrease = (cashEnding || 0) - (cashBeginning || 0) + (equivalentsEnding || 0) - (equivalentsBeginning || 0)
+  
+  // 设置计算结果，当期金额 = 累计金额
+  setCashFlowItemValue('cash_and_equivalents_net_increase_final', netIncrease, netIncrease)
+}
+
+// 获取现金流量表项目值的辅助函数
+const getCashFlowItemValue = (field: string): number | null => {
+  // 在补充资料中查找
+  for (const section of supplementaryData.value) {
+    for (const item of section.items) {
+      if (item.field === field) {
+        return item.currentAmount
+      }
+    }
+  }
+  return null
+}
+
+// 设置现金流量表项目值的辅助函数
+const setCashFlowItemValue = (field: string, currentAmount: number, yearAmount: number) => {
+  // 在补充资料中查找并设置
+  for (const section of supplementaryData.value) {
+    for (const item of section.items) {
+      if (item.field === field) {
+        item.currentAmount = currentAmount
+        item.yearAmount = yearAmount
+        item.isCalculated = true
+        return
+      }
+    }
+  }
 }
 
 // 静默计算本年累计值
@@ -199,7 +248,14 @@ const calculateCumulative = async (silent = true) => {
     
     // 更新累计值到表单中
     const calculatedData = result.data
+    const fixedAmountFields = ['cash_ending_balance_final', 'cash_beginning_balance_final', 'cash_equivalents_ending_balance_final', 'cash_equivalents_beginning_balance_final', 'cash_and_equivalents_net_increase_final']
+    
     Object.keys(calculatedData).forEach(key => {
+      // 跳过固定金额字段（当期=累计）
+      if (fixedAmountFields.includes(key)) {
+        return
+      }
+      
       // 在主表中查找
       const mainItem = cashFlowData.value.flatMap(section => section.items)
         .find(item => item.field === key)
@@ -270,13 +326,20 @@ const loadData = async (targetPeriod: string) => {
             console.log('解析后的数据:', parsedData)
             
             // 将数据恢复到表单中
+            const fixedAmountFields = ['cash_ending_balance_final', 'cash_beginning_balance_final', 'cash_equivalents_ending_balance_final', 'cash_equivalents_beginning_balance_final', 'cash_and_equivalents_net_increase_final']
+            
             Object.keys(parsedData).forEach(key => {
                 // 在主表中查找
                 const mainItem = cashFlowData.value.flatMap(section => section.items)
                     .find(item => item.field === key)
                 if (mainItem) {
                     mainItem.currentAmount = parsedData[key].current_amount
-                    mainItem.yearAmount = parsedData[key].year_amount || parsedData[key].cumulative_amount
+                    // 对于固定金额字段，本年累计 = 当期金额
+                    if (fixedAmountFields.includes(key)) {
+                        mainItem.yearAmount = parsedData[key].current_amount
+                    } else {
+                        mainItem.yearAmount = parsedData[key].year_amount || parsedData[key].cumulative_amount
+                    }
                     console.log(`恢复主表字段 ${key}:`, parsedData[key])
                 }
                 
@@ -285,7 +348,12 @@ const loadData = async (targetPeriod: string) => {
                     .find(item => item.field === key)
                 if (suppItem) {
                     suppItem.currentAmount = parsedData[key].current_amount
-                    suppItem.yearAmount = parsedData[key].year_amount || parsedData[key].cumulative_amount
+                    // 对于固定金额字段，本年累计 = 当期金额
+                    if (fixedAmountFields.includes(key)) {
+                        suppItem.yearAmount = parsedData[key].current_amount
+                    } else {
+                        suppItem.yearAmount = parsedData[key].year_amount || parsedData[key].cumulative_amount
+                    }
                     console.log(`恢复补充资料字段 ${key}:`, parsedData[key])
                 }
             })
@@ -360,7 +428,14 @@ const handleSave = async () => {
 
         // 如果返回了计算后的数据，更新表单
         if (result.calculatedData) {
+            const fixedAmountFields = ['cash_ending_balance_final', 'cash_beginning_balance_final', 'cash_equivalents_ending_balance_final', 'cash_equivalents_beginning_balance_final', 'cash_and_equivalents_net_increase_final']
+            
             Object.keys(result.calculatedData).forEach(key => {
+                // 跳过固定金额字段
+                if (fixedAmountFields.includes(key)) {
+                    return
+                }
+                
                 // 更新主表
                 const mainItem = cashFlowData.value.flatMap(section => section.items)
                     .find(item => item.field === key)

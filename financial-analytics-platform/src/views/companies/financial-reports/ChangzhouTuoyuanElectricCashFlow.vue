@@ -288,6 +288,8 @@ const calculateSubtotalsAndTotals = () => {
         getAmount('depreciation') +
         getAmount('intangible_amortization') +
         getAmount('deferred_expense_amortization') +
+        getAmount('prepaid_expense_decrease') +
+        getAmount('accrued_expense_increase') +
         getAmount('disposal_loss') +
         getAmount('fixed_asset_scrap_loss') +
         getAmount('fair_value_change_loss') +

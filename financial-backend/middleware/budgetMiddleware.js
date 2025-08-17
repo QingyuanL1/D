@@ -370,6 +370,27 @@ function createBudgetMiddleware(tableKey) {
                                     });
                                 }
                             });
+                        } else if (tableKey === 'stock_order_to_income') {
+                            // 特殊处理存量订单转收入数据
+                            ['equipment', 'components', 'engineering'].forEach(category => {
+                                if (parsedData[category] && Array.isArray(parsedData[category])) {
+                                    const categoryName = category === 'equipment' ? '设备' :
+                                                       category === 'components' ? '元件' : '工程';
+
+                                    parsedData[category] = parsedData[category].map(item => {
+                                        const budgetKey = `${categoryName}-${item.customer}`;
+                                        if (budgetMap[budgetKey] !== undefined) {
+                                            const budget = budgetMap[budgetKey];
+                                            return {
+                                                ...item,
+                                                yearlyPlan: budget,
+                                                stockOrder: budget / 2  // 年初存量订单余额 = 年度计划 / 2，与前端显示的年初余额一致
+                                            };
+                                        }
+                                        return item;
+                                    });
+                                }
+                            });
                         } else {
                             Object.keys(parsedData).forEach(key => {
                                 if (Array.isArray(parsedData[key])) {

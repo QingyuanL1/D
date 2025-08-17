@@ -262,17 +262,17 @@ const calculateIncomeTotal = (category: 'equipment' | 'components' | 'engineerin
 const updateIncomeTotal = () => {
     // 更新设备板块累计转收入
     orderData.value.equipment.forEach(item => {
-        item.incomeTotal = calculateIncomeTotal('equipment', item.customer)
+        item.incomeTotal = parseFloat(calculateIncomeTotal('equipment', item.customer).toFixed(2))
     })
 
     // 更新元件板块累计转收入
     orderData.value.components.forEach(item => {
-        item.incomeTotal = calculateIncomeTotal('components', item.customer)
+        item.incomeTotal = parseFloat(calculateIncomeTotal('components', item.customer).toFixed(2))
     })
 
     // 更新工程板块累计转收入
     orderData.value.engineering.forEach(item => {
-        item.incomeTotal = calculateIncomeTotal('engineering', item.customer)
+        item.incomeTotal = parseFloat(calculateIncomeTotal('engineering', item.customer).toFixed(2))
     })
 }
 

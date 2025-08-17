@@ -214,7 +214,9 @@ const initChart = () => {
       formatter: function(params: any[]) {
         let result = `${params[0].name}<br/>`
         params.forEach(param => {
-          result += `${param.seriesName}: ${formatNumber(param.value)}%<br/>`
+          if (param.value !== null && param.value !== undefined) {
+            result += `${param.seriesName}: ${formatNumber(param.value)}%<br/>`
+          }
         })
         return result
       }
@@ -254,6 +256,7 @@ const initChart = () => {
         type: 'line',
         data: monthlyData.value,
         smooth: true,
+        connectNulls: false,
         lineStyle: {
           width: 3,
           color: '#3B82F6'

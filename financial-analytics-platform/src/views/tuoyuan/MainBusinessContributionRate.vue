@@ -62,6 +62,22 @@
                             </span>
                         </td>
                     </tr>
+                    
+                    <!-- 加权平均行 -->
+                    <tr class="bg-blue-50 font-bold text-blue-800" v-if="weightedData">
+                        <td colspan="2" class="border border-gray-300 px-4 py-2 text-center">
+                            加权平均
+                            <span class="text-xs text-gray-600 block">(按收入加权)</span>
+                        </td>
+                        <td class="border border-gray-300 px-4 py-2 text-right text-gray-500">-</td>
+                        <td class="border border-gray-300 px-4 py-2 text-right">
+                            {{ formatPercentage(weightedData.weightedContributionRate) }}%
+                        </td>
+                        <td class="border border-gray-300 px-4 py-2 text-right text-xs">
+                            <div>收入: {{ formatNumber(weightedData.totalIncome) }}</div>
+                            <div>成本: {{ formatNumber(weightedData.totalCost) }}</div>
+                        </td>
+                    </tr>
                 </tbody>
             </table>
         </div>
@@ -121,9 +137,29 @@ const contributionRateData = ref<ContributionRateData>(JSON.parse(JSON.stringify
 const remarks = ref('')
 const suggestions = ref('')
 
+// 添加合计和加权数据
+const totalData = ref({
+    yearlyPlan: 0,
+    currentActual: 0,
+    deviation: 0,
+    simpleAverage: 0
+})
+
+const weightedData = ref({
+    totalIncome: 0,
+    totalCost: 0,
+    weightedContributionRate: 0,
+    marginContribution: 0
+})
+
 const formatPercentage = (value: number): string => {
     if (value === 0) return '0.00'
     return value.toFixed(2)
+}
+
+const formatNumber = (value: number): string => {
+    if (value === 0) return '0.00'
+    return value.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
 
 // 判断是否是板块的第一行
@@ -147,22 +183,26 @@ const calculateDeviation = () => {
 // 在数据加载后计算偏差（不需要监听变化）
 
 // 计算合计数据
-const totalData = computed(() => {
-    const total = {
+const calculateTotalData = () => {
+    totalData.value = {
         yearlyPlan: 0,
         currentActual: 0,
-        deviation: 0
+        deviation: 0,
+        simpleAverage: 0
     }
     
     contributionRateData.value.items.forEach(item => {
-        total.yearlyPlan += item.yearlyPlan || 0
-        total.currentActual += item.currentActual || 0
+        totalData.value.yearlyPlan += item.yearlyPlan || 0
+        totalData.value.currentActual += item.currentActual || 0
     })
     
-    total.deviation = total.currentActual - total.yearlyPlan
+    totalData.value.deviation = totalData.value.currentActual - totalData.value.yearlyPlan
     
-    return total
-})
+    // 计算简单平均
+    totalData.value.simpleAverage = totalData.value.yearlyPlan / contributionRateData.value.items.length
+}
+
+
 
 // 加载数据
 const loadData = async (targetPeriod: string) => {
@@ -193,6 +233,21 @@ const loadData = async (targetPeriod: string) => {
                             currentActual: Number(item.currentActual) || 0,
                             deviation: Number(item.deviation) || 0
                         }))
+                        
+                        // 处理合计和加权数据
+                        if (calculateResult.data.summary) {
+                            const summary = calculateResult.data.summary
+                            weightedData.value = {
+                                totalIncome: Number(summary.totalIncome) || 0,
+                                totalCost: Number(summary.totalCost) || 0,
+                                weightedContributionRate: Number(summary.weightedContributionRate) || 0,
+                                marginContribution: Number(summary.totalIncome - summary.totalCost) || 0
+                            }
+                        }
+                        
+                        // 计算合计数据
+                        calculateTotalData()
+                        
                         console.log('自动计算成功，数据已加载')
                         return
                     }
@@ -214,6 +269,26 @@ const loadData = async (targetPeriod: string) => {
                 currentActual: Number(item.currentActual) || 0,
                 deviation: Number(item.deviation) || 0
             }))
+            
+            // 使用后端返回的真实合计数据
+            if (result.data.total) {
+                totalData.value = {
+                    yearlyPlan: Number(result.data.total.yearlyPlan) || 0,
+                    currentActual: Number(result.data.total.currentActual) || 0,
+                    deviation: Number(result.data.total.deviation) || 0,
+                    simpleAverage: Number(result.data.total.simpleAverage) || 0
+                }
+            }
+            
+            // 使用后端返回的真实加权数据
+            if (result.data.weighted) {
+                weightedData.value = {
+                    totalIncome: Number(result.data.weighted.totalIncome) || 0,
+                    totalCost: Number(result.data.weighted.totalCost) || 0,
+                    weightedContributionRate: Number(result.data.weighted.weightedContributionRate) || 0,
+                    marginContribution: Number(result.data.weighted.marginContribution) || 0
+                }
+            }
         }
         
         // 重新计算偏差
@@ -227,6 +302,7 @@ const loadData = async (targetPeriod: string) => {
 const resetToDefaultData = () => {
     contributionRateData.value = JSON.parse(JSON.stringify(fixedPlanData))
     calculateDeviation()
+    calculateTotalData()
 }
 
 // 加载备注和建议

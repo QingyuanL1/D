@@ -18,25 +18,37 @@ export interface IncomeStatementSection {
 export const useIncomeStatementData = () => {
     const incomeStatementData = ref<IncomeStatementSection[]>([
         {
-            title: '一、营业总收入',
+            title: '一、主营业务收入',
             items: [
                 {
-                    name: '营业总收入',
-                    field: 'total_revenue',
+                    name: '主营业务收入',
+                    field: 'main_business_revenue',
                     currentAmount: null,
                     yearAmount: null,
                     isBold: true
-                },
+                }
+            ]
+        },
+        {
+            title: '减：直接成本',
+            items: [
                 {
-                    name: '其中：主营业务收入',
-                    field: 'main_business_revenue',
+                    name: '人工成本',
+                    field: 'labor_cost',
                     currentAmount: null,
                     yearAmount: null,
                     isSubItem: true
                 },
                 {
-                    name: '其他业务收入',
-                    field: 'other_business_revenue',
+                    name: '制造费用',
+                    field: 'manufacturing_cost',
+                    currentAmount: null,
+                    yearAmount: null,
+                    isSubItem: true
+                },
+                {
+                    name: '主营业务税金及附加',
+                    field: 'main_business_taxes',
                     currentAmount: null,
                     yearAmount: null,
                     isSubItem: true
@@ -44,178 +56,52 @@ export const useIncomeStatementData = () => {
             ]
         },
         {
-            title: '二、营业总成本',
+            title: '二、主营业务利润（亏损以"-"号填列）',
             items: [
                 {
-                    name: '营业总成本',
-                    field: 'total_cost',
+                    name: '主营业务利润',
+                    field: 'main_business_profit',
                     currentAmount: null,
                     yearAmount: null,
                     isBold: true
-                },
+                }
+            ]
+        },
+        {
+            title: '加：其他业务利润（亏损以"-"号填列）',
+            items: [
                 {
-                    name: '营业成本',
-                    field: 'operating_cost',
+                    name: '其他业务利润',
+                    field: 'other_business_profit',
                     currentAmount: null,
                     yearAmount: null
-                },
-                {
-                    name: '其中：主营业务成本',
-                    field: 'main_business_cost',
-                    currentAmount: null,
-                    yearAmount: null,
-                    isSubItem: true
-                },
-                {
-                    name: '其他业务成本',
-                    field: 'other_business_cost',
-                    currentAmount: null,
-                    yearAmount: null,
-                    isSubItem: true
-                },
-                {
-                    name: '税金及附加',
-                    field: 'taxes_and_surcharges',
-                    currentAmount: null,
-                    yearAmount: null
-                },
-                {
-                    name: '销售费用',
-                    field: 'selling_expenses',
-                    currentAmount: null,
-                    yearAmount: null
-                },
+                }
+            ]
+        },
+        {
+            title: '减：营业费用',
+            items: [
                 {
                     name: '管理费用',
                     field: 'management_expenses',
                     currentAmount: null,
-                    yearAmount: null
-                },
-                {
-                    name: '研发费用',
-                    field: 'research_expenses',
-                    currentAmount: null,
-                    yearAmount: null
+                    yearAmount: null,
+                    isSubItem: true
                 },
                 {
                     name: '财务费用',
                     field: 'financial_expenses',
                     currentAmount: null,
-                    yearAmount: null
-                },
-                {
-                    name: '其中：利息费用',
-                    field: 'interest_expense',
-                    currentAmount: null,
-                    yearAmount: null,
-                    isSubItem: true
-                },
-                {
-                    name: '利息收入',
-                    field: 'interest_income',
-                    currentAmount: null,
-                    yearAmount: null,
-                    isSubItem: true
-                },
-                {
-                    name: '汇兑净损失（净收益以"-"号填列）',
-                    field: 'exchange_loss',
-                    currentAmount: null,
-                    yearAmount: null
-                },
-                {
-                    name: '其他',
-                    field: 'other_financial_expenses',
-                    currentAmount: null,
                     yearAmount: null,
                     isSubItem: true
                 }
             ]
         },
         {
-            title: '加：其他收益',
+            title: '三、营业利润（亏损以"-"号填列）',
             items: [
                 {
-                    name: '其他收益',
-                    field: 'other_income',
-                    currentAmount: null,
-                    yearAmount: null
-                }
-            ]
-        },
-        {
-            title: '投资收益',
-            items: [
-                {
-                    name: '投资收益（损失以"-"号填列）',
-                    field: 'investment_income',
-                    currentAmount: null,
-                    yearAmount: null
-                },
-                {
-                    name: '其中：对联营企业和合营企业的投资收益',
-                    field: 'investment_income_associates',
-                    currentAmount: null,
-                    yearAmount: null,
-                    isSubItem: true
-                },
-                {
-                    name: '以摊余成本计量的金融资产终止确认收益',
-                    field: 'financial_assets_income',
-                    currentAmount: null,
-                    yearAmount: null
-                }
-            ]
-        },
-        {
-            title: '公允价值变动收益',
-            items: [
-                {
-                    name: '公允价值变动收益（损失以"-"号填列）',
-                    field: 'fair_value_change_income',
-                    currentAmount: null,
-                    yearAmount: null
-                }
-            ]
-        },
-        {
-            title: '信用减值损失',
-            items: [
-                {
-                    name: '信用减值损失（损失以"-"号填列）',
-                    field: 'credit_impairment_loss',
-                    currentAmount: null,
-                    yearAmount: null
-                }
-            ]
-        },
-        {
-            title: '资产减值损失',
-            items: [
-                {
-                    name: '资产减值损失（损失以"-"号填列）',
-                    field: 'asset_impairment_loss',
-                    currentAmount: null,
-                    yearAmount: null
-                }
-            ]
-        },
-        {
-            title: '资产处置收益',
-            items: [
-                {
-                    name: '资产处置收益（损失以"-"号填列）',
-                    field: 'asset_disposal_income',
-                    currentAmount: null,
-                    yearAmount: null
-                }
-            ]
-        },
-        {
-            title: '三、营业利润',
-            items: [
-                {
-                    name: '营业利润（亏损以"-"号填列）',
+                    name: '营业利润',
                     field: 'operating_profit',
                     currentAmount: null,
                     yearAmount: null,
@@ -224,20 +110,46 @@ export const useIncomeStatementData = () => {
             ]
         },
         {
-            title: '加：营业外收入',
+            title: '加：投资收益（亏损以"-"号填列）',
+            items: [
+                {
+                    name: '投资收益',
+                    field: 'investment_income',
+                    currentAmount: null,
+                    yearAmount: null
+                }
+            ]
+        },
+        {
+            title: '补贴收入',
+            items: [
+                {
+                    name: '补贴收入',
+                    field: 'subsidy_income',
+                    currentAmount: null,
+                    yearAmount: null
+                }
+            ]
+        },
+        {
+            title: '营业外收入',
             items: [
                 {
                     name: '营业外收入',
                     field: 'non_operating_income',
                     currentAmount: null,
                     yearAmount: null
-                },
+                }
+            ]
+        },
+        {
+            title: '以前年度损益调整',
+            items: [
                 {
-                    name: '其中：政府补助',
-                    field: 'government_grants',
+                    name: '以前年度损益调整',
+                    field: 'prior_year_adjustment',
                     currentAmount: null,
-                    yearAmount: null,
-                    isSubItem: true
+                    yearAmount: null
                 }
             ]
         },
@@ -253,10 +165,10 @@ export const useIncomeStatementData = () => {
             ]
         },
         {
-            title: '四、利润总额',
+            title: '四、利润总额（亏损以"-"号填列）',
             items: [
                 {
-                    name: '利润总额（亏损总额以"-"号填列）',
+                    name: '利润总额',
                     field: 'total_profit',
                     currentAmount: null,
                     yearAmount: null,
@@ -265,26 +177,59 @@ export const useIncomeStatementData = () => {
             ]
         },
         {
-            title: '减：所得税费用',
+            title: '减：所得税',
             items: [
                 {
-                    name: '所得税费用',
-                    field: 'income_tax_expense',
+                    name: '所得税',
+                    field: 'income_tax',
                     currentAmount: null,
                     yearAmount: null
                 }
             ]
         },
         {
-            title: '五、净利润',
+            title: '少数股东损益（合并报表填列）',
             items: [
                 {
-                    name: '净利润（净亏损以"-"号填列）',
+                    name: '少数股东损益',
+                    field: 'minority_shareholders_profit',
+                    currentAmount: null,
+                    yearAmount: null
+                }
+            ]
+        },
+        {
+            title: '加：未确认的投资损失（合并报表填列）',
+            items: [
+                {
+                    name: '未确认的投资损失',
+                    field: 'unrecognized_investment_loss',
+                    currentAmount: null,
+                    yearAmount: null
+                }
+            ]
+        },
+        {
+            title: '纳税调整',
+            items: [
+                {
+                    name: '纳税调整',
+                    field: 'tax_adjustment',
+                    currentAmount: null,
+                    yearAmount: null
+                }
+            ]
+        },
+        {
+            title: '五、净利润（亏损以"-"号填列）',
+            items: [
+                {
+                    name: '净利润',
                     field: 'net_profit',
                     currentAmount: null,
                     yearAmount: null,
                     isBold: true
-                },
+                }
             ]
         }
     ])

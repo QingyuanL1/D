@@ -19,7 +19,87 @@ router.get('/:period', createBudgetMiddleware('stock_order_to_income'), async (r
         );
         
         if (rows.length === 0) {
-            return res.status(404).json({ error: '未找到指定期间的数据' });
+            // 当没有数据时，计算累计转收入并返回基础数据结构
+            const defaultData = {
+                equipment: [
+                    { customer: '上海', stockOrder: 0, currentMonthIncome: 0, incomeTotal: 0, incomeRate: 0, yearlyPlan: 0 },
+                    { customer: '国网', stockOrder: 0, currentMonthIncome: 0, incomeTotal: 0, incomeRate: 0, yearlyPlan: 0 },
+                    { customer: '江苏', stockOrder: 0, currentMonthIncome: 0, incomeTotal: 0, incomeRate: 0, yearlyPlan: 0 },
+                    { customer: '输配电内配', stockOrder: 0, currentMonthIncome: 0, incomeTotal: 0, incomeRate: 0, yearlyPlan: 0 },
+                    { customer: '西门子', stockOrder: 0, currentMonthIncome: 0, incomeTotal: 0, incomeRate: 0, yearlyPlan: 0 },
+                    { customer: '同业', stockOrder: 0, currentMonthIncome: 0, incomeTotal: 0, incomeRate: 0, yearlyPlan: 0 },
+                    { customer: '用户', stockOrder: 0, currentMonthIncome: 0, incomeTotal: 0, incomeRate: 0, yearlyPlan: 0 },
+                    { customer: '其它', stockOrder: 0, currentMonthIncome: 0, incomeTotal: 0, incomeRate: 0, yearlyPlan: 0 }
+                ],
+                components: [
+                    { customer: '用户', stockOrder: 0, currentMonthIncome: 0, incomeTotal: 0, incomeRate: 0, yearlyPlan: 0 }
+                ],
+                engineering: [
+                    { customer: '一包', stockOrder: 0, currentMonthIncome: 0, incomeTotal: 0, incomeRate: 0, yearlyPlan: 0 },
+                    { customer: '二包', stockOrder: 0, currentMonthIncome: 0, incomeTotal: 0, incomeRate: 0, yearlyPlan: 0 },
+                    { customer: '域内合作', stockOrder: 0, currentMonthIncome: 0, incomeTotal: 0, incomeRate: 0, yearlyPlan: 0 },
+                    { customer: '域外合作', stockOrder: 0, currentMonthIncome: 0, incomeTotal: 0, incomeRate: 0, yearlyPlan: 0 },
+                    { customer: '其它', stockOrder: 0, currentMonthIncome: 0, incomeTotal: 0, incomeRate: 0, yearlyPlan: 0 }
+                ]
+            };
+
+            // 计算累计转收入（从年初到当前月份的前一个月）
+            try {
+                const currentYear = period.substring(0, 4);
+                const currentMonth = parseInt(period.substring(5, 7));
+
+                // 查询从年初到当前月份前一个月的所有数据
+                for (let month = 1; month < currentMonth; month++) {
+                    const monthPeriod = `${currentYear}-${month.toString().padStart(2, '0')}`;
+                    const [monthRows] = await pool.execute(
+                        'SELECT data FROM stock_order_to_income WHERE period = ? ORDER BY created_at DESC LIMIT 1',
+                        [monthPeriod]
+                    );
+
+                    if (monthRows.length > 0) {
+                        const monthData = monthRows[0].data;
+                        
+                        // 累加设备板块数据
+                        if (monthData.equipment) {
+                            defaultData.equipment.forEach(defaultItem => {
+                                const monthItem = monthData.equipment.find(item => item.customer === defaultItem.customer);
+                                if (monthItem && monthItem.currentMonthIncome) {
+                                    defaultItem.incomeTotal += parseFloat(monthItem.currentMonthIncome) || 0;
+                                }
+                            });
+                        }
+
+                        // 累加元件板块数据
+                        if (monthData.components) {
+                            defaultData.components.forEach(defaultItem => {
+                                const monthItem = monthData.components.find(item => item.customer === defaultItem.customer);
+                                if (monthItem && monthItem.currentMonthIncome) {
+                                    defaultItem.incomeTotal += parseFloat(monthItem.currentMonthIncome) || 0;
+                                }
+                            });
+                        }
+
+                        // 累加工程板块数据
+                        if (monthData.engineering) {
+                            defaultData.engineering.forEach(defaultItem => {
+                                const monthItem = monthData.engineering.find(item => item.customer === defaultItem.customer);
+                                if (monthItem && monthItem.currentMonthIncome) {
+                                    defaultItem.incomeTotal += parseFloat(monthItem.currentMonthIncome) || 0;
+                                }
+                            });
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('计算累计转收入失败:', error);
+            }
+            
+            return res.json({
+                success: true,
+                data: defaultData,
+                period: period,
+                updated_at: null
+            });
         }
         
         res.json({

@@ -448,7 +448,13 @@ export const useShanghaiNanhuaLanlingCashFlowData = () => {
                     currentAmount: null,
                     yearAmount: null
                 },
-               
+                {
+                    name: '现金及现金等价物净增加额',
+                    field: 'cash_and_equivalents_net_increase_final',
+                    currentAmount: null,
+                    yearAmount: null,
+                    isBold: true
+                }
             ]
         },
         {

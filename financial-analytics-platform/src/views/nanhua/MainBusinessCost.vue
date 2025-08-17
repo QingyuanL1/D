@@ -16,10 +16,10 @@
                         <th class="border border-gray-300 px-4 py-2">客户属性</th>
                         <th class="border border-gray-300 px-4 py-2">年度计划</th>
                         <th class="border border-gray-300 px-4 py-2">计划执行率</th>
-                        <th class="border border-gray-300 px-4 py-2">当期直接费用</th>
-                        <th class="border border-gray-300 px-4 py-2">累计直接费用</th>
-                        <th class="border border-gray-300 px-4 py-2">当期制造费用/间接成本</th>
-                        <th class="border border-gray-300 px-4 py-2">累计制造费用/间接成本</th>
+                        <th class="border border-gray-300 px-4 py-2">当期材料费用</th>
+                        <th class="border border-gray-300 px-4 py-2">累计材料费用</th>
+                        <th class="border border-gray-300 px-4 py-2">当期工、费合计</th>
+                        <th class="border border-gray-300 px-4 py-2">累计工、费合计</th>
                     </tr>
                 </thead>
                 <tbody>

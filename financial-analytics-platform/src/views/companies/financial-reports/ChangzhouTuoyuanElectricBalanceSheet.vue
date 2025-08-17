@@ -87,69 +87,75 @@
                     <tr>
                         <td class="border border-gray-300 px-4 py-2 pl-4">应收票据</td>
                         <td class="border border-gray-300 px-4 py-2 text-right">
-                            <input v-model="balanceSheetData.notes_receivable_beginning" type="number"
-                                class="w-full text-right px-2 py-1 border rounded" step="0.01" />
+                            <input v-model.number="balanceSheetData.notes_receivable_ending" type="number"
+                                class="w-full text-right px-2 py-1 border rounded" step="0.01" placeholder="0"
+                                data-field="notes_receivable_ending" @input="handleInputChange" />
                         </td>
                         <td class="border border-gray-300 px-4 py-2 text-right">
-                            <input v-model.number="balanceSheetData.notes_receivable_ending" type="number"
+                            <input v-model="balanceSheetData.notes_receivable_beginning" type="number"
                                 class="w-full text-right px-2 py-1 border rounded" step="0.01" placeholder="期初余额"
-                                data-field="notes_receivable_ending" @input="handleInputChange" />
+                                :disabled="!shouldAllowBeginningInput('notes_receivable_ending')" />
                         </td>
                         <td class="border border-gray-300 px-4 py-2 pl-4">应付账款</td>
                         <td class="border border-gray-300 px-4 py-2 text-right">
-                            <input v-model="balanceSheetData.accounts_payable_beginning" type="number"
-                                class="w-full text-right px-2 py-1 border rounded" step="0.01" />
+                            <input v-model.number="balanceSheetData.accounts_payable_ending" type="number"
+                                class="w-full text-right px-2 py-1 border rounded" step="0.01" placeholder="0"
+                                data-field="accounts_payable_ending" @input="handleInputChange" />
                         </td>
                         <td class="border border-gray-300 px-4 py-2 text-right">
-                            <input v-model.number="balanceSheetData.accounts_payable_ending" type="number"
+                            <input v-model="balanceSheetData.accounts_payable_beginning" type="number"
                                 class="w-full text-right px-2 py-1 border rounded" step="0.01" placeholder="期初余额"
-                                data-field="accounts_payable_ending" @input="handleInputChange" />
+                                :disabled="!shouldAllowBeginningInput('accounts_payable_ending')" />
                         </td>
                     </tr>
 
                     <tr>
                         <td class="border border-gray-300 px-4 py-2 pl-4">应收账款</td>
                         <td class="border border-gray-300 px-4 py-2 text-right">
-                            <input v-model="balanceSheetData.accounts_receivable_beginning" type="number"
-                                class="w-full text-right px-2 py-1 border rounded" step="0.01" />
+                            <input v-model.number="balanceSheetData.accounts_receivable_ending" type="number"
+                                class="w-full text-right px-2 py-1 border rounded" step="0.01" placeholder="0"
+                                data-field="accounts_receivable_ending" @input="handleInputChange" />
                         </td>
                         <td class="border border-gray-300 px-4 py-2 text-right">
-                            <input v-model.number="balanceSheetData.accounts_receivable_ending" type="number"
+                            <input v-model="balanceSheetData.accounts_receivable_beginning" type="number"
                                 class="w-full text-right px-2 py-1 border rounded" step="0.01" placeholder="期初余额"
-                                data-field="accounts_receivable_ending" @input="handleInputChange" />
+                                :disabled="!shouldAllowBeginningInput('accounts_receivable_ending')" />
                         </td>
                         <td class="border border-gray-300 px-4 py-2 pl-4">预收账款</td>
                         <td class="border border-gray-300 px-4 py-2 text-right">
-                            <input v-model="balanceSheetData.advance_receipts_beginning" type="number"
-                                class="w-full text-right px-2 py-1 border rounded" step="0.01" />
+                            <input v-model.number="balanceSheetData.advance_receipts_ending" type="number"
+                                class="w-full text-right px-2 py-1 border rounded" step="0.01" placeholder="0"
+                                data-field="advance_receipts_ending" @input="handleInputChange" />
                         </td>
                         <td class="border border-gray-300 px-4 py-2 text-right">
-                            <input v-model.number="balanceSheetData.advance_receipts_ending" type="number"
+                            <input v-model="balanceSheetData.advance_receipts_beginning" type="number"
                                 class="w-full text-right px-2 py-1 border rounded" step="0.01" placeholder="期初余额"
-                                data-field="advance_receipts_ending" @input="handleInputChange" />
+                                :disabled="!shouldAllowBeginningInput('advance_receipts_ending')" />
                         </td>
                     </tr>
 
                     <tr>
                         <td class="border border-gray-300 px-4 py-2 pl-4">减：坏账准备</td>
                         <td class="border border-gray-300 px-4 py-2 text-right">
-                            <input v-model="balanceSheetData.bad_debt_provision_beginning" type="number"
-                                class="w-full text-right px-2 py-1 border rounded" step="0.01" />
+                            <input v-model.number="balanceSheetData.bad_debt_provision_ending" type="number"
+                                class="w-full text-right px-2 py-1 border rounded" step="0.01" placeholder="0"
+                                data-field="bad_debt_provision_ending" @input="handleInputChange" />
                         </td>
                         <td class="border border-gray-300 px-4 py-2 text-right">
-                            <input v-model.number="balanceSheetData.bad_debt_provision_ending" type="number"
+                            <input v-model="balanceSheetData.bad_debt_provision_beginning" type="number"
                                 class="w-full text-right px-2 py-1 border rounded" step="0.01" placeholder="期初余额"
-                                data-field="bad_debt_provision_ending" @input="handleInputChange" />
+                                :disabled="!shouldAllowBeginningInput('bad_debt_provision_ending')" />
                         </td>
                         <td class="border border-gray-300 px-4 py-2 pl-4">其他应付款</td>
                         <td class="border border-gray-300 px-4 py-2 text-right">
-                            <input v-model="balanceSheetData.other_payables_beginning" type="number"
-                                class="w-full text-right px-2 py-1 border rounded" step="0.01" />
+                            <input v-model.number="balanceSheetData.other_payables_ending" type="number"
+                                class="w-full text-right px-2 py-1 border rounded" step="0.01" placeholder="0"
+                                data-field="other_payables_ending" @input="handleInputChange" />
                         </td>
                         <td class="border border-gray-300 px-4 py-2 text-right">
-                            <input v-model.number="balanceSheetData.other_payables_ending" type="number"
+                            <input v-model="balanceSheetData.other_payables_beginning" type="number"
                                 class="w-full text-right px-2 py-1 border rounded" step="0.01" placeholder="期初余额"
-                                data-field="other_payables_ending" @input="handleInputChange" />
+                                :disabled="!shouldAllowBeginningInput('other_payables_ending')" />
                         </td>
                     </tr>
 
@@ -965,34 +971,25 @@ const isFirstMonthOfYear = (): boolean => {
     return month === 1
 }
 
-// 获取上期期末余额（期初余额）
+// 获取期初余额（统一从一月份获取）
 const getPreviousPeriodValue = (fieldName: string): number => {
-    // 如果是一月份，期初余额需要手动输入，返回当前输入的beginning值
+    const beginningField = fieldName.replace('_ending', '_beginning')
+    
+    // 如果是一月份，返回当前输入的beginning值
     if (isFirstMonthOfYear()) {
-        const beginningField = fieldName.replace('_ending', '_beginning')
         const beginningValue = (balanceSheetData as any)[beginningField]
         return beginningValue || 0
     }
 
-    // 计算上一个期间
-    const currentPeriod = period.value
-    const [year, month] = currentPeriod.split('-').map(Number)
+    // 对于其他月份，统一从当年一月份的期初余额获取
+    const [year] = period.value.split('-').map(Number)
+    const januaryPeriod = `${year}-01`
 
-    let prevYear = year
-    let prevMonth = month - 1
-
-    if (prevMonth === 0) {
-        prevMonth = 12
-        prevYear = year - 1
-    }
-
-    const previousPeriod = `${prevYear}-${prevMonth.toString().padStart(2, '0')}`
-
-    // 从历史数据中获取上期期末余额
-    if (historicalData.value[previousPeriod]) {
-        const prevData = historicalData.value[previousPeriod]
-        if (prevData && prevData[fieldName]) {
-            return Number(prevData[fieldName])
+    // 从历史数据中获取一月份的期初余额
+    if (historicalData.value[januaryPeriod]) {
+        const januaryData = historicalData.value[januaryPeriod]
+        if (januaryData && januaryData[beginningField]) {
+            return Number(januaryData[beginningField])
         }
     }
 
@@ -1002,6 +999,19 @@ const getPreviousPeriodValue = (fieldName: string): number => {
 // 检查字段是否应该允许输入期初余额
 const shouldAllowBeginningInput = (fieldName: string): boolean => {
     return isFirstMonthOfYear()
+}
+
+// 自动填充期初余额（从一月份数据获取）
+const getBeginningBalance = (fieldName: string): number => {
+    const beginningField = fieldName.replace('_ending', '_beginning')
+    
+    // 如果是一月份，返回当前输入值
+    if (isFirstMonthOfYear()) {
+        return (balanceSheetData as any)[beginningField] || 0
+    }
+    
+    // 其他月份从一月份数据获取
+    return getPreviousPeriodValue(fieldName)
 }
 
 // 计算累计值的函数（从年初到当前期间的所有当期数据之和）
@@ -1039,6 +1049,26 @@ const handleSave = async () => {
 
         // 这里可以调用API保存数据
         console.log('保存数据:', dataToSave)
+
+        // 同时保存到拓源资产负债表中用于分析
+        try {
+            const response = await fetch('http://47.111.95.19:3000/tuoyuan-financial-reports/balance-sheet', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    period: period.value,
+                    data: balanceSheetData
+                })
+            })
+            
+            if (!response.ok) {
+                console.warn('保存到拓源资产负债表失败，但继续记录表单提交')
+            }
+        } catch (error) {
+            console.warn('保存到拓源资产负债表失败:', error)
+        }
 
         // 记录表单提交
         await recordFormSubmission(moduleId, period.value, dataToSave, remarks.value, suggestions.value)
@@ -1212,13 +1242,37 @@ watch(period, async () => {
     await loadHistoricalData() // 重新加载历史数据
     await loadSavedData()
     await loadRemarksData()
+    
+    // 如果不是一月份，自动填充期初余额
+    if (!isFirstMonthOfYear()) {
+        fillBeginningBalances()
+    }
 })
+
+// 自动填充所有期初余额
+const fillBeginningBalances = () => {
+    const endingFields = Object.keys(balanceSheetData).filter(key => key.endsWith('_ending'))
+    
+    endingFields.forEach(endingField => {
+        const beginningField = endingField.replace('_ending', '_beginning')
+        const beginningValue = getPreviousPeriodValue(endingField)
+        
+        if (beginningField in balanceSheetData) {
+            (balanceSheetData as any)[beginningField] = beginningValue
+        }
+    })
+}
 
 onMounted(async () => {
     console.log('常州拓源资产负债表组件挂载，当前期间:', period.value)
     await loadHistoricalData() // 加载历史数据用于累计计算
     await loadSavedData()  // 先加载保存的数据
     await loadRemarksData() // 再加载备注和建议
+    
+    // 如果不是一月份，自动填充期初余额
+    if (!isFirstMonthOfYear()) {
+        fillBeginningBalances()
+    }
 })
 </script>
 

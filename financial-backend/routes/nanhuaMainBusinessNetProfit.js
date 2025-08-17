@@ -28,13 +28,12 @@ router.get('/:period', createBudgetMiddleware('南华主营业务净利润贡献
       [period]
     );
 
-    // 合并数据，年度目标使用固定值
     const result = {
       customers: fixedData.customers.map(item => {
         const dbItem = rows.find(row => row.customer_name === item.customerName);
         return {
           customerName: item.customerName,
-          yearlyPlan: item.yearlyPlan, // 直接使用固定的年度目标，不从数据库读取
+          yearlyPlan: item.yearlyPlan,
           currentPeriod: dbItem ? parseFloat(dbItem.current_period) : 0,
           cumulative: dbItem ? parseFloat(dbItem.cumulative) : 0,
           decompositionRatio: dbItem ? parseFloat(dbItem.decomposition_ratio) : 0,

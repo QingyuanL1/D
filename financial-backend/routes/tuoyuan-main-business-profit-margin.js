@@ -199,16 +199,23 @@ router.get('/calculate/:period', async (req, res) => {
                 );
                 
                 if (costItem) {
-                    // 优先使用累计人工成本（电气公司不计算材料成本）
+                    // 获取累计材料成本（直接费用）和累计人工成本（制造费用）
+                    const cumulativeMaterialCost = parseFloat(costItem.cumulativeMaterialCost || 0);
                     const cumulativeLaborCost = parseFloat(costItem.cumulativeLaborCost || 0);
+                    
+                    let materialCost = cumulativeMaterialCost;
                     let laborCost = cumulativeLaborCost;
                     
-                    // 如果累计人工成本为0，则计算前面所有月份的当期人工成本总和
+                    // 如果累计成本为0，则计算前面所有月份的当期成本总和
+                    if (materialCost === 0) {
+                        materialCost = await calculateHistoricalCosts(period, customerAttribute, 'material');
+                    }
                     if (laborCost === 0) {
                         laborCost = await calculateHistoricalCosts(period, customerAttribute, 'labor');
                     }
                     
-                    totalCost = laborCost; // 只使用人工成本，不包含材料成本
+                    // 总成本 = 材料成本（直接费用） + 人工成本（制造费用）
+                    totalCost = materialCost + laborCost;
                 }
             }
 
@@ -238,8 +245,8 @@ router.get('/calculate/:period', async (req, res) => {
                 items: calculatedItems
             },
             calculation: {
-                formula: '毛利率 = (累计收入 - 累计人工成本) / 累计收入 * 100%',
-                description: '基于tuoyuan_main_business_income_breakdown.currentCumulative和tuoyuan_main_business_cost_structure_quality.cumulative_labor_cost计算（电气公司仅计算人工成本，不包含材料成本）'
+                formula: '毛利率 = (累计收入 - 累计材料成本 - 累计人工成本) / 累计收入 * 100%',
+                description: '基于tuoyuan_main_business_income_breakdown.currentCumulative和tuoyuan_main_business_cost_structure_quality.cumulative_material_cost、cumulative_labor_cost计算'
             }
         });
 
@@ -270,7 +277,7 @@ function getYearlyPlan(segmentAttribute, customerAttribute) {
         : 0;
 }
 
-// 计算历史累计成本的辅助函数（仅计算人工成本，电气公司不计算材料成本）
+// 计算历史累计成本的辅助函数（支持材料成本和人工成本）
 async function calculateHistoricalCosts(currentPeriod, customerAttribute, costType) {
     try {
         const [year, month] = currentPeriod.split('-');
@@ -278,7 +285,7 @@ async function calculateHistoricalCosts(currentPeriod, customerAttribute, costTy
         let totalCost = 0;
         let monthsWithData = [];
 
-        // 累计从年初到当前月份的所有当期人工成本
+        // 累计从年初到当前月份的所有当期成本
         for (let m = 1; m <= currentMonth; m++) {
             const monthPeriod = `${year}-${m.toString().padStart(2, '0')}`;
             
@@ -291,11 +298,11 @@ async function calculateHistoricalCosts(currentPeriod, customerAttribute, costTy
                 const monthCostItem = rows.find(row => row.customer_type === customerAttribute);
                 if (monthCostItem) {
                     let monthCost = 0;
-                    // 只计算人工成本，不计算材料成本
                     if (costType === 'labor') {
                         monthCost = parseFloat(monthCostItem.current_labor_cost || 0);
+                    } else if (costType === 'material') {
+                        monthCost = parseFloat(monthCostItem.current_material_cost || 0);
                     }
-                    // 注意：材料成本(material)不再参与计算
                     
                     if (monthCost > 0) {
                         totalCost += monthCost;

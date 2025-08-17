@@ -106,29 +106,34 @@ const fetchContributionRateData = async () => {
         if (response.ok) {
           const result = await response.json()
           if (result.success && result.data && result.data.customers) {
-            // 计算当月加权平均边际贡献率，过滤掉异常数据
-            const validRates = result.data.customers
-              .filter((customer: any) => {
-                const rate = customer.current
-                // 过滤掉异常数据：0, 100%, 超过100%的值
-                return rate > 0 && rate < 100 && rate !== 100
-              })
-              .map((customer: any) => customer.current)
+            // 计算当月加权平均边际贡献率
+            const validCustomers = result.data.customers.filter((customer: any) => {
+              const rate = customer.current
+              // 只过滤掉明显异常的数据：负数或超过200%的异常值
+              // 100%是正常的边际贡献率，不应该被过滤
+              return typeof rate === 'number' && rate >= 0 && rate <= 200
+            })
             
-            if (validRates.length > 0) {
-              const avgRate = validRates.reduce((sum: number, rate: number) => sum + rate, 0) / validRates.length
-              // 确保边际贡献率在合理范围内(0-100%)
-              const normalizedRate = Math.min(Math.max(avgRate, 0), 100)
-              monthlyDataArray.push(Math.round(normalizedRate * 100) / 100)
+            if (validCustomers.length > 0) {
+              // 计算加权平均（如果有年度计划数据作为权重）
+              let totalWeightedRate = 0
+              let totalWeight = 0
+              
+              validCustomers.forEach((customer: any) => {
+                const rate = customer.current || 0
+                const weight = customer.yearlyPlan || 1 // 使用年度计划作为权重，默认权重为1
+                totalWeightedRate += rate * weight
+                totalWeight += weight
+              })
+              
+              const avgRate = totalWeight > 0 ? totalWeightedRate / totalWeight : 
+                            validCustomers.reduce((sum: number, customer: any) => sum + customer.current, 0) / validCustomers.length
+              
+              monthlyDataArray.push(Math.round(avgRate * 100) / 100)
+              
+              console.log(`${period}月南华边际贡献率: ${avgRate.toFixed(2)}% (有效客户数: ${validCustomers.length})`)
             } else {
-              // 如果没有有效数据，检查是否存在数据，存在则取最大55.56%
-              const hasData = result.data.customers.some((customer: any) => customer.current > 0)
-              if (hasData) {
-                // 如果7月有数据但都是异常值，设为最大合理值55.56%
-                monthlyDataArray.push(55.56)
-              } else {
-                monthlyDataArray.push(0)
-              }
+              monthlyDataArray.push(0)
             }
           } else {
             monthlyDataArray.push(0)

@@ -131,6 +131,18 @@ export const useChangzhouTuoyuanCashFlowData = () => {
                     yearAmount: null
                 },
                 {
+                    name: '待摊费用的减少（减：增加）',
+                    field: 'prepaid_expense_decrease',
+                    currentAmount: null,
+                    yearAmount: null
+                },
+                {
+                    name: '预提费用的增加（减：减少）',
+                    field: 'accrued_expense_increase',
+                    currentAmount: null,
+                    yearAmount: null
+                },
+                {
                     name: '处置固定资产、无形资产和其他长期资产的损失（收益以"-"号填列）',
                     field: 'disposal_loss',
                     currentAmount: null,

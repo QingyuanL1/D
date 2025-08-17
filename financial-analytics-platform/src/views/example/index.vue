@@ -285,7 +285,7 @@
         <div class="space-x-4">
           <button class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
             @click="() => setBeginBalanceFromPreviousMonth(period.slice(0, 7))">
-            从上月设置期初余额
+            从一月设置期初余额
           </button>
           <button class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600" @click="save">
             保存
@@ -707,15 +707,23 @@ const calculateNonCurrentLiabilities = () => {
 }
 
 const calculateEquityTotal = () => {
-  // 计算所有者权益合计（排除子项和特殊项）
-  const total = data.value.equity
-    .filter(item => !item.indent && !item.special && !item.total) // 只计算主项，排除子项、特殊项和已经是合计的项
+  const parentCompanyEquity = data.value.equity
+    .filter(item => !item.indent && !item.special && !item.total)
     .reduce((sum, item) => ({
       endBalance: sum.endBalance + (item.endBalance || 0),
       beginBalance: sum.beginBalance + (item.beginBalance || 0)
     }), { endBalance: 0, beginBalance: 0 })
 
-  data.value.equityTotal = total
+  const minorityInterest = data.value.equity.find(item => item.special)
+  const minorityBalance = {
+    endBalance: minorityInterest ? (minorityInterest.endBalance || 0) : 0,
+    beginBalance: minorityInterest ? (minorityInterest.beginBalance || 0) : 0
+  }
+
+  data.value.equityTotal = {
+    endBalance: parentCompanyEquity.endBalance + minorityBalance.endBalance,
+    beginBalance: parentCompanyEquity.beginBalance + minorityBalance.beginBalance
+  }
 }
 
 const calculateAssetsTotal = () => {
@@ -769,129 +777,119 @@ watch(data, () => {
   }
 }, { deep: true })
 
-// 自动设置期初余额（静默模式，用于切换月份时）
-const autoSetBeginBalanceFromPreviousMonth = async (currentPeriod) => {
-  // 如果是1月份，不需要自动设置期初余额
+const setBeginBalanceFromJanuary = async (currentPeriod) => {
+  try {
+    console.log(`正在获取一月份的期初余额作为${currentPeriod}的期初余额`)
+
+    const januaryPeriod = `${currentPeriod.slice(0, 4)}-01`
+    const response = await fetch(`http://47.111.95.19:3000/balance-sheet/${januaryPeriod}`)
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        console.log(`一月份(${januaryPeriod})暂无数据，期初余额保持为0`)
+        return
+      }
+      throw new Error('获取一月份数据失败')
+    }
+
+    const result = await response.json()
+    if (result.success && result.data) {
+      const januaryData = typeof result.data === 'string' ? JSON.parse(result.data) : result.data
+      console.log(`获取到一月份(${januaryPeriod})数据，设置期初余额`)
+
+      isCalculating = true
+
+      if (januaryData.assets?.current) {
+        data.value.assets.current.forEach((item, index) => {
+          if (januaryData.assets.current[index]) {
+            item.beginBalance = januaryData.assets.current[index].beginBalance || 0
+          }
+        })
+      }
+
+      if (januaryData.assets?.nonCurrent) {
+        data.value.assets.nonCurrent.forEach((item, index) => {
+          if (januaryData.assets.nonCurrent[index]) {
+            item.beginBalance = januaryData.assets.nonCurrent[index].beginBalance || 0
+          }
+        })
+      }
+
+      if (januaryData.liabilities?.current) {
+        data.value.liabilities.current.forEach((item, index) => {
+          if (januaryData.liabilities.current[index]) {
+            item.beginBalance = januaryData.liabilities.current[index].beginBalance || 0
+          }
+        })
+      }
+
+      if (januaryData.liabilities?.nonCurrent) {
+        data.value.liabilities.nonCurrent.forEach((item, index) => {
+          if (januaryData.liabilities.nonCurrent[index]) {
+            item.beginBalance = januaryData.liabilities.nonCurrent[index].beginBalance || 0
+          }
+        })
+      }
+
+      if (januaryData.equity) {
+        data.value.equity.forEach((item, index) => {
+          if (januaryData.equity[index]) {
+            item.beginBalance = januaryData.equity[index].beginBalance || 0
+          }
+        })
+      }
+
+      if (januaryData.assets?.currentTotal) {
+        data.value.assets.currentTotal.beginBalance = januaryData.assets.currentTotal.beginBalance || 0
+      }
+      if (januaryData.assets?.nonCurrentTotal) {
+        data.value.assets.nonCurrentTotal.beginBalance = januaryData.assets.nonCurrentTotal.beginBalance || 0
+      }
+      if (januaryData.assets?.total) {
+        data.value.assets.total.beginBalance = januaryData.assets.total.beginBalance || 0
+      }
+      if (januaryData.liabilities?.currentTotal) {
+        data.value.liabilities.currentTotal.beginBalance = januaryData.liabilities.currentTotal.beginBalance || 0
+      }
+      if (januaryData.liabilities?.nonCurrentTotal) {
+        data.value.liabilities.nonCurrentTotal.beginBalance = januaryData.liabilities.nonCurrentTotal.beginBalance || 0
+      }
+      if (januaryData.liabilities?.total) {
+        data.value.liabilities.total.beginBalance = januaryData.liabilities.total.beginBalance || 0
+      }
+      if (januaryData.equityTotal) {
+        data.value.equityTotal.beginBalance = januaryData.equityTotal.beginBalance || 0
+      }
+      if (januaryData.total) {
+        data.value.total.beginBalance = januaryData.total.beginBalance || 0
+      }
+
+      nextTick(() => {
+        recalculateAll()
+        isCalculating = false
+        console.log(`期初余额设置完成，来源：${januaryPeriod}的期初余额`)
+      })
+    }
+  } catch (error) {
+    console.error('设置期初余额失败:', error)
+  }
+}
+
+const autoSetBeginBalanceFromJanuary = async (currentPeriod) => {
   if (currentPeriod.endsWith('-01')) {
     console.log('1月份数据，期初余额需要手动输入')
     return
   }
 
-  try {
-    console.log(`自动获取前一个月的期末余额作为${currentPeriod}的期初余额`)
-
-    const response = await fetch(`http://47.111.95.19:3000/balance-sheet/${currentPeriod}/previous-end-balance`)
-
-    if (!response.ok) {
-      if (response.status === 404) {
-        const result = await response.json()
-        console.log(`前一个月(${result.previousPeriod})暂无数据，期初余额保持为0`)
-        return
-      }
-      console.error('获取前一个月数据失败')
-      return
-    }
-
-    const result = await response.json()
-    if (result.success && result.data) {
-      const previousData = result.data
-      console.log(`自动获取到前一个月(${result.previousPeriod})数据，设置期初余额`)
-
-      // 暂时禁用自动计算
-      isCalculating = true
-
-      // 设置流动资产期初余额
-      if (previousData.assets?.current) {
-        data.value.assets.current.forEach((item, index) => {
-          if (previousData.assets.current[index]) {
-            item.beginBalance = previousData.assets.current[index].endBalance || 0
-          }
-        })
-      }
-
-      // 设置非流动资产期初余额
-      if (previousData.assets?.nonCurrent) {
-        data.value.assets.nonCurrent.forEach((item, index) => {
-          if (previousData.assets.nonCurrent[index]) {
-            item.beginBalance = previousData.assets.nonCurrent[index].endBalance || 0
-          }
-        })
-      }
-
-      // 设置流动负债期初余额
-      if (previousData.liabilities?.current) {
-        data.value.liabilities.current.forEach((item, index) => {
-          if (previousData.liabilities.current[index]) {
-            item.beginBalance = previousData.liabilities.current[index].endBalance || 0
-          }
-        })
-      }
-
-      // 设置非流动负债期初余额
-      if (previousData.liabilities?.nonCurrent) {
-        data.value.liabilities.nonCurrent.forEach((item, index) => {
-          if (previousData.liabilities.nonCurrent[index]) {
-            item.beginBalance = previousData.liabilities.nonCurrent[index].endBalance || 0
-          }
-        })
-      }
-
-      // 设置所有者权益期初余额
-      if (previousData.equity) {
-        data.value.equity.forEach((item, index) => {
-          if (previousData.equity[index]) {
-            item.beginBalance = previousData.equity[index].endBalance || 0
-          }
-        })
-      }
-
-      // 设置合计项的期初余额
-      if (previousData.assets?.currentTotal) {
-        data.value.assets.currentTotal.beginBalance = previousData.assets.currentTotal.endBalance || 0
-      }
-      if (previousData.assets?.nonCurrentTotal) {
-        data.value.assets.nonCurrentTotal.beginBalance = previousData.assets.nonCurrentTotal.endBalance || 0
-      }
-      if (previousData.assets?.total) {
-        data.value.assets.total.beginBalance = previousData.assets.total.endBalance || 0
-      }
-      if (previousData.liabilities?.currentTotal) {
-        data.value.liabilities.currentTotal.beginBalance = previousData.liabilities.currentTotal.endBalance || 0
-      }
-      if (previousData.liabilities?.nonCurrentTotal) {
-        data.value.liabilities.nonCurrentTotal.beginBalance = previousData.liabilities.nonCurrentTotal.endBalance || 0
-      }
-      if (previousData.liabilities?.total) {
-        data.value.liabilities.total.beginBalance = previousData.liabilities.total.endBalance || 0
-      }
-      if (previousData.equityTotal) {
-        data.value.equityTotal.beginBalance = previousData.equityTotal.endBalance || 0
-      }
-      if (previousData.total) {
-        data.value.total.beginBalance = previousData.total.endBalance || 0
-      }
-
-      // 重新启用自动计算
-      nextTick(() => {
-        recalculateAll()
-        isCalculating = false
-        console.log(`期初余额自动设置完成，来源：${result.previousPeriod}`)
-      })
-    }
-  } catch (error) {
-    console.error('自动设置期初余额失败:', error)
-  }
+  await setBeginBalanceFromJanuary(currentPeriod)
 }
 
-// 从前一个月的数据中设置期初余额（手动操作，带用户提示）
 const setBeginBalanceFromPreviousMonth = async (currentPeriod) => {
-  // 如果是1月份，不需要自动设置期初余额
   if (currentPeriod.endsWith('-01')) {
     alert('1月份数据，期初余额需要手动输入')
     return
   }
 
-  // 确认是否要覆盖当前的期初余额
   const hasExistingBeginBalance = data.value.assets.current.some(item => item.beginBalance !== 0) ||
     data.value.assets.nonCurrent.some(item => item.beginBalance !== 0) ||
     data.value.liabilities.current.some(item => item.beginBalance !== 0) ||
@@ -899,113 +897,15 @@ const setBeginBalanceFromPreviousMonth = async (currentPeriod) => {
     data.value.equity.some(item => item.beginBalance !== 0)
 
   if (hasExistingBeginBalance) {
-    const confirmed = confirm('当前已有期初余额数据，是否要用前一个月的期末余额覆盖？')
+    const confirmed = confirm('当前已有期初余额数据，是否要用一月份的期初余额覆盖？')
     if (!confirmed) {
       return
     }
   }
 
   try {
-    console.log(`正在获取前一个月的期末余额作为${currentPeriod}的期初余额`)
-
-    const response = await fetch(`http://47.111.95.19:3000/balance-sheet/${currentPeriod}/previous-end-balance`)
-
-    if (!response.ok) {
-      if (response.status === 404) {
-        const result = await response.json()
-        console.log(`前一个月(${result.previousPeriod})暂无数据，期初余额保持为0`)
-        return
-      }
-      throw new Error('获取前一个月数据失败')
-    }
-
-    const result = await response.json()
-    if (result.success && result.data) {
-      const previousData = result.data
-      console.log(`获取到前一个月(${result.previousPeriod})数据:`, previousData)
-
-      // 暂时禁用自动计算
-      isCalculating = true
-
-      // 设置流动资产期初余额
-      if (previousData.assets?.current) {
-        data.value.assets.current.forEach((item, index) => {
-          if (previousData.assets.current[index]) {
-            item.beginBalance = previousData.assets.current[index].endBalance || 0
-          }
-        })
-      }
-
-      // 设置非流动资产期初余额
-      if (previousData.assets?.nonCurrent) {
-        data.value.assets.nonCurrent.forEach((item, index) => {
-          if (previousData.assets.nonCurrent[index]) {
-            item.beginBalance = previousData.assets.nonCurrent[index].endBalance || 0
-          }
-        })
-      }
-
-      // 设置流动负债期初余额
-      if (previousData.liabilities?.current) {
-        data.value.liabilities.current.forEach((item, index) => {
-          if (previousData.liabilities.current[index]) {
-            item.beginBalance = previousData.liabilities.current[index].endBalance || 0
-          }
-        })
-      }
-
-      // 设置非流动负债期初余额
-      if (previousData.liabilities?.nonCurrent) {
-        data.value.liabilities.nonCurrent.forEach((item, index) => {
-          if (previousData.liabilities.nonCurrent[index]) {
-            item.beginBalance = previousData.liabilities.nonCurrent[index].endBalance || 0
-          }
-        })
-      }
-
-      // 设置所有者权益期初余额
-      if (previousData.equity) {
-        data.value.equity.forEach((item, index) => {
-          if (previousData.equity[index]) {
-            item.beginBalance = previousData.equity[index].endBalance || 0
-          }
-        })
-      }
-
-      // 设置合计项的期初余额
-      if (previousData.assets?.currentTotal) {
-        data.value.assets.currentTotal.beginBalance = previousData.assets.currentTotal.endBalance || 0
-      }
-      if (previousData.assets?.nonCurrentTotal) {
-        data.value.assets.nonCurrentTotal.beginBalance = previousData.assets.nonCurrentTotal.endBalance || 0
-      }
-      if (previousData.assets?.total) {
-        data.value.assets.total.beginBalance = previousData.assets.total.endBalance || 0
-      }
-      if (previousData.liabilities?.currentTotal) {
-        data.value.liabilities.currentTotal.beginBalance = previousData.liabilities.currentTotal.endBalance || 0
-      }
-      if (previousData.liabilities?.nonCurrentTotal) {
-        data.value.liabilities.nonCurrentTotal.beginBalance = previousData.liabilities.nonCurrentTotal.endBalance || 0
-      }
-      if (previousData.liabilities?.total) {
-        data.value.liabilities.total.beginBalance = previousData.liabilities.total.endBalance || 0
-      }
-      if (previousData.equityTotal) {
-        data.value.equityTotal.beginBalance = previousData.equityTotal.endBalance || 0
-      }
-      if (previousData.total) {
-        data.value.total.beginBalance = previousData.total.endBalance || 0
-      }
-
-      // 重新启用自动计算
-      nextTick(() => {
-        recalculateAll()
-        isCalculating = false
-        console.log('期初余额设置完成')
-        alert(`成功从前一个月(${result.previousPeriod})的期末余额设置期初余额`)
-      })
-    }
+    await setBeginBalanceFromJanuary(currentPeriod)
+    alert(`成功设置期初余额（来源：${currentPeriod.slice(0, 4)}-01的期初余额）`)
   } catch (error) {
     console.error('设置期初余额失败:', error)
     alert('设置期初余额失败: ' + (error instanceof Error ? error.message : '网络错误'))
@@ -1023,10 +923,8 @@ const loadData = async () => {
     if (!response.ok) {
       if (response.status === 404) {
         console.log('该期间暂无数据，重置为初始模板并自动设置期初余额')
-        // 先重置数据为初始状态
         resetToInitialState()
-        // 如果当前期间没有数据，自动从前一个月设置期初余额（静默模式）
-        await autoSetBeginBalanceFromPreviousMonth(period.value.slice(0, 7))
+        await autoSetBeginBalanceFromJanuary(period.value.slice(0, 7))
         return
       }
       throw new Error('加载数据失败')
@@ -1037,10 +935,8 @@ const loadData = async () => {
 
     if (result.success && result.data) {
       console.log('成功获取数据，开始验证数据完整性...')
-      // 解析JSON字符串
       const parsedData = typeof result.data === 'string' ? JSON.parse(result.data) : result.data
 
-      // 验证数据结构完整性（适应前端完整结构）
       const isDataComplete = parsedData.assets &&
         parsedData.assets.current &&
         parsedData.assets.nonCurrent &&
@@ -1051,10 +947,8 @@ const loadData = async () => {
 
       if (isDataComplete) {
         console.log('数据结构完整，开始加载...')
-        // 暂时禁用自动计算，避免在数据加载时触发
         isCalculating = true
 
-        // 确保新增的字段存在
         if (!parsedData.assets.total) {
           parsedData.assets.total = { endBalance: 0, beginBalance: 0 }
         }
@@ -1062,18 +956,15 @@ const loadData = async () => {
           parsedData.liabilities.total = { endBalance: 0, beginBalance: 0 }
         }
 
-        // 直接替换整个 data 对象
         data.value = parsedData
 
-        // 加载完成后重新计算合计值，并检查是否需要自动设置期初余额
         nextTick(async () => {
           recalculateAll()
 
-          // 如果不是1月份，自动从上个月设置期初余额
           const currentPeriod = period.value.slice(0, 7)
           if (!currentPeriod.endsWith('-01')) {
             console.log('非1月份数据，自动设置期初余额')
-            await autoSetBeginBalanceFromPreviousMonth(currentPeriod)
+            await autoSetBeginBalanceFromJanuary(currentPeriod)
           }
 
           isCalculating = false
@@ -1082,17 +973,15 @@ const loadData = async () => {
       } else {
         console.log('数据结构不完整，重置为初始模板并自动设置期初余额')
         resetToInitialState()
-        await autoSetBeginBalanceFromPreviousMonth(period.value.slice(0, 7))
+        await autoSetBeginBalanceFromJanuary(period.value.slice(0, 7))
       }
     } else {
-      // 如果API调用成功但返回的数据为空或无效，也要重置数据
       console.log('API返回成功但数据为空，重置为初始模板并自动设置期初余额')
       resetToInitialState()
-      await autoSetBeginBalanceFromPreviousMonth(period.value.slice(0, 7))
+      await autoSetBeginBalanceFromJanuary(period.value.slice(0, 7))
     }
   } catch (error) {
     console.error('加载数据失败:', error)
-    // 只在网络错误等严重问题时才重置，让用户手动处理
     alert('加载数据失败: ' + (error instanceof Error ? error.message : '网络错误'))
   }
 }

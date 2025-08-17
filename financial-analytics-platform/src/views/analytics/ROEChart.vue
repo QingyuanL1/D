@@ -45,7 +45,7 @@
             </div>
             <div class="flex items-center">
               <div class="w-4 h-4 bg-red-500 rounded mr-2"></div>
-              <span class="text-sm text-gray-600">目标线 (20%)</span>
+              <span class="text-sm text-gray-600">目标线 ({{ summary.targetROE }}%)</span>
             </div>
           </div>
         </div>
@@ -67,7 +67,7 @@ const availableYears = ref<string[]>([])
 const availableCompanies = ref([
   { key: 'main', name: '电气公司', incomeTable: 'income_statement', balanceTable: 'balance_sheet' },
   { key:'nanhua', name: '南华公司', incomeTable: 'nanhua_income_statement', balanceTable: 'nanhua_balance_sheet' },
-  { key: 'tuoyuan', name: '拓源公司', incomeTable: 'tuoyuan_income_statement', balanceTable: 'tuoyuan_balance_sheet' }
+  { key: 'tuoyuan', name: '拓元公司', incomeTable: 'tuoyuan_income_statement', balanceTable: 'tuoyuan_balance_sheet' }
 ])
 const loading = ref(true)
 
@@ -150,7 +150,7 @@ const resetDataToDefault = () => {
   summary.value = {
     currentROE: 0,
     completion_rate: 0,
-    targetROE: 20
+    targetROE: 21.18
   }
 }
 
@@ -170,12 +170,12 @@ const fetchROEData = async () => {
         
         // 计算汇总数据
         const latestROE = result.data.monthlyData?.roe && result.data.monthlyData.roe.length > 0 ? 
-          result.data.monthlyData.roe[result.data.monthlyData.roe.length - 1] / 1000 : 0;
+          result.data.monthlyData.roe[result.data.monthlyData.roe.length - 1] : 0;
         
         summary.value = {
           currentROE: latestROE,
-          completion_rate: latestROE / 20 * 100,
-          targetROE: 20
+          completion_rate: result.data.summary?.completion_rate || 0,
+          targetROE: result.data.summary?.targetROE || 21.18
         };
       } else {
         // 没有数据时重置为默认值
@@ -206,13 +206,13 @@ const updateTrendChart = () => {
   try {
     // 准备数据 - 只显示真实数据
     const monthsData = months.value || [];
-    const roeData = (monthlyData.value && monthlyData.value.roe) ? monthlyData.value.roe.map((value: number) => value / 1000) : [];
+    const roeData = (monthlyData.value && monthlyData.value.roe) ? monthlyData.value.roe : [];
     
     // 检查是否有数据
     const hasData = monthsData.length > 0 && roeData.length > 0
     
     // 目标线数据
-    const targetData = hasData ? monthsData.map(() => 20) : [];
+    const targetData = hasData ? monthsData.map(() => summary.value.targetROE) : [];
     
     console.log('Chart data:', { monthsData, roeData, targetData, hasData });
   

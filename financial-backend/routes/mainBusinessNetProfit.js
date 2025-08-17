@@ -292,8 +292,38 @@ async function calculatePeriodData(period) {
     }
 
     // 解析数据
-    const incomeData = incomeRows[0].data;
+    let incomeData = incomeRows[0].data;
     const centerData = centerRows[0].data;
+
+    // 处理不同的数据格式
+    if (Array.isArray(incomeData)) {
+        // 新格式：数组格式，需要转换为对象格式
+        const convertedData = {
+            equipment: [],
+            components: [],
+            engineering: []
+        };
+
+        incomeData.forEach(item => {
+            const dataItem = {
+                customer: item.customer,
+                accumulatedIncome: item.accumulatedIncome || 0,
+                currentMonthIncome: item.currentMonthIncome || 0,
+                progress: item.progress || '0.00%',
+                yearlyPlan: item.yearlyPlan || 0
+            };
+
+            if (item.segment === '设备') {
+                convertedData.equipment.push(dataItem);
+            } else if (item.segment === '元件') {
+                convertedData.components.push(dataItem);
+            } else if (item.segment === '工程') {
+                convertedData.engineering.push(dataItem);
+            }
+        });
+
+        incomeData = convertedData;
+    }
 
     // 构建成本数据映射
     const costMap = {};
@@ -443,8 +473,38 @@ router.get('/calculate/:period', async (req, res) => {
         }
 
         // 解析数据
-        const incomeData = incomeRows[0].data;
+        let incomeData = incomeRows[0].data;
         const centerData = centerRows[0].data;
+
+        // 处理不同的数据格式
+        if (Array.isArray(incomeData)) {
+            // 新格式：数组格式，需要转换为对象格式
+            const convertedData = {
+                equipment: [],
+                components: [],
+                engineering: []
+            };
+
+            incomeData.forEach(item => {
+                const dataItem = {
+                    customer: item.customer,
+                    accumulatedIncome: item.accumulatedIncome || 0,
+                    currentMonthIncome: item.currentMonthIncome || 0,
+                    progress: item.progress || '0.00%',
+                    yearlyPlan: item.yearlyPlan || 0
+                };
+
+                if (item.segment === '设备') {
+                    convertedData.equipment.push(dataItem);
+                } else if (item.segment === '元件') {
+                    convertedData.components.push(dataItem);
+                } else if (item.segment === '工程') {
+                    convertedData.engineering.push(dataItem);
+                }
+            });
+
+            incomeData = convertedData;
+        }
 
         // 构建成本数据映射
         const costMap = {};

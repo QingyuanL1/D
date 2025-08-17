@@ -85,10 +85,14 @@ router.get('/:period', createBudgetMiddleware('main_business_income_breakdown'),
         });
       }
 
-      // 3. 计算累计收入（从年初到当前月份）
+      // 3. 计算累计收入（从年初到当前月份的所有当月收入求和）
+      console.log(`开始计算累计收入，从${year}年1月到${month}月`);
+      
       for (let m = 1; m <= parseInt(month); m++) {
         const monthPeriod = `${year}-${m.toString().padStart(2, '0')}`;
         const monthPeriodDate = `${monthPeriod}-01`;
+        
+        console.log(`处理${monthPeriod}期间的收入数据`);
         
         // 3.1 累计当月订单转收入
         const [monthOrderRows] = await pool.execute(
@@ -104,7 +108,11 @@ router.get('/:period', createBudgetMiddleware('main_business_income_breakdown'),
               orderData[category].forEach(orderItem => {
                 const resultItem = resultData[category].find(item => item.customer === orderItem.customer);
                 if (resultItem) {
-                  resultItem.accumulatedIncome += Number(orderItem.currentIncome || 0);
+                  const currentIncome = Number(orderItem.currentIncome || 0);
+                  resultItem.accumulatedIncome += currentIncome;
+                  if (currentIncome > 0) {
+                    console.log(`${category}-${orderItem.customer}: 订单转收入+${currentIncome}, 累计=${resultItem.accumulatedIncome}`);
+                  }
                 }
               });
             }
@@ -125,13 +133,26 @@ router.get('/:period', createBudgetMiddleware('main_business_income_breakdown'),
               stockData[category].forEach(stockItem => {
                 const resultItem = resultData[category].find(item => item.customer === stockItem.customer);
                 if (resultItem) {
-                  resultItem.accumulatedIncome += Number(stockItem.currentMonthIncome || 0);
+                  const currentIncome = Number(stockItem.currentMonthIncome || 0);
+                  resultItem.accumulatedIncome += currentIncome;
+                  if (currentIncome > 0) {
+                    console.log(`${category}-${stockItem.customer}: 存量转收入+${currentIncome}, 累计=${resultItem.accumulatedIncome}`);
+                  }
                 }
               });
             }
           });
         }
       }
+      
+      console.log('累计收入计算完成，最终结果:');
+      ['equipment', 'components', 'engineering'].forEach(category => {
+        resultData[category].forEach(item => {
+          if (item.accumulatedIncome > 0) {
+            console.log(`${category}-${item.customer}: 累计收入=${item.accumulatedIncome}`);
+          }
+        });
+      });
 
       // 4. 计算进度
       ['equipment', 'components', 'engineering'].forEach(category => {

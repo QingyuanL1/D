@@ -42,9 +42,31 @@ router.get('/:period', async (req, res) => {
       })
     };
 
+    // 计算合计数据
+    const totalData = calculateNanhuaTotalData(result.customers);
+
+    // 获取加权平均数据
+    let weightedData = null;
+    try {
+      const weightedResult = await calculateNanhuaWeightedData(period);
+      weightedData = weightedResult;
+    } catch (error) {
+      console.error('获取南华加权数据失败:', error);
+      weightedData = {
+        totalIncome: 0,
+        totalCost: 0,
+        weightedContributionRate: 0,
+        marginContribution: 0
+      };
+    }
+
     res.json({
       success: true,
-      data: result
+      data: {
+        ...result,
+        total: totalData,
+        weighted: weightedData
+      }
     });
   } catch (error) {
     console.error('获取南华主营业务边际贡献率结构与质量数据失败:', error);
@@ -251,6 +273,98 @@ function calculateNanhuaContributionRates(incomeData, costData, period) {
     });
 
     return result;
+}
+
+// 计算南华合计数据
+function calculateNanhuaTotalData(customers) {
+  const total = {
+    yearlyPlan: 0,
+    current: 0,
+    deviation: 0,
+    count: customers.length
+  };
+  
+  customers.forEach(item => {
+    total.yearlyPlan += item.yearlyPlan || 0;
+    total.current += item.current || 0;
+  });
+  
+  total.deviation = total.current - total.yearlyPlan;
+  
+  return {
+    yearlyPlan: parseFloat(total.yearlyPlan.toFixed(2)),
+    current: parseFloat(total.current.toFixed(2)),
+    deviation: parseFloat(total.deviation.toFixed(2)),
+    simpleAverage: parseFloat((total.current / customers.length).toFixed(2))
+  };
+}
+
+// 计算南华加权平均数据
+async function calculateNanhuaWeightedData(period) {
+  try {
+    // 1. 获取南华主营业务收入数据
+    const incomeResponse = await fetch(`http://47.111.95.19:3000/nanhua-business-income/${period}`);
+    
+    if (!incomeResponse.ok) {
+      throw new Error('无法获取收入数据');
+    }
+
+    const incomeResult = await incomeResponse.json();
+    if (!incomeResult.success || !incomeResult.data) {
+      throw new Error('收入数据格式错误');
+    }
+
+    // 2. 获取南华累计主营业务成本数据
+    const year = period.split('-')[0];
+    const [costRows] = await pool.execute(`
+      SELECT 
+        category, 
+        customer_type, 
+        SUM(cumulative_material_cost + cumulative_labor_cost) as total_cumulative_cost
+      FROM nanhua_main_business_cost 
+      WHERE period <= ? AND SUBSTRING(period, 1, 4) = ?
+      GROUP BY category, customer_type
+      ORDER BY category, customer_type
+    `, [period, year]);
+
+    // 3. 计算总收入和总成本
+    let totalIncome = 0;
+    let totalCost = 0;
+
+    // 汇总收入
+    if (incomeResult.data && incomeResult.data.customers) {
+      incomeResult.data.customers.forEach(item => {
+        totalIncome += parseFloat(item.accumulated) || 0;
+      });
+    }
+
+    // 汇总成本
+    costRows.forEach(item => {
+      totalCost += parseFloat(item.total_cumulative_cost) || 0;
+    });
+
+    // 4. 计算加权平均边际贡献率
+    let weightedRate = 0;
+    if (totalIncome > 0) {
+      weightedRate = ((totalIncome - totalCost) / totalIncome) * 100;
+    }
+
+    return {
+      totalIncome: parseFloat(totalIncome.toFixed(2)),
+      totalCost: parseFloat(totalCost.toFixed(2)),
+      weightedContributionRate: parseFloat(weightedRate.toFixed(2)),
+      marginContribution: parseFloat((totalIncome - totalCost).toFixed(2))
+    };
+
+  } catch (error) {
+    console.error('计算南华加权数据失败:', error);
+    return {
+      totalIncome: 0,
+      totalCost: 0,
+      weightedContributionRate: 0,
+      marginContribution: 0
+    };
+  }
 }
 
 // 保存南华主营业务边际贡献率结构与质量数据（含自接项目）

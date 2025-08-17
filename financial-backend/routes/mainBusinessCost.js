@@ -292,4 +292,92 @@ router.delete('/:period', async (req, res) => {
     }
 });
 
+// 重新计算累计成本（从年初到目标月份的所有当月成本求和）
+router.post('/recalculate-cumulative/:period', async (req, res) => {
+    try {
+        const { period } = req.params;
+        const [year, month] = period.split('-');
+        
+        console.log(`开始重新计算${period}期间的累计成本`);
+        
+        // 获取该期间所有已有的成本数据作为基础结构
+        const [existingRows] = await pool.execute(`
+            SELECT DISTINCT category, customer_type 
+            FROM main_business_cost 
+            WHERE period LIKE '${year}-%'
+            ORDER BY category, customer_type
+        `);
+        
+        const cumulativeResults = {};
+        
+        // 为每个类别和客户类型计算累计成本
+        for (const row of existingRows) {
+            const key = `${row.category}-${row.customer_type}`;
+            cumulativeResults[key] = {
+                category: row.category,
+                customer_type: row.customer_type,
+                cumulative_material_cost: 0,
+                cumulative_labor_cost: 0
+            };
+            
+            // 从年初到目标月份，累加所有当月成本
+            for (let m = 1; m <= parseInt(month); m++) {
+                const monthPeriod = `${year}-${m.toString().padStart(2, '0')}`;
+                
+                const [monthRows] = await pool.execute(`
+                    SELECT current_material_cost, current_labor_cost
+                    FROM main_business_cost 
+                    WHERE period = ? AND category = ? AND customer_type = ?
+                `, [monthPeriod, row.category, row.customer_type]);
+                
+                if (monthRows.length > 0) {
+                    const monthData = monthRows[0];
+                    const currentMaterialCost = parseFloat(monthData.current_material_cost) || 0;
+                    const currentLaborCost = parseFloat(monthData.current_labor_cost) || 0;
+                    
+                    cumulativeResults[key].cumulative_material_cost += currentMaterialCost;
+                    cumulativeResults[key].cumulative_labor_cost += currentLaborCost;
+                    
+                    if (currentMaterialCost > 0 || currentLaborCost > 0) {
+                        console.log(`${key} ${monthPeriod}: 材料+${currentMaterialCost}, 人工+${currentLaborCost}, 累计材料=${cumulativeResults[key].cumulative_material_cost}, 累计人工=${cumulativeResults[key].cumulative_labor_cost}`);
+                    }
+                }
+            }
+        }
+        
+        // 更新目标期间的累计值
+        for (const key in cumulativeResults) {
+            const result = cumulativeResults[key];
+            await pool.execute(`
+                UPDATE main_business_cost 
+                SET cumulative_material_cost = ?, cumulative_labor_cost = ?
+                WHERE period = ? AND category = ? AND customer_type = ?
+            `, [
+                result.cumulative_material_cost,
+                result.cumulative_labor_cost,
+                period,
+                result.category,
+                result.customer_type
+            ]);
+        }
+        
+        console.log('累计成本重新计算完成');
+        
+        res.json({
+            success: true,
+            message: '累计成本重新计算完成',
+            period: period,
+            results: cumulativeResults
+        });
+        
+    } catch (error) {
+        console.error('重新计算累计成本失败:', error);
+        res.status(500).json({
+            success: false,
+            message: '重新计算累计成本失败',
+            error: error.message
+        });
+    }
+});
+
 module.exports = router;

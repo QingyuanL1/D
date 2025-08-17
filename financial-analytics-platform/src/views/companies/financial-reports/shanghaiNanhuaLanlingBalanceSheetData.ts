@@ -126,7 +126,7 @@ export default {
   },
   equity: {
     items: [
-      { lineNumber: 114, name: "少数股东权益（合并报表填列）", endBalance: 0, beginBalance: 0 },
+      { lineNumber: 114, name: "少数股东权益（合并报表填列）", endBalance: 0, beginBalance: 0, special: true },
       { lineNumber: 115, name: "实收资本（或股本）", endBalance: 0, beginBalance: 0 },
       { lineNumber: 116, name: "减：已归还投资", endBalance: 0, beginBalance: 0 },
       { lineNumber: 117, name: "实收资本（或股本）净额", endBalance: 0, beginBalance: 0 },
