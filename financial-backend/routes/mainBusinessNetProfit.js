@@ -3,6 +3,46 @@ const { pool } = require('../config/database');
 const { createBudgetMiddleware } = require('../middleware/budgetMiddleware');
 const router = express.Router();
 
+// 实时计算成本中心累计收入
+const calculateCenterCumulativeIncome = async (period, category, customerType) => {
+    try {
+        console.log(`计算成本中心累计收入: period=${period}, category=${category}, customerType=${customerType}`);
+
+        const [rows] = await pool.execute(
+            'SELECT period, data FROM cost_center_structure WHERE period <= ? ORDER BY period',
+            [period]
+        );
+
+        let total = 0;
+        const categoryKey = category + 'Data'; // equipmentData, componentData, engineeringData
+
+        for (const row of rows) {
+            const data = row.data;
+            const categoryData = data[categoryKey];
+
+            if (categoryData && Array.isArray(categoryData)) {
+                const item = categoryData.find(d =>
+                    d.customerType === customerType ||
+                    (d.customerType === '其他' && customerType === '其它') ||
+                    (d.customerType === '其它' && customerType === '其他')
+                );
+
+                if (item && item.currentMonthIncome) {
+                    const monthValue = parseFloat(item.currentMonthIncome) || 0;
+                    total += monthValue;
+                    console.log(`  ${row.period}: +${monthValue} (累计: ${total})`);
+                }
+            }
+        }
+
+        console.log(`  最终累计值: ${total}`);
+        return total;
+    } catch (error) {
+        console.error('计算成本中心累计收入失败:', error);
+        return 0;
+    }
+};
+
 // 获取主营业务净利润贡献情况数据
 router.get('/:period', createBudgetMiddleware('main_business_net_profit_contribution'), async (req, res) => {
     const { period } = req.params;
@@ -129,6 +169,39 @@ router.get('/', async (req, res) => {
     }
 });
 
+// 静态预算数据（与前端保持一致）
+const STATIC_BUDGET_DATA = {
+    equipment: [
+        { customer: '上海', yearlyPlan: 2145.03 },
+        { customer: '国网', yearlyPlan: 621.55 },
+        { customer: '江苏', yearlyPlan: 0 },
+        { customer: '输配电内配', yearlyPlan: 0 },
+        { customer: '西门子', yearlyPlan: 0 },
+        { customer: '同业', yearlyPlan: 553.08 },
+        { customer: '用户', yearlyPlan: 323.8 },
+        { customer: '其它', yearlyPlan: 0 }
+    ],
+    components: [
+        { customer: '用户', yearlyPlan: -26.21 }
+    ],
+    engineering: [
+        { customer: '一包', yearlyPlan: 328.91 },
+        { customer: '二包', yearlyPlan: 14.4 },
+        { customer: '域内合作', yearlyPlan: -35.24 },
+        { customer: '域外合作', yearlyPlan: 0 },
+        { customer: '其它', yearlyPlan: 69.6 }
+    ]
+};
+
+// 获取静态预算数据
+const getStaticBudget = (category, customer) => {
+    const categoryData = STATIC_BUDGET_DATA[category];
+    if (!categoryData) return 0;
+
+    const budgetItem = categoryData.find(item => item.customer === customer);
+    return budgetItem ? budgetItem.yearlyPlan : 0;
+};
+
 // 为前端组件提供当月值和累计值的接口
 router.get('/monthly-data/:period', async (req, res) => {
     const { period } = req.params;
@@ -144,9 +217,6 @@ router.get('/monthly-data/:period', async (req, res) => {
         const [year, month] = period.split('-');
         const currentMonth = parseInt(month);
 
-        // 计算当月值（使用当前期间）
-        const currentMonthData = await calculatePeriodData(period);
-
         // 计算累计值（从1月到当前月）
         const cumulativeData = {
             equipment: [],
@@ -154,10 +224,10 @@ router.get('/monthly-data/:period', async (req, res) => {
             engineering: []
         };
 
-        // 获取从1月到当前月的所有数据并累计
+        // 获取从1月到当前月的所有数据并累计当期净利润
         for (let m = 1; m <= currentMonth; m++) {
             const monthPeriod = `${year}-${m.toString().padStart(2, '0')}`;
-            const monthData = await calculatePeriodData(monthPeriod);
+            const monthData = await calculateCurrentPeriodData(monthPeriod);
 
             // 累计设备数据
             monthData.equipment.forEach(item => {
@@ -165,13 +235,14 @@ router.get('/monthly-data/:period', async (req, res) => {
                 if (!existingItem) {
                     existingItem = {
                         customer: item.customer,
-                        yearlyPlan: item.yearlyPlan,
+                        yearlyPlan: getStaticBudget('equipment', item.customer), // 使用静态预算数据
                         currentMonthValue: 0,
                         cumulativeValue: 0,
                         progress: item.progress
                     };
                     cumulativeData.equipment.push(existingItem);
                 }
+                // 累加当期净利润
                 existingItem.cumulativeValue += item.currentAmount;
                 // 如果是当前月，设置当月值
                 if (m === currentMonth) {
@@ -185,13 +256,14 @@ router.get('/monthly-data/:period', async (req, res) => {
                 if (!existingItem) {
                     existingItem = {
                         customer: item.customer,
-                        yearlyPlan: item.yearlyPlan,
+                        yearlyPlan: getStaticBudget('components', item.customer), // 使用静态预算数据
                         currentMonthValue: 0,
                         cumulativeValue: 0,
                         progress: item.progress
                     };
                     cumulativeData.components.push(existingItem);
                 }
+                // 累加当期净利润
                 existingItem.cumulativeValue += item.currentAmount;
                 if (m === currentMonth) {
                     existingItem.currentMonthValue = item.currentAmount;
@@ -204,13 +276,14 @@ router.get('/monthly-data/:period', async (req, res) => {
                 if (!existingItem) {
                     existingItem = {
                         customer: item.customer,
-                        yearlyPlan: item.yearlyPlan,
+                        yearlyPlan: getStaticBudget('engineering', item.customer), // 使用静态预算数据
                         currentMonthValue: 0,
                         cumulativeValue: 0,
                         progress: item.progress
                     };
                     cumulativeData.engineering.push(existingItem);
                 }
+                // 累加当期净利润
                 existingItem.cumulativeValue += item.currentAmount;
                 if (m === currentMonth) {
                     existingItem.currentMonthValue = item.currentAmount;
@@ -218,10 +291,22 @@ router.get('/monthly-data/:period', async (req, res) => {
             });
         }
 
-        // 计算贡献占比
+        // 计算总累计值
+        let totalCumulativeValue = 0;
         cumulativeData.equipment.forEach(item => {
-            if (item.yearlyPlan && item.yearlyPlan > 0) {
-                const contribution = (item.cumulativeValue / item.yearlyPlan * 100).toFixed(2);
+            totalCumulativeValue += item.cumulativeValue || 0;
+        });
+        cumulativeData.components.forEach(item => {
+            totalCumulativeValue += item.cumulativeValue || 0;
+        });
+        cumulativeData.engineering.forEach(item => {
+            totalCumulativeValue += item.cumulativeValue || 0;
+        });
+
+        // 计算贡献占比（相对于总累计值的占比）
+        cumulativeData.equipment.forEach(item => {
+            if (totalCumulativeValue !== 0) {
+                const contribution = (item.cumulativeValue / totalCumulativeValue * 100).toFixed(2);
                 item.contribution = `${contribution}%`;
             } else {
                 item.contribution = '0.00%';
@@ -229,8 +314,8 @@ router.get('/monthly-data/:period', async (req, res) => {
         });
 
         cumulativeData.components.forEach(item => {
-            if (item.yearlyPlan && item.yearlyPlan > 0) {
-                const contribution = (item.cumulativeValue / item.yearlyPlan * 100).toFixed(2);
+            if (totalCumulativeValue !== 0) {
+                const contribution = (item.cumulativeValue / totalCumulativeValue * 100).toFixed(2);
                 item.contribution = `${contribution}%`;
             } else {
                 item.contribution = '0.00%';
@@ -238,8 +323,8 @@ router.get('/monthly-data/:period', async (req, res) => {
         });
 
         cumulativeData.engineering.forEach(item => {
-            if (item.yearlyPlan && item.yearlyPlan > 0) {
-                const contribution = (item.cumulativeValue / item.yearlyPlan * 100).toFixed(2);
+            if (totalCumulativeValue !== 0) {
+                const contribution = (item.cumulativeValue / totalCumulativeValue * 100).toFixed(2);
                 item.contribution = `${contribution}%`;
             } else {
                 item.contribution = '0.00%';
@@ -261,7 +346,215 @@ router.get('/monthly-data/:period', async (req, res) => {
     }
 });
 
+// 计算指定期间的当期净利润数据（内部函数）
+// 净利润计算公式：当期营业收入 - 当期直接成本 - 当期间接成本 - 成本中心营销费用 - 成本中心管理费用 - 成本中心财务费用
+async function calculateCurrentPeriodData(period) {
+    // 1. 获取主营业务收入数据 (需要转换为日期格式)
+    const incomeDate = `${period}-01`;
+    const [incomeRows] = await pool.execute(
+        'SELECT data FROM main_business_income WHERE period = ?',
+        [incomeDate]
+    );
+
+    // 2. 获取主营业务成本数据 - 获取当期直接成本和当期间接成本
+    const [costRows] = await pool.execute(
+        'SELECT category, customer_type, current_material_cost, current_labor_cost FROM main_business_cost WHERE period = ?',
+        [period]
+    );
+
+    // 3. 获取成本中心结构数据
+    const [centerRows] = await pool.execute(
+        'SELECT data FROM cost_center_structure WHERE period = ?',
+        [period]
+    );
+
+    // 如果没有数据，返回空结果
+    if (incomeRows.length === 0 || costRows.length === 0 || centerRows.length === 0) {
+        return {
+            equipment: [],
+            components: [],
+            engineering: []
+        };
+    }
+
+    // 解析数据
+    let incomeData = incomeRows[0].data;
+    const centerData = centerRows[0].data;
+
+    // 处理不同的数据格式
+    if (Array.isArray(incomeData)) {
+        // 新格式：数组格式，需要转换为对象格式
+        const convertedData = {
+            equipment: [],
+            components: [],
+            engineering: []
+        };
+
+        incomeData.forEach(item => {
+            const dataItem = {
+                customer: item.customer,
+                currentMonthIncome: item.currentMonthIncome || 0,
+                progress: item.progress || '0.00%',
+                yearlyPlan: item.yearlyPlan || 0
+            };
+
+            if (item.segment === '设备') {
+                convertedData.equipment.push(dataItem);
+            } else if (item.segment === '元件') {
+                convertedData.components.push(dataItem);
+            } else if (item.segment === '工程') {
+                convertedData.engineering.push(dataItem);
+            }
+        });
+
+        incomeData = convertedData;
+    }
+
+    // 构建成本数据映射 - 使用当期直接成本和当期间接成本
+    const costMap = {};
+    costRows.forEach(row => {
+        const key = `${row.category}-${row.customer_type}`;
+        costMap[key] = {
+            currentDirectCost: parseFloat(row.current_material_cost) || 0,  // 当期直接成本
+            currentIndirectCost: parseFloat(row.current_labor_cost) || 0    // 当期间接成本
+        };
+    });
+
+    // 计算结果
+    const result = {
+        equipment: [],
+        components: [],
+        engineering: []
+    };
+
+    // 处理设备板块 - 计算当期净利润
+    if (incomeData.equipment && Array.isArray(incomeData.equipment)) {
+        result.equipment = incomeData.equipment.map(item => {
+            // 使用当期收入作为营业收入
+            const currentMonthIncome = parseFloat(item.currentMonthIncome) || 0;
+
+            // 获取当期直接成本和当期间接成本
+            const costData = costMap[`设备-${item.customer}`] || { currentDirectCost: 0, currentIndirectCost: 0 };
+            const currentDirectCost = costData.currentDirectCost;
+            const currentIndirectCost = costData.currentIndirectCost;
+
+            // 从成本中心数据中获取营销、管理、财务费用
+            let marketingCost = 0;
+            let managementCost = 0;
+            let financeCost = 0;
+
+            if (centerData.equipmentData && Array.isArray(centerData.equipmentData)) {
+                const centerItem = centerData.equipmentData.find(c =>
+                    c.customerType === item.customer ||
+                    (c.customerType === '其他' && item.customer === '其它') ||
+                    (c.customerType === '其它' && item.customer === '其他')
+                );
+                if (centerItem) {
+                    marketingCost = parseFloat(centerItem.marketing) || 0;
+                    managementCost = parseFloat(centerItem.management) || 0;
+                    financeCost = parseFloat(centerItem.finance) || 0;
+                }
+            }
+
+            // 当期净利润计算公式：当期营业收入 - 当期直接成本 - 当期间接成本 - 营销费用 - 管理费用 - 财务费用
+            const currentAmount = currentMonthIncome - currentDirectCost - currentIndirectCost - marketingCost - managementCost - financeCost;
+
+            return {
+                customer: item.customer,
+                yearlyPlan: item.yearlyPlan || 0,
+                currentAmount: currentAmount,
+                progress: item.progress || '0.00%'
+            };
+        });
+    }
+
+    // 处理元件板块 - 计算当期净利润
+    if (incomeData.components && Array.isArray(incomeData.components)) {
+        result.components = incomeData.components.map(item => {
+            // 使用当期收入作为营业收入
+            const currentMonthIncome = parseFloat(item.currentMonthIncome) || 0;
+
+            // 获取当期直接成本和当期间接成本
+            const costData = costMap[`元件-${item.customer}`] || { currentDirectCost: 0, currentIndirectCost: 0 };
+            const currentDirectCost = costData.currentDirectCost;
+            const currentIndirectCost = costData.currentIndirectCost;
+
+            // 从成本中心数据中获取营销、管理、财务费用
+            let marketingCost = 0;
+            let managementCost = 0;
+            let financeCost = 0;
+
+            if (centerData.componentData && Array.isArray(centerData.componentData)) {
+                const centerItem = centerData.componentData.find(c =>
+                    c.customerType === item.customer ||
+                    (c.customerType === '其他' && item.customer === '其它') ||
+                    (c.customerType === '其它' && item.customer === '其他')
+                );
+                if (centerItem) {
+                    marketingCost = parseFloat(centerItem.marketing) || 0;
+                    managementCost = parseFloat(centerItem.management) || 0;
+                    financeCost = parseFloat(centerItem.finance) || 0;
+                }
+            }
+
+            // 当期净利润计算公式：当期营业收入 - 当期直接成本 - 当期间接成本 - 营销费用 - 管理费用 - 财务费用
+            const currentAmount = currentMonthIncome - currentDirectCost - currentIndirectCost - marketingCost - managementCost - financeCost;
+
+            return {
+                customer: item.customer,
+                yearlyPlan: item.yearlyPlan || 0,
+                currentAmount: currentAmount,
+                progress: item.progress || '0.00%'
+            };
+        });
+    }
+
+    // 处理工程板块 - 计算当期净利润
+    if (incomeData.engineering && Array.isArray(incomeData.engineering)) {
+        result.engineering = incomeData.engineering.map(item => {
+            // 使用当期收入作为营业收入
+            const currentMonthIncome = parseFloat(item.currentMonthIncome) || 0;
+
+            // 获取当期直接成本和当期间接成本
+            const costData = costMap[`工程-${item.customer}`] || { currentDirectCost: 0, currentIndirectCost: 0 };
+            const currentDirectCost = costData.currentDirectCost;
+            const currentIndirectCost = costData.currentIndirectCost;
+
+            // 从成本中心数据中获取营销、管理、财务费用
+            let marketingCost = 0;
+            let managementCost = 0;
+            let financeCost = 0;
+
+            if (centerData.engineeringData && Array.isArray(centerData.engineeringData)) {
+                const centerItem = centerData.engineeringData.find(c =>
+                    c.customerType === item.customer ||
+                    (c.customerType === '其他' && item.customer === '其它') ||
+                    (c.customerType === '其它' && item.customer === '其他')
+                );
+                if (centerItem) {
+                    marketingCost = parseFloat(centerItem.marketing) || 0;
+                    managementCost = parseFloat(centerItem.management) || 0;
+                    financeCost = parseFloat(centerItem.finance) || 0;
+                }
+            }
+
+            // 当期净利润计算公式：当期营业收入 - 当期直接成本 - 当期间接成本 - 营销费用 - 管理费用 - 财务费用
+            const currentAmount = currentMonthIncome - currentDirectCost - currentIndirectCost - marketingCost - managementCost - financeCost;
+
+            return {
+                customer: item.customer,
+                yearlyPlan: item.yearlyPlan || 0,
+                currentAmount: currentAmount,
+                progress: item.progress || '0.00%'
+            };
+        });
+    }
+
+    return result;
+}
+
 // 计算指定期间的净利润数据（内部函数）
+// 新的净利润计算公式：营业收入 - 累计直接成本 - 累计间接成本 - 成本中心营销费用 - 成本中心管理费用 - 成本中心财务费用
 async function calculatePeriodData(period) {
     // 1. 获取主营业务收入数据 (需要转换为日期格式)
     const incomeDate = `${period}-01`;
@@ -270,9 +563,9 @@ async function calculatePeriodData(period) {
         [incomeDate]
     );
 
-    // 2. 获取主营业务成本数据
+    // 2. 获取主营业务成本数据 - 修改为获取累计直接成本和累计间接成本
     const [costRows] = await pool.execute(
-        'SELECT category, customer_type, current_material_cost FROM main_business_cost WHERE period = ?',
+        'SELECT category, customer_type, current_material_cost, cumulative_material_cost, cumulative_labor_cost FROM main_business_cost WHERE period = ?',
         [period]
     );
 
@@ -325,11 +618,14 @@ async function calculatePeriodData(period) {
         incomeData = convertedData;
     }
 
-    // 构建成本数据映射
+    // 构建成本数据映射 - 修改为使用累计直接成本和累计间接成本
     const costMap = {};
     costRows.forEach(row => {
         const key = `${row.category}-${row.customer_type}`;
-        costMap[key] = parseFloat(row.current_material_cost) || 0;
+        costMap[key] = {
+            cumulativeDirectCost: parseFloat(row.cumulative_material_cost) || 0,  // 累计直接成本
+            cumulativeIndirectCost: parseFloat(row.cumulative_labor_cost) || 0    // 累计间接成本
+        };
     });
 
     // 计算结果
@@ -339,14 +635,22 @@ async function calculatePeriodData(period) {
         engineering: []
     };
 
-    // 处理设备板块
+    // 处理设备板块 - 修改净利润计算公式
     if (incomeData.equipment && Array.isArray(incomeData.equipment)) {
         result.equipment = incomeData.equipment.map(item => {
-            const currentMonthIncome = parseFloat(item.currentMonthIncome) || 0; // 使用当月收入而不是累计收入
-            const materialCost = costMap[`设备-${item.customer}`] || 0;
+            // 使用累计收入作为营业收入
+            const accumulatedIncome = parseFloat(item.accumulatedIncome) || 0;
 
-            // 从成本中心数据中查找对应的当月收入
-            let centerIncome = 0;
+            // 获取累计直接成本和累计间接成本
+            const costData = costMap[`设备-${item.customer}`] || { cumulativeDirectCost: 0, cumulativeIndirectCost: 0 };
+            const cumulativeDirectCost = costData.cumulativeDirectCost;
+            const cumulativeIndirectCost = costData.cumulativeIndirectCost;
+
+            // 从成本中心数据中获取营销、管理、财务费用
+            let marketingCost = 0;
+            let managementCost = 0;
+            let financeCost = 0;
+
             if (centerData.equipmentData && Array.isArray(centerData.equipmentData)) {
                 const centerItem = centerData.equipmentData.find(c =>
                     c.customerType === item.customer ||
@@ -354,11 +658,14 @@ async function calculatePeriodData(period) {
                     (c.customerType === '其它' && item.customer === '其他')
                 );
                 if (centerItem) {
-                    centerIncome = parseFloat(centerItem.currentMonthIncome) || 0; // 使用当月收入
+                    marketingCost = parseFloat(centerItem.marketing) || 0;
+                    managementCost = parseFloat(centerItem.management) || 0;
+                    financeCost = parseFloat(centerItem.finance) || 0;
                 }
             }
 
-            const currentAmount = currentMonthIncome - materialCost - centerIncome;
+            // 新的净利润计算公式：营业收入 - 累计直接成本 - 累计间接成本 - 营销费用 - 管理费用 - 财务费用
+            const currentAmount = accumulatedIncome - cumulativeDirectCost - cumulativeIndirectCost - marketingCost - managementCost - financeCost;
 
             return {
                 customer: item.customer,
@@ -369,13 +676,22 @@ async function calculatePeriodData(period) {
         });
     }
 
-    // 处理元件板块
+    // 处理元件板块 - 修改净利润计算公式
     if (incomeData.components && Array.isArray(incomeData.components)) {
         result.components = incomeData.components.map(item => {
-            const currentMonthIncome = parseFloat(item.currentMonthIncome) || 0;
-            const materialCost = costMap[`元件-${item.customer}`] || 0;
+            // 使用累计收入作为营业收入
+            const accumulatedIncome = parseFloat(item.accumulatedIncome) || 0;
 
-            let centerIncome = 0;
+            // 获取累计直接成本和累计间接成本
+            const costData = costMap[`元件-${item.customer}`] || { cumulativeDirectCost: 0, cumulativeIndirectCost: 0 };
+            const cumulativeDirectCost = costData.cumulativeDirectCost;
+            const cumulativeIndirectCost = costData.cumulativeIndirectCost;
+
+            // 从成本中心数据中获取营销、管理、财务费用
+            let marketingCost = 0;
+            let managementCost = 0;
+            let financeCost = 0;
+
             if (centerData.componentData && Array.isArray(centerData.componentData)) {
                 const centerItem = centerData.componentData.find(c =>
                     c.customerType === item.customer ||
@@ -383,11 +699,14 @@ async function calculatePeriodData(period) {
                     (c.customerType === '其它' && item.customer === '其他')
                 );
                 if (centerItem) {
-                    centerIncome = parseFloat(centerItem.currentMonthIncome) || 0;
+                    marketingCost = parseFloat(centerItem.marketing) || 0;
+                    managementCost = parseFloat(centerItem.management) || 0;
+                    financeCost = parseFloat(centerItem.finance) || 0;
                 }
             }
 
-            const currentAmount = currentMonthIncome - materialCost - centerIncome;
+            // 新的净利润计算公式：营业收入 - 累计直接成本 - 累计间接成本 - 营销费用 - 管理费用 - 财务费用
+            const currentAmount = accumulatedIncome - cumulativeDirectCost - cumulativeIndirectCost - marketingCost - managementCost - financeCost;
 
             return {
                 customer: item.customer,
@@ -398,13 +717,22 @@ async function calculatePeriodData(period) {
         });
     }
 
-    // 处理工程板块
+    // 处理工程板块 - 修改净利润计算公式
     if (incomeData.engineering && Array.isArray(incomeData.engineering)) {
         result.engineering = incomeData.engineering.map(item => {
-            const currentMonthIncome = parseFloat(item.currentMonthIncome) || 0;
-            const materialCost = costMap[`工程-${item.customer}`] || 0;
+            // 使用累计收入作为营业收入
+            const accumulatedIncome = parseFloat(item.accumulatedIncome) || 0;
 
-            let centerIncome = 0;
+            // 获取累计直接成本和累计间接成本
+            const costData = costMap[`工程-${item.customer}`] || { cumulativeDirectCost: 0, cumulativeIndirectCost: 0 };
+            const cumulativeDirectCost = costData.cumulativeDirectCost;
+            const cumulativeIndirectCost = costData.cumulativeIndirectCost;
+
+            // 从成本中心数据中获取营销、管理、财务费用
+            let marketingCost = 0;
+            let managementCost = 0;
+            let financeCost = 0;
+
             if (centerData.engineeringData && Array.isArray(centerData.engineeringData)) {
                 const centerItem = centerData.engineeringData.find(c =>
                     c.customerType === item.customer ||
@@ -412,11 +740,14 @@ async function calculatePeriodData(period) {
                     (c.customerType === '其它' && item.customer === '其他')
                 );
                 if (centerItem) {
-                    centerIncome = parseFloat(centerItem.currentMonthIncome) || 0;
+                    marketingCost = parseFloat(centerItem.marketing) || 0;
+                    managementCost = parseFloat(centerItem.management) || 0;
+                    financeCost = parseFloat(centerItem.finance) || 0;
                 }
             }
 
-            const currentAmount = currentMonthIncome - materialCost - centerIncome;
+            // 新的净利润计算公式：营业收入 - 累计直接成本 - 累计间接成本 - 营销费用 - 管理费用 - 财务费用
+            const currentAmount = accumulatedIncome - cumulativeDirectCost - cumulativeIndirectCost - marketingCost - managementCost - financeCost;
 
             return {
                 customer: item.customer,
@@ -522,22 +853,12 @@ router.get('/calculate/:period', async (req, res) => {
 
         // 处理设备板块
         if (incomeData.equipment && Array.isArray(incomeData.equipment)) {
-            result.equipment = incomeData.equipment.map(item => {
+            result.equipment = await Promise.all(incomeData.equipment.map(async item => {
                 const accumulatedIncome = parseFloat(item.accumulatedIncome) || 0;
                 const materialCost = costMap[`设备-${item.customer}`] || 0;
 
-                // 从成本中心数据中查找对应的累计收入
-                let centerIncome = 0;
-                if (centerData.equipmentData && Array.isArray(centerData.equipmentData)) {
-                    const centerItem = centerData.equipmentData.find(c =>
-                        c.customerType === item.customer ||
-                        (c.customerType === '其他' && item.customer === '其它') ||
-                        (c.customerType === '其它' && item.customer === '其他')
-                    );
-                    if (centerItem) {
-                        centerIncome = parseFloat(centerItem.cumulativeIncome) || 0;
-                    }
-                }
+                // 使用实时计算的成本中心累计收入
+                const centerIncome = await calculateCenterCumulativeIncome(period, 'equipment', item.customer);
 
                 const currentAmount = accumulatedIncome - materialCost - centerIncome;
 
@@ -550,27 +871,17 @@ router.get('/calculate/:period', async (req, res) => {
                     currentAmount: currentAmount,
                     progress: item.progress || '0.00%'
                 };
-            });
+            }));
         }
 
         // 处理元件板块
         if (incomeData.components && Array.isArray(incomeData.components)) {
-            result.components = incomeData.components.map(item => {
+            result.components = await Promise.all(incomeData.components.map(async item => {
                 const accumulatedIncome = parseFloat(item.accumulatedIncome) || 0;
                 const materialCost = costMap[`元件-${item.customer}`] || 0;
 
-                // 从成本中心数据中查找对应的累计收入
-                let centerIncome = 0;
-                if (centerData.componentData && Array.isArray(centerData.componentData)) {
-                    const centerItem = centerData.componentData.find(c =>
-                        c.customerType === item.customer ||
-                        (c.customerType === '其他' && item.customer === '其它') ||
-                        (c.customerType === '其它' && item.customer === '其他')
-                    );
-                    if (centerItem) {
-                        centerIncome = parseFloat(centerItem.cumulativeIncome) || 0;
-                    }
-                }
+                // 使用实时计算的成本中心累计收入
+                const centerIncome = await calculateCenterCumulativeIncome(period, 'component', item.customer);
 
                 const currentAmount = accumulatedIncome - materialCost - centerIncome;
 
@@ -583,27 +894,17 @@ router.get('/calculate/:period', async (req, res) => {
                     currentAmount: currentAmount,
                     progress: item.progress || '0.00%'
                 };
-            });
+            }));
         }
 
         // 处理工程板块
         if (incomeData.engineering && Array.isArray(incomeData.engineering)) {
-            result.engineering = incomeData.engineering.map(item => {
+            result.engineering = await Promise.all(incomeData.engineering.map(async item => {
                 const accumulatedIncome = parseFloat(item.accumulatedIncome) || 0;
                 const materialCost = costMap[`工程-${item.customer}`] || 0;
 
-                // 从成本中心数据中查找对应的累计收入
-                let centerIncome = 0;
-                if (centerData.engineeringData && Array.isArray(centerData.engineeringData)) {
-                    const centerItem = centerData.engineeringData.find(c =>
-                        c.customerType === item.customer ||
-                        (c.customerType === '其他' && item.customer === '其它') ||
-                        (c.customerType === '其它' && item.customer === '其他')
-                    );
-                    if (centerItem) {
-                        centerIncome = parseFloat(centerItem.cumulativeIncome) || 0;
-                    }
-                }
+                // 使用实时计算的成本中心累计收入
+                const centerIncome = await calculateCenterCumulativeIncome(period, 'engineering', item.customer);
 
                 const currentAmount = accumulatedIncome - materialCost - centerIncome;
 
@@ -616,7 +917,7 @@ router.get('/calculate/:period', async (req, res) => {
                     currentAmount: currentAmount,
                     progress: item.progress || '0.00%'
                 };
-            });
+            }));
         }
 
         console.log(`计算完成，期间: ${period}`);
@@ -631,8 +932,8 @@ router.get('/calculate/:period', async (req, res) => {
             data: result,
             period: period,
             calculation: {
-                formula: '当期金额 = 累计收入 - 当期材料成本 - 成本中心累计收入',
-                description: '基于main_business_income.accumulatedIncome - main_business_cost.current_material_cost - cost_center_structure.cumulativeIncome计算'
+                formula: '当期金额 = 累计收入 - 当期材料成本 - 成本中心累计收入（实时计算）',
+                description: '基于main_business_income.accumulatedIncome - main_business_cost.current_material_cost - 实时计算的成本中心累计收入'
             }
         });
 
@@ -643,3 +944,21 @@ router.get('/calculate/:period', async (req, res) => {
 });
 
 module.exports = router;
+
+/*
+净利润计算公式更新说明：
+
+旧公式：净利润 = 当月收入 - 材料成本 - 成本中心当月收入
+
+新公式：净利润 = 营业收入 - 累计直接成本 - 累计间接成本 - 成本中心营销费用 - 成本中心管理费用 - 成本中心财务费用
+
+数据来源：
+- 营业收入：main_business_income.accumulatedIncome (累计收入)
+- 累计直接成本：main_business_cost.cumulative_material_cost
+- 累计间接成本：main_business_cost.cumulative_labor_cost
+- 成本中心营销费用：cost_center_structure.marketing
+- 成本中心管理费用：cost_center_structure.management
+- 成本中心财务费用：cost_center_structure.finance
+
+注意：生产制造费用(production)不参与净利润计算
+*/

@@ -109,9 +109,9 @@ const fetchContributionRateData = async () => {
             // 计算当月加权平均边际贡献率
             const validCustomers = result.data.customers.filter((customer: any) => {
               const rate = customer.current
-              // 只过滤掉明显异常的数据：负数或超过200%的异常值
-              // 100%是正常的边际贡献率，不应该被过滤
-              return typeof rate === 'number' && rate >= 0 && rate <= 200
+              // 允许负值（成本超过收入的情况），只过滤掉明显异常的数据
+              // 边际贡献率可以是负值，这是正常的业务情况
+              return typeof rate === 'number' && rate >= -1000 && rate <= 1000
             })
             
             if (validCustomers.length > 0) {

@@ -16,6 +16,10 @@
                         <th class="border border-gray-300 px-4 py-2">客户属性</th>
                         <th class="border border-gray-300 px-4 py-2">年计划收入</th>
                         <th class="border border-gray-300 px-4 py-2">当期计入损益</th>
+                        <th class="border border-gray-300 px-4 py-2">营销</th>
+                        <th class="border border-gray-300 px-4 py-2">管理</th>
+                        <th class="border border-gray-300 px-4 py-2">财务</th>
+                        <th class="border border-gray-300 px-4 py-2">生产制造</th>
                         <th class="border border-gray-300 px-4 py-2">累计计入损益</th>
                         <th class="border border-gray-300 px-4 py-2">分摊损益占比</th>
                     </tr>
@@ -24,7 +28,8 @@
                     <!-- 工程客户列表 -->
                     <template v-for="(item, index) in costCenterData.engineering" :key="`engineering-${index}`">
                         <tr>
-                            <td v-if="index === 0" :rowspan="costCenterData.engineering.length" class="border border-gray-300 px-4 py-2 font-medium text-center">
+                            <td v-if="index === 0" :rowspan="costCenterData.engineering.length"
+                                class="border border-gray-300 px-4 py-2 font-medium text-center">
                                 工程
                             </td>
                             <td class="border border-gray-300 px-4 py-2">
@@ -33,8 +38,25 @@
                             <td class="border border-gray-300 px-4 py-2 text-right">
                                 {{ formatNumber(item.yearlyPlannedIncome) }}
                             </td>
+                            <td class="border border-gray-300 px-4 py-2 text-right">
+                                <span class="text-sm font-medium">{{ formatNumber(calculateCurrentIncome(item))
+                                    }}</span>
+                            </td>
                             <td class="border border-gray-300 px-4 py-2">
-                                <input v-model="item.currentIncome" type="number" class="w-full px-2 py-1 border rounded text-right" step="0.01" />
+                                <input v-model="item.marketing" type="number"
+                                    class="w-full px-2 py-1 border rounded text-right" step="0.01" />
+                            </td>
+                            <td class="border border-gray-300 px-4 py-2">
+                                <input v-model="item.management" type="number"
+                                    class="w-full px-2 py-1 border rounded text-right" step="0.01" />
+                            </td>
+                            <td class="border border-gray-300 px-4 py-2">
+                                <input v-model="item.finance" type="number"
+                                    class="w-full px-2 py-1 border rounded text-right" step="0.01" />
+                            </td>
+                            <td class="border border-gray-300 px-4 py-2">
+                                <input v-model="item.production" type="number"
+                                    class="w-full px-2 py-1 border rounded text-right" step="0.01" />
                             </td>
                             <td class="border border-gray-300 px-4 py-2 text-right">
                                 {{ formatNumber(item.accumulatedIncome) }}
@@ -48,7 +70,8 @@
                     <!-- 非主营业务客户列表 -->
                     <template v-for="(item, index) in costCenterData.nonMainBusiness" :key="`nonmain-${index}`">
                         <tr>
-                            <td v-if="index === 0" :rowspan="costCenterData.nonMainBusiness.length" class="border border-gray-300 px-4 py-2 font-medium text-center">
+                            <td v-if="index === 0" :rowspan="costCenterData.nonMainBusiness.length"
+                                class="border border-gray-300 px-4 py-2 font-medium text-center">
                                 非主营业务
                             </td>
                             <td class="border border-gray-300 px-4 py-2">
@@ -57,8 +80,25 @@
                             <td class="border border-gray-300 px-4 py-2 text-right">
                                 {{ formatNumber(item.yearlyPlannedIncome) }}
                             </td>
+                            <td class="border border-gray-300 px-4 py-2 text-right">
+                                <span class="text-sm font-medium">{{ formatNumber(calculateCurrentIncome(item))
+                                }}</span>
+                            </td>
                             <td class="border border-gray-300 px-4 py-2">
-                                <input v-model="item.currentIncome" type="number" class="w-full px-2 py-1 border rounded text-right" step="0.01" />
+                                <input v-model="item.marketing" type="number"
+                                    class="w-full px-2 py-1 border rounded text-right" step="0.01" />
+                            </td>
+                            <td class="border border-gray-300 px-4 py-2">
+                                <input v-model="item.management" type="number"
+                                    class="w-full px-2 py-1 border rounded text-right" step="0.01" />
+                            </td>
+                            <td class="border border-gray-300 px-4 py-2">
+                                <input v-model="item.finance" type="number"
+                                    class="w-full px-2 py-1 border rounded text-right" step="0.01" />
+                            </td>
+                            <td class="border border-gray-300 px-4 py-2">
+                                <input v-model="item.production" type="number"
+                                    class="w-full px-2 py-1 border rounded text-right" step="0.01" />
                             </td>
                             <td class="border border-gray-300 px-4 py-2 text-right">
                                 {{ formatNumber(item.accumulatedIncome) }}
@@ -79,6 +119,18 @@
                             {{ formatNumber(totalData.currentIncome) }}
                         </td>
                         <td class="border border-gray-300 px-4 py-2 text-right">
+                            {{ formatNumber(totalData.marketing) }}
+                        </td>
+                        <td class="border border-gray-300 px-4 py-2 text-right">
+                            {{ formatNumber(totalData.management) }}
+                        </td>
+                        <td class="border border-gray-300 px-4 py-2 text-right">
+                            {{ formatNumber(totalData.finance) }}
+                        </td>
+                        <td class="border border-gray-300 px-4 py-2 text-right">
+                            {{ formatNumber(totalData.production) }}
+                        </td>
+                        <td class="border border-gray-300 px-4 py-2 text-right">
                             {{ formatNumber(totalData.accumulatedIncome) }}
                         </td>
                         <td class="border border-gray-300 px-4 py-2 text-right">
@@ -90,12 +142,8 @@
         </div>
 
         <!-- 文件上传和备注组件 -->
-        <FormAttachmentAndRemarks 
-            :module-id="MODULE_IDS.NANHUA_COST_CENTER_STRUCTURE"
-            :period="period"
-            v-model:remarks="remarks"
-            v-model:suggestions="suggestions"
-        />
+        <FormAttachmentAndRemarks :module-id="MODULE_IDS.NANHUA_COST_CENTER_STRUCTURE" :period="period"
+            v-model:remarks="remarks" v-model:suggestions="suggestions" />
 
         <div class="mt-4 flex justify-end space-x-4">
             <button @click="handleSave" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
@@ -121,6 +169,10 @@ interface CostCenterItem {
     customerName: string;
     yearlyPlannedIncome: number;
     currentIncome: number;
+    marketing: number;
+    management: number;
+    finance: number;
+    production: number;
     accumulatedIncome: number;
     contributionRate: number;
 }
@@ -133,18 +185,18 @@ interface CostCenterData {
 // 固定的数据结构
 const fixedData: CostCenterData = {
     engineering: [
-        { customerName: '一包项目', yearlyPlannedIncome: 284.22, currentIncome: 0, accumulatedIncome: 0, contributionRate: 0 },
-        { customerName: '二包项目', yearlyPlannedIncome: 106.53, currentIncome: 0, accumulatedIncome: 0, contributionRate: 0 },
-        { customerName: '域内合作项目', yearlyPlannedIncome: 41.41, currentIncome: 0, accumulatedIncome: 0, contributionRate: 0 },
-        { customerName: '域外合作项目', yearlyPlannedIncome: 17.07, currentIncome: 0, accumulatedIncome: 0, contributionRate: 0 },
-        { customerName: '新能源项目', yearlyPlannedIncome: 157.09, currentIncome: 0, accumulatedIncome: 0, contributionRate: 0 },
-        { customerName: '苏州项目', yearlyPlannedIncome: 12.88, currentIncome: 0, accumulatedIncome: 0, contributionRate: 0 },
-        { customerName: '自接项目', yearlyPlannedIncome: 109.83, currentIncome: 0, accumulatedIncome: 0, contributionRate: 0 },
-        { customerName: '其他', yearlyPlannedIncome: 0.00, currentIncome: 0, accumulatedIncome: 0, contributionRate: 0 }
+        { customerName: '一包项目', yearlyPlannedIncome: 284.22, currentIncome: 0, marketing: 0, management: 0, finance: 0, production: 0, accumulatedIncome: 0, contributionRate: 0 },
+        { customerName: '二包项目', yearlyPlannedIncome: 106.53, currentIncome: 0, marketing: 0, management: 0, finance: 0, production: 0, accumulatedIncome: 0, contributionRate: 0 },
+        { customerName: '域内合作项目', yearlyPlannedIncome: 41.41, currentIncome: 0, marketing: 0, management: 0, finance: 0, production: 0, accumulatedIncome: 0, contributionRate: 0 },
+        { customerName: '域外合作项目', yearlyPlannedIncome: 17.07, currentIncome: 0, marketing: 0, management: 0, finance: 0, production: 0, accumulatedIncome: 0, contributionRate: 0 },
+        { customerName: '新能源项目', yearlyPlannedIncome: 157.09, currentIncome: 0, marketing: 0, management: 0, finance: 0, production: 0, accumulatedIncome: 0, contributionRate: 0 },
+        { customerName: '苏州项目', yearlyPlannedIncome: 12.88, currentIncome: 0, marketing: 0, management: 0, finance: 0, production: 0, accumulatedIncome: 0, contributionRate: 0 },
+        { customerName: '自接项目', yearlyPlannedIncome: 109.83, currentIncome: 0, marketing: 0, management: 0, finance: 0, production: 0, accumulatedIncome: 0, contributionRate: 0 },
+        { customerName: '其他', yearlyPlannedIncome: 0.00, currentIncome: 0, marketing: 0, management: 0, finance: 0, production: 0, accumulatedIncome: 0, contributionRate: 0 }
     ],
     nonMainBusiness: [
-        { customerName: '存货盘盈', yearlyPlannedIncome: 0.47, currentIncome: 0, accumulatedIncome: 0, contributionRate: 0 },
-        { customerName: '利息收入', yearlyPlannedIncome: 5.91, currentIncome: 0, accumulatedIncome: 0, contributionRate: 0 }
+        { customerName: '存货盘盈', yearlyPlannedIncome: 0.47, currentIncome: 0, marketing: 0, management: 0, finance: 0, production: 0, accumulatedIncome: 0, contributionRate: 0 },
+        { customerName: '利息收入', yearlyPlannedIncome: 5.91, currentIncome: 0, marketing: 0, management: 0, finance: 0, production: 0, accumulatedIncome: 0, contributionRate: 0 }
     ]
 }
 
@@ -160,94 +212,51 @@ const formatNumber = (value: number): string => {
     return value.toFixed(2)
 }
 
-// 计算累计收入（从年初到当前月份）
-const calculateAccumulatedIncome = async (targetPeriod: string) => {
-    try {
-        const [year, month] = targetPeriod.split('-')
-        const currentMonth = parseInt(month)
-        
-        // 计算工程项目的累计收入
-        for (let customer of costCenterData.value.engineering) {
-            let accumulated = 0
-            
-            // 从1月累计到当前月份
-            for (let m = 1; m <= currentMonth; m++) {
-                const monthPeriod = `${year}-${m.toString().padStart(2, '0')}`
-                try {
-                    const response = await fetch(`http://47.111.95.19:3000/nanhua-cost-center-structure/${monthPeriod}`)
-                    if (response.ok) {
-                        const result = await response.json()
-                        const customerData = result.data.engineering.find((c: any) => c.customerName === customer.customerName)
-                        if (customerData) {
-                            accumulated += customerData.currentIncome || 0
-                        }
-                    }
-                } catch (error) {
-                    console.warn(`无法加载${monthPeriod}的数据:`, error)
-                }
-            }
-            
-            customer.accumulatedIncome = accumulated
-            // 计算分摊损益占比
-            customer.contributionRate = customer.yearlyPlannedIncome > 0 ? (accumulated / customer.yearlyPlannedIncome * 100) : 0
-        }
-        
-        // 计算非主营业务的累计收入
-        for (let customer of costCenterData.value.nonMainBusiness) {
-            let accumulated = 0
-            
-            // 从1月累计到当前月份
-            for (let m = 1; m <= currentMonth; m++) {
-                const monthPeriod = `${year}-${m.toString().padStart(2, '0')}`
-                try {
-                    const response = await fetch(`http://47.111.95.19:3000/nanhua-cost-center-structure/${monthPeriod}`)
-                    if (response.ok) {
-                        const result = await response.json()
-                        const customerData = result.data.nonMainBusiness.find((c: any) => c.customerName === customer.customerName)
-                        if (customerData) {
-                            accumulated += customerData.currentIncome || 0
-                        }
-                    }
-                } catch (error) {
-                    console.warn(`无法加载${monthPeriod}的数据:`, error)
-                }
-            }
-            
-            customer.accumulatedIncome = accumulated
-            // 计算分摊损益占比
-            customer.contributionRate = customer.yearlyPlannedIncome > 0 ? (accumulated / customer.yearlyPlannedIncome * 100) : 0
-        }
-    } catch (error) {
-        console.error('计算累计收入失败:', error)
-    }
+// 计算当期计入损益（四个分解值的总和）
+const calculateCurrentIncome = (item: CostCenterItem): number => {
+    return (item.marketing || 0) + (item.management || 0) + (item.finance || 0) + (item.production || 0)
 }
+
+// 注意：累计收入现在由后端计算，不需要前端重复计算
 
 // 计算合计数据
 const totalData = computed(() => {
     const total = {
         yearlyPlannedIncome: 0,
         currentIncome: 0,
+        marketing: 0,
+        management: 0,
+        finance: 0,
+        production: 0,
         accumulatedIncome: 0,
         contributionRate: 0
     }
-    
+
     // 合计工程项目
     costCenterData.value.engineering.forEach(item => {
         total.yearlyPlannedIncome += item.yearlyPlannedIncome || 0
-        total.currentIncome += item.currentIncome || 0
+        total.currentIncome += calculateCurrentIncome(item)
+        total.marketing += item.marketing || 0
+        total.management += item.management || 0
+        total.finance += item.finance || 0
+        total.production += item.production || 0
         total.accumulatedIncome += item.accumulatedIncome || 0
     })
-    
+
     // 合计非主营业务
     costCenterData.value.nonMainBusiness.forEach(item => {
         total.yearlyPlannedIncome += item.yearlyPlannedIncome || 0
-        total.currentIncome += item.currentIncome || 0
+        total.currentIncome += calculateCurrentIncome(item)
+        total.marketing += item.marketing || 0
+        total.management += item.management || 0
+        total.finance += item.finance || 0
+        total.production += item.production || 0
         total.accumulatedIncome += item.accumulatedIncome || 0
     })
-    
+
     // 计算总体分摊损益占比
     total.contributionRate = total.yearlyPlannedIncome > 0 ? (total.accumulatedIncome / total.yearlyPlannedIncome * 100) : 0
-    
+
     return total
 })
 
@@ -269,17 +278,25 @@ const loadData = async (targetPeriod: string) => {
                     customerName: item.customerName,
                     yearlyPlannedIncome: Number(item.yearlyPlannedIncome) || 0,
                     currentIncome: Number(item.currentIncome) || 0,
+                    marketing: Number(item.marketing) || 0,
+                    management: Number(item.management) || 0,
+                    finance: Number(item.finance) || 0,
+                    production: Number(item.production) || 0,
                     accumulatedIncome: Number(item.accumulatedIncome) || 0,
                     contributionRate: Number(item.contributionRate) || 0
                 }))
             }
-            
+
             // 更新非主营业务数据
             if (result.data.nonMainBusiness) {
                 costCenterData.value.nonMainBusiness = result.data.nonMainBusiness.map((item: any) => ({
                     customerName: item.customerName,
                     yearlyPlannedIncome: Number(item.yearlyPlannedIncome) || 0,
                     currentIncome: Number(item.currentIncome) || 0,
+                    marketing: Number(item.marketing) || 0,
+                    management: Number(item.management) || 0,
+                    finance: Number(item.finance) || 0,
+                    production: Number(item.production) || 0,
                     accumulatedIncome: Number(item.accumulatedIncome) || 0,
                     contributionRate: Number(item.contributionRate) || 0
                 }))
@@ -311,7 +328,6 @@ watch(() => route.query.period, async (newPeriod) => {
     if (newPeriod) {
         period.value = newPeriod.toString()
         await loadData(newPeriod.toString())
-        await calculateAccumulatedIncome(newPeriod.toString())
         loadRemarksAndSuggestions(newPeriod.toString())
     }
 })
@@ -321,7 +337,6 @@ watch(period, async (newPeriod, oldPeriod) => {
     if (newPeriod && newPeriod !== oldPeriod) {
         console.log(`期间发生变化: ${oldPeriod} -> ${newPeriod}`)
         await loadData(newPeriod)
-        await calculateAccumulatedIncome(newPeriod)
         loadRemarksAndSuggestions(newPeriod)
     }
 })
@@ -362,11 +377,9 @@ const handleReset = () => {
 onMounted(async () => {
     if (route.query.period) {
         await loadData(route.query.period.toString())
-        await calculateAccumulatedIncome(route.query.period.toString())
         loadRemarksAndSuggestions(route.query.period.toString())
     } else {
         await loadData(period.value)
-        await calculateAccumulatedIncome(period.value)
         loadRemarksAndSuggestions(period.value)
     }
 })

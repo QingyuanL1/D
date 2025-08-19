@@ -911,6 +911,14 @@ export const frameIn: Array<RouteRecordRaw> = [
         },
       },
       {
+        path: 'tuoyuan/cost-center-structure',
+        name: 'TuoyuanCostCenterStructure',
+        component: () => import('@/views/tuoyuan/CostCenterStructure.vue'),
+        meta: {
+          title: '拓源公司-成本中心结构与质量',
+        },
+      },
+      {
         path: 'tuoyuan/main-business-contribution-rate',
         name: 'TuoyuanMainBusinessContributionRate',
         component: () => import('@/views/tuoyuan/MainBusinessContributionRate.vue'),
@@ -933,6 +941,14 @@ export const frameIn: Array<RouteRecordRaw> = [
           import('@/views/tuoyuan/MainBusinessNetProfitContribution.vue'),
         meta: {
           title: '拓源公司-主营业务净利润贡献情况',
+        },
+      },
+      {
+        path: 'tuoyuan/net-profit-structure',
+        name: 'TuoyuanNetProfitStructure',
+        component: () => import('@/views/tuoyuan/NetProfitStructure.vue'),
+        meta: {
+          title: '拓源公司-净利润结构与质量',
         },
       },
       {

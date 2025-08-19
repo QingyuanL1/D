@@ -3,65 +3,135 @@ const router = express.Router();
 const { pool } = require('../config/database');
 const fetch = require('node-fetch');
 
-// 获取数据
+// 获取数据 - 使用实时计算
 router.get('/:period', async (req, res) => {
     try {
         const { period } = req.params;
-        console.log(`获取拓源公司主营业务毛利率数据，期间: ${period}`);
+        console.log(`实时计算拓源公司主营业务毛利率数据，期间: ${period}`);
         
-        const query = `
-            SELECT 
-                id,
-                period,
-                segment_attribute,
-                customer_attribute,
-                yearly_plan,
-                current_actual,
-                deviation,
-                created_at,
-                updated_at
-            FROM tuoyuan_main_business_profit_margin 
-            WHERE period = ?
-            ORDER BY id ASC
-        `;
-        
-        const [results] = await pool.execute(query, [period]);
-        
-        if (results.length === 0) {
-            return res.status(404).json({
+        // 验证period格式 (YYYY-MM)
+        if (!/^\d{4}-\d{2}$/.test(period)) {
+            return res.status(400).json({ 
                 success: false,
-                message: '未找到数据'
+                message: '无效的期间格式，应为YYYY-MM' 
             });
         }
 
-        const items = results.map(row => ({
-            id: row.id,
-            segmentAttribute: row.segment_attribute,
-            customerAttribute: row.customer_attribute,
-            yearlyPlan: parseFloat(row.yearly_plan || 0),
-            currentActual: parseFloat(row.current_actual || 0),
-            deviation: parseFloat(row.deviation || 0)
-        }));
+        // 1. 获取主营业务收入数据
+        const incomeResponse = await fetch(`http://47.111.95.19:3000/tuoyuan-main-business-income-breakdown/${period}`);
+        let incomeData = null;
+
+        if (incomeResponse.ok) {
+            const incomeResult = await incomeResponse.json();
+            if (incomeResult.success) {
+                incomeData = incomeResult.data;
+            }
+        }
+
+        if (!incomeData) {
+            return res.status(404).json({ 
+                success: false,
+                message: `未找到${period}期间的主营业务收入数据` 
+            });
+        }
+
+        // 2. 获取主营业务成本数据
+        const costResponse = await fetch(`http://47.111.95.19:3000/tuoyuan-main-business-cost-structure-quality/${period}`);
+        let costData = null;
+
+        if (costResponse.ok) {
+            const costResult = await costResponse.json();
+            if (costResult.success) {
+                costData = costResult.data;
+            }
+        }
+
+        if (!costData) {
+            return res.status(404).json({ 
+                success: false,
+                message: `未找到${period}期间的主营业务成本数据` 
+            });
+        }
+
+        // 3. 计算各板块的毛利率
+        const calculatedItems = [];
+
+        // 遍历收入数据计算毛利率
+        for (const incomeItem of incomeData.items) {
+            const segmentAttribute = incomeItem.segmentAttribute;
+            const customerAttribute = incomeItem.customerAttribute;
+            const cumulativeIncome = incomeItem.currentCumulative || 0;
+
+            // 查找对应的成本数据
+            let totalCost = 0;
+            if (costData.equipment) {
+                const costItem = costData.equipment.find(cost => 
+                    cost.customerType === customerAttribute
+                );
+                
+                if (costItem) {
+                    // 获取累计材料成本（直接费用）和累计人工成本（制造费用）
+                    const cumulativeMaterialCost = parseFloat(costItem.cumulativeMaterialCost || 0);
+                    const cumulativeLaborCost = parseFloat(costItem.cumulativeLaborCost || 0);
+                    
+                    let materialCost = cumulativeMaterialCost;
+                    let laborCost = cumulativeLaborCost;
+                    
+                    // 如果累计成本为0，则计算前面所有月份的当期成本总和
+                    if (materialCost === 0) {
+                        materialCost = await calculateHistoricalCosts(period, customerAttribute, 'material');
+                    }
+                    if (laborCost === 0) {
+                        laborCost = await calculateHistoricalCosts(period, customerAttribute, 'labor');
+                    }
+                    
+                    // 总成本 = 材料成本（直接费用） + 人工成本（制造费用）
+                    totalCost = materialCost + laborCost;
+                }
+            }
+
+            // 计算毛利率：(收入-成本)/收入 * 100%
+            let profitMargin = 0;
+            if (cumulativeIncome > 0) {
+                profitMargin = ((cumulativeIncome - totalCost) / cumulativeIncome) * 100;
+            }
+
+            // 获取年度计划值
+            const yearlyPlan = getYearlyPlan(segmentAttribute, customerAttribute);
+            const deviation = profitMargin - yearlyPlan;
+
+            calculatedItems.push({
+                segmentAttribute: segmentAttribute,
+                customerAttribute: customerAttribute,
+                yearlyPlan: yearlyPlan,
+                currentActual: Number(profitMargin.toFixed(2)),
+                deviation: Number(deviation.toFixed(2))
+            });
+        }
 
         res.json({
             success: true,
             data: {
                 period: period,
-                items: items
+                items: calculatedItems
+            },
+            calculation: {
+                formula: '毛利率 = (累计收入 - 累计材料成本 - 累计人工成本) / 累计收入 * 100%',
+                description: '基于tuoyuan_main_business_income_breakdown.currentCumulative和tuoyuan_main_business_cost_structure_quality.cumulative_material_cost、cumulative_labor_cost实时计算'
             }
         });
 
     } catch (error) {
-        console.error('获取拓源公司主营业务毛利率数据失败:', error);
+        console.error('实时计算拓源公司主营业务毛利率数据失败:', error);
         res.status(500).json({
             success: false,
-            message: '获取数据失败',
+            message: '实时计算失败',
             error: error.message
         });
     }
 });
 
-// 保存数据
+// 保存数据 - 注意：现在GET路由使用实时计算，此路由主要用于兼容性或数据缓存
 router.post('/', async (req, res) => {
     try {
         const { period, data } = req.body;
@@ -131,7 +201,7 @@ router.post('/', async (req, res) => {
     }
 });
 
-// 计算指定期间的毛利率数据
+// 计算指定期间的毛利率数据 - 已被GET /:period路由替代，保留用于兼容性
 router.get('/calculate/:period', async (req, res) => {
     try {
         const { period } = req.params;

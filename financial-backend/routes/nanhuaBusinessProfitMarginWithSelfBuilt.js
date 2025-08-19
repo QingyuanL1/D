@@ -4,35 +4,75 @@ const { pool } = require('../config/database');
 const { createBudgetMiddleware } = require('../middleware/budgetMiddleware');
 const fetch = require('node-fetch');
 
-// 获取南华主营业务毛利率结构与质量数据（含自建项目）
+// 获取南华主营业务毛利率结构与质量数据（含自建项目）- 改为实时计算
 router.get('/:period', createBudgetMiddleware('nanhua_business_profit_margin_with_self_built'), async (req, res) => {
   const { period } = req.params;
-  
+
   // 验证period格式 (YYYY-MM)
   if (!/^\d{4}-\d{2}$/.test(period)) {
     return res.status(400).json({ error: '无效的期间格式，应为YYYY-MM' });
   }
-  
+
   try {
-    const [rows] = await pool.execute(
-      'SELECT * FROM nanhua_business_profit_margin_with_self_built WHERE period = ? ORDER BY created_at DESC LIMIT 1',
-      [period]
-    );
-    
-    if (rows.length === 0) {
-      return res.status(404).json({ error: '未找到指定期间的数据' });
+    console.log(`实时计算南华主营业务毛利率数据，期间: ${period}`);
+
+    // 先尝试自动计算毛利率
+    let calculatedData = null;
+    try {
+      console.log('尝试自动计算南华毛利率...');
+      const calculateResponse = await fetch(`http://47.111.95.19:3000/nanhua-business-profit-margin-with-self-built/calculate/${period}`);
+
+      if (calculateResponse.ok) {
+        const calculateResult = await calculateResponse.json();
+        if (calculateResult.success && calculateResult.data) {
+          calculatedData = calculateResult.data;
+          console.log('南华毛利率自动计算成功:', calculatedData);
+        }
+      }
+    } catch (calcError) {
+      console.log('南华毛利率自动计算失败，将使用现有数据:', calcError.message);
     }
-    
+
+    // 如果自动计算成功，使用计算结果；否则加载现有数据
+    let finalData = calculatedData;
+
+    if (!finalData) {
+      // 回退到数据库查询
+      const [rows] = await pool.execute(
+        'SELECT * FROM nanhua_business_profit_margin_with_self_built WHERE period = ? ORDER BY created_at DESC LIMIT 1',
+        [period]
+      );
+
+      if (rows.length > 0) {
+        finalData = rows[0].data;
+        console.log('使用南华毛利率数据库存储数据:', finalData);
+      }
+    }
+
+    if (!finalData) {
+      return res.status(404).json({
+        success: false,
+        message: '未找到指定期间的南华毛利率数据，且自动计算失败'
+      });
+    }
+
     res.json({
       success: true,
-      data: rows[0].data,
-      period: rows[0].period,
-      updated_at: rows[0].updated_at
+      data: finalData,
+      period: period,
+      calculation: {
+        method: calculatedData ? 'real_time_calculation' : 'stored_data',
+        description: calculatedData ? '实时计算结果' : '数据库存储数据'
+      }
     });
-    
+
   } catch (error) {
-    console.error('获取数据失败:', error);
-    res.status(500).json({ error: '获取数据失败' });
+    console.error('获取南华毛利率数据失败:', error);
+    res.status(500).json({
+      success: false,
+      message: '获取数据失败',
+      error: error.message
+    });
   }
 });
 
@@ -130,46 +170,36 @@ router.get('/', async (req, res) => {
   }
 });
 
-// 计算累计成本的辅助函数
+// 计算累计成本的辅助函数（修复：使用与边际贡献率相同的数据源）
 const calculateCumulativeCosts = async (period, customerName, customerMapping) => {
   try {
     const [year, month] = period.split('-');
     const mappedName = customerMapping[customerName] || customerName;
-    let totalMaterialCost = 0;
-    let totalLaborCost = 0;
 
-    // 累加从1月到当前月份的所有当期成本
-    for (let m = 1; m <= parseInt(month); m++) {
-      const monthPeriod = `${year}-${m.toString().padStart(2, '0')}`;
-      
-      try {
-        const monthCostResponse = await fetch(`http://47.111.95.19:3000/nanhua-main-business-cost/${monthPeriod}`);
-        if (monthCostResponse.ok) {
-          const monthCostResult = await monthCostResponse.json();
-          if (monthCostResult.success && monthCostResult.data) {
-            // 根据客户类型确定在哪个类别中查找
-            let costCategory = [];
-            if (['一包项目', '二包项目', '域内合作项目', '域外合作项目'].includes(customerName)) {
-              costCategory = monthCostResult.data.equipment || [];
-            } else if (['新能源项目', '苏州项目'].includes(customerName)) {
-              costCategory = monthCostResult.data.component || [];
-            } else if (['自接项目', '其他'].includes(customerName)) {
-              costCategory = monthCostResult.data.project || [];
-            }
-            
-            const costCustomer = costCategory.find(item => item.customerType === mappedName);
-            if (costCustomer) {
-              totalMaterialCost += parseFloat(costCustomer.currentMaterialCost || 0);
-              totalLaborCost += parseFloat(costCustomer.currentLaborCost || 0);
-            }
-          }
-        }
-      } catch (error) {
-        console.error(`获取${monthPeriod}成本数据失败:`, error);
-      }
+    // 直接查询数据库，获取累计成本数据（与边际贡献率使用相同的数据源）
+    const [costRows] = await pool.execute(`
+      SELECT
+        category,
+        customer_type,
+        SUM(cumulative_material_cost) as cumulative_material_cost,
+        SUM(cumulative_labor_cost) as cumulative_labor_cost,
+        SUM(cumulative_material_cost + cumulative_labor_cost) as total_cumulative_cost
+      FROM nanhua_main_business_cost
+      WHERE period <= ? AND SUBSTRING(period, 1, 4) = ?
+      AND customer_type = ?
+      GROUP BY category, customer_type
+      ORDER BY category, customer_type
+    `, [period, year, mappedName]);
+
+    let totalCost = 0;
+    if (costRows.length > 0) {
+      totalCost = costRows.reduce((sum, row) => {
+        return sum + (parseFloat(row.total_cumulative_cost) || 0);
+      }, 0);
     }
 
-    return totalMaterialCost + totalLaborCost;
+    console.log(`${customerName} (${mappedName}) 累计成本: ${totalCost}, 数据行数: ${costRows.length}`);
+    return totalCost;
   } catch (error) {
     console.error(`计算${customerName}累计成本失败:`, error);
     return 0;

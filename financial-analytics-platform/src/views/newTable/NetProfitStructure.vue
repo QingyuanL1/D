@@ -1,7 +1,7 @@
 <template>
     <div class="max-w-[1500px] mx-auto bg-white rounded-lg shadow-lg p-6">
         <div class="flex justify-between items-center mb-6">
-            <h1 class="text-2xl font-bold">净利润结构与质量（单位：万元）</h1>
+            <h1 class="text-2xl font-bold">利润总额结构与质量（单位：万元）</h1>
             <div class="text-gray-500">(按年度计划口径分解)</div>
             <div class="flex items-center space-x-4">
                 <input v-model="period" type="month" class="px-3 py-2 border rounded" />
@@ -24,18 +24,22 @@
                     <!-- 主营业务 -->
                     <tr>
                         <td class="border border-gray-300 px-4 py-2 text-center">1</td>
-                        <td class="border border-gray-300 px-4 py-2">主营业务</td>
+                        <td class="border border-gray-300 px-4 py-2">主营业务利润总额</td>
                         <td class="border border-gray-300 px-4 py-2">
-                            <input v-model="data.mainBusiness.plan" type="text" class="w-full px-2 py-1 border rounded bg-gray-100" readonly />
+                            <input v-model="data.mainBusiness.plan" type="text"
+                                class="w-full px-2 py-1 border rounded bg-gray-100" readonly />
                         </td>
                         <td class="border border-gray-300 px-4 py-2">
-                            <input v-model="data.mainBusiness.current" type="text" class="w-full px-2 py-1 border rounded" @input="calculateProgress('mainBusiness')" />
+                            <input v-model="data.mainBusiness.current" type="text"
+                                class="w-full px-2 py-1 border rounded bg-gray-100" readonly />
                         </td>
                         <td class="border border-gray-300 px-4 py-2">
-                            <input v-model="data.mainBusiness.cumulative" type="text" class="w-full px-2 py-1 border rounded bg-gray-100" readonly />
+                            <input v-model="data.mainBusiness.cumulative" type="text"
+                                class="w-full px-2 py-1 border rounded bg-gray-100" readonly />
                         </td>
                         <td class="border border-gray-300 px-4 py-2">
-                            <input v-model="data.mainBusiness.progress" type="text" class="w-full px-2 py-1 border rounded" />
+                            <input v-model="data.mainBusiness.progress" type="text"
+                                class="w-full px-2 py-1 border rounded" />
                         </td>
                     </tr>
 
@@ -44,16 +48,20 @@
                         <td class="border border-gray-300 px-4 py-2 text-center">2</td>
                         <td class="border border-gray-300 px-4 py-2">非主营业务</td>
                         <td class="border border-gray-300 px-4 py-2">
-                            <input v-model="data.nonMainBusiness.plan" type="text" class="w-full px-2 py-1 border rounded bg-gray-100" readonly />
+                            <input v-model="data.nonMainBusiness.plan" type="text"
+                                class="w-full px-2 py-1 border rounded bg-gray-100" readonly />
                         </td>
                         <td class="border border-gray-300 px-4 py-2">
-                            <input v-model="data.nonMainBusiness.current" type="text" class="w-full px-2 py-1 border rounded" @input="calculateProgress('nonMainBusiness')" />
+                            <input v-model="data.nonMainBusiness.current" type="text"
+                                class="w-full px-2 py-1 border rounded" @input="calculateProgress('nonMainBusiness')" />
                         </td>
                         <td class="border border-gray-300 px-4 py-2">
-                            <input v-model="data.nonMainBusiness.cumulative" type="text" class="w-full px-2 py-1 border rounded bg-gray-100" readonly />
+                            <input v-model="data.nonMainBusiness.cumulative" type="text"
+                                class="w-full px-2 py-1 border rounded bg-gray-100" readonly />
                         </td>
                         <td class="border border-gray-300 px-4 py-2">
-                            <input v-model="data.nonMainBusiness.progress" type="text" class="w-full px-2 py-1 border rounded" />
+                            <input v-model="data.nonMainBusiness.progress" type="text"
+                                class="w-full px-2 py-1 border rounded" />
                         </td>
                     </tr>
 
@@ -61,16 +69,20 @@
                     <tr class="bg-gray-50 font-bold">
                         <td class="border border-gray-300 px-4 py-2 text-center" colspan="2">合计</td>
                         <td class="border border-gray-300 px-4 py-2">
-                            <input v-model="data.total.plan" type="text" class="w-full px-2 py-1 border rounded font-bold" readonly />
+                            <input v-model="data.total.plan" type="text"
+                                class="w-full px-2 py-1 border rounded font-bold" readonly />
                         </td>
                         <td class="border border-gray-300 px-4 py-2">
-                            <input v-model="data.total.current" type="text" class="w-full px-2 py-1 border rounded font-bold" readonly />
+                            <input v-model="data.total.current" type="text"
+                                class="w-full px-2 py-1 border rounded font-bold" readonly />
                         </td>
                         <td class="border border-gray-300 px-4 py-2">
-                            <input v-model="data.total.cumulative" type="text" class="w-full px-2 py-1 border rounded font-bold" readonly />
+                            <input v-model="data.total.cumulative" type="text"
+                                class="w-full px-2 py-1 border rounded font-bold" readonly />
                         </td>
                         <td class="border border-gray-300 px-4 py-2">
-                            <input v-model="data.total.progress" type="text" class="w-full px-2 py-1 border rounded font-bold" readonly />
+                            <input v-model="data.total.progress" type="text"
+                                class="w-full px-2 py-1 border rounded font-bold" readonly />
                         </td>
                     </tr>
                 </tbody>
@@ -79,7 +91,7 @@
 
         <!-- 主营业务净利润贡献情况表 -->
         <div class="mt-8">
-            <h2 class="text-xl font-bold mb-4">主营业务净利润贡献情况（单位：万元）</h2>
+            <h2 class="text-xl font-bold mb-4">主营业务利润总额贡献情况（单位：万元）</h2>
             <div class="overflow-x-auto my-6">
                 <table class="w-full border-collapse border border-gray-300">
                     <thead class="sticky top-0 bg-white">
@@ -96,15 +108,19 @@
                         <!-- 设备板块 -->
                         <template v-for="(item, index) in equipmentData" :key="`equipment-${index}`">
                             <tr>
-                                <td v-if="index === 0" class="border border-gray-300 px-4 py-2 text-center" :rowspan="equipmentData.length">
+                                <td v-if="index === 0" class="border border-gray-300 px-4 py-2 text-center"
+                                    :rowspan="equipmentData.length">
                                     设备
                                 </td>
                                 <td class="border border-gray-300 px-4 py-2">{{ item.customerType }}</td>
                                 <td class="border border-gray-300 px-4 py-2">
-                                    <input v-model="item.plan" type="text" class="w-full px-2 py-1 border rounded bg-gray-100" readonly />
+                                    <input v-model="item.plan" type="text"
+                                        class="w-full px-2 py-1 border rounded bg-gray-100" readonly />
                                 </td>
                                 <td class="border border-gray-300 px-4 py-2">
-                                    <span class="font-medium">{{ formatNumber(parseFloat(item.currentMonthValue?.replace(/,/g, '')) || 0) }}</span>
+                                    <span class="font-medium">{{
+                                        formatNumber(parseFloat(item.currentMonthValue?.replace(/,/g, '')) || 0)
+                                    }}</span>
                                 </td>
                                 <td class="border border-gray-300 px-4 py-2">
                                     <span class="font-medium">{{ item.actual }}</span>
@@ -118,15 +134,19 @@
                         <!-- 元件板块 -->
                         <template v-for="(item, index) in componentData" :key="`component-${index}`">
                             <tr>
-                                <td v-if="index === 0" class="border border-gray-300 px-4 py-2 text-center" :rowspan="componentData.length">
+                                <td v-if="index === 0" class="border border-gray-300 px-4 py-2 text-center"
+                                    :rowspan="componentData.length">
                                     元件
                                 </td>
                                 <td class="border border-gray-300 px-4 py-2">{{ item.customerType }}</td>
                                 <td class="border border-gray-300 px-4 py-2">
-                                    <input v-model="item.plan" type="text" class="w-full px-2 py-1 border rounded bg-gray-100" readonly />
+                                    <input v-model="item.plan" type="text"
+                                        class="w-full px-2 py-1 border rounded bg-gray-100" readonly />
                                 </td>
                                 <td class="border border-gray-300 px-4 py-2">
-                                    <span class="font-medium">{{ formatNumber(parseFloat(item.currentMonthValue?.replace(/,/g, '')) || 0) }}</span>
+                                    <span class="font-medium">{{
+                                        formatNumber(parseFloat(item.currentMonthValue?.replace(/,/g, '')) || 0)
+                                    }}</span>
                                 </td>
                                 <td class="border border-gray-300 px-4 py-2">
                                     <span class="font-medium">{{ item.actual }}</span>
@@ -140,15 +160,19 @@
                         <!-- 工程板块 -->
                         <template v-for="(item, index) in projectData" :key="`project-${index}`">
                             <tr>
-                                <td v-if="index === 0" class="border border-gray-300 px-4 py-2 text-center" :rowspan="projectData.length">
+                                <td v-if="index === 0" class="border border-gray-300 px-4 py-2 text-center"
+                                    :rowspan="projectData.length">
                                     工程
                                 </td>
                                 <td class="border border-gray-300 px-4 py-2">{{ item.customerType }}</td>
                                 <td class="border border-gray-300 px-4 py-2">
-                                    <input v-model="item.plan" type="text" class="w-full px-2 py-1 border rounded bg-gray-100" readonly />
+                                    <input v-model="item.plan" type="text"
+                                        class="w-full px-2 py-1 border rounded bg-gray-100" readonly />
                                 </td>
                                 <td class="border border-gray-300 px-4 py-2">
-                                    <span class="font-medium">{{ formatNumber(parseFloat(item.currentMonthValue?.replace(/,/g, '')) || 0) }}</span>
+                                    <span class="font-medium">{{
+                                        formatNumber(parseFloat(item.currentMonthValue?.replace(/,/g, '')) || 0)
+                                    }}</span>
                                 </td>
                                 <td class="border border-gray-300 px-4 py-2">
                                     <span class="font-medium">{{ item.actual }}</span>
@@ -203,7 +227,8 @@
                                 <span class="w-full px-2 py-1">{{ item.plan }}</span>
                             </td>
                             <td class="border border-gray-300 px-4 py-2">
-                                <input v-model="item.currentPeriod" type="text" class="w-full px-2 py-1 border rounded" @input="calculateNonMainProgress(index)" />
+                                <input v-model="item.currentPeriod" type="text" class="w-full px-2 py-1 border rounded"
+                                    @input="calculateNonMainProgress(index)" />
                             </td>
                             <td class="border border-gray-300 px-4 py-2">
                                 <span class="w-full px-2 py-1">{{ item.accumulated }}</span>
@@ -244,12 +269,8 @@
         </div>
 
         <!-- 文件上传和备注组件 -->
-        <FormAttachmentAndRemarks
-            :module-id="MODULE_IDS.NET_PROFIT_STRUCTURE"
-            :period="period"
-            v-model:remarks="remarks"
-            v-model:suggestions="suggestions"
-        />
+        <FormAttachmentAndRemarks :module-id="MODULE_IDS.NET_PROFIT_STRUCTURE" :period="period"
+            v-model:remarks="remarks" v-model:suggestions="suggestions" />
     </div>
 </template>
 
@@ -518,16 +539,16 @@ const calculateTotal = () => {
     const nonMainCurrent = parseFloat(data.nonMainBusiness.current.replace(/,/g, '')) || 0
     const mainCumulative = parseFloat(data.mainBusiness.cumulative.replace(/,/g, '')) || 0
     const nonMainCumulative = parseFloat(data.nonMainBusiness.cumulative.replace(/,/g, '')) || 0
-    
+
     const totalPlan = mainPlan + nonMainPlan
     const totalCurrent = mainCurrent + nonMainCurrent
     const totalCumulative = mainCumulative + nonMainCumulative
-    
+
     // 格式化为带千分位的数字
     data.total.plan = totalPlan.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
     data.total.current = totalCurrent.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
     data.total.cumulative = totalCumulative.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-    
+
     if (totalPlan !== 0) {
         const totalProgress = (totalCumulative / totalPlan * 100).toFixed(2)
         data.total.progress = `${totalProgress}%`
@@ -555,57 +576,158 @@ watch(period, (newPeriod, oldPeriod) => {
 
 
 
-// 监听当期值变化，自动重新计算累计值
-watch(() => [data.mainBusiness.current, data.nonMainBusiness.current], async () => {
-    await calculateCumulativeValues()
+// 监听非主营业务当期值变化，重新计算非主营业务累计值
+watch(() => data.nonMainBusiness.current, async () => {
+    await calculateNonMainBusinessCumulative()
+    calculateTotal()
 }, { deep: true })
 
-// 计算累计值函数
+// 计算累计值函数 - 只计算主营业务，非主营业务保持手动输入
 const calculateCumulativeValues = async () => {
     try {
         const [year] = period.value.split('-')
         let mainBusinessCumulative = 0
-        let nonMainBusinessCumulative = 0
-        
-        // 获取从年初到当前期间的所有数据
+
+        // 获取从年初到当前期间的主营业务数据
         for (let month = 1; month <= parseInt(period.value.split('-')[1]); month++) {
             const monthPeriod = `${year}-${month.toString().padStart(2, '0')}`
-            
+
             try {
-                const response = await fetch(`http://47.111.95.19:3000/net-profit-structure/${monthPeriod}`)
-                if (response.ok) {
-                    const result = await response.json()
-                    if (result.success && result.data) {
-                        const currentValue = parseFloat(result.data.mainBusiness?.current || result.data.mainBusiness?.actual || 0)
-                        const nonMainCurrentValue = parseFloat(result.data.nonMainBusiness?.current || result.data.nonMainBusiness?.actual || 0)
-                        
-                        mainBusinessCumulative += currentValue
-                        nonMainBusinessCumulative += nonMainCurrentValue
+                // 获取主营业务净利润数据
+                const mainBusinessResponse = await fetch(`http://47.111.95.19:3000/main-business-net-profit/monthly-data/${monthPeriod}`)
+                if (mainBusinessResponse.ok) {
+                    const mainBusinessResult = await mainBusinessResponse.json()
+                    if (mainBusinessResult.success && mainBusinessResult.data) {
+                        // 计算主营业务当期净利润总和
+                        let monthlyMainBusiness = 0
+
+                        // 累加设备板块
+                        if (mainBusinessResult.data.equipment) {
+                            mainBusinessResult.data.equipment.forEach((item: any) => {
+                                monthlyMainBusiness += item.currentMonthValue || 0
+                            })
+                        }
+
+                        // 累加元件板块
+                        if (mainBusinessResult.data.components) {
+                            mainBusinessResult.data.components.forEach((item: any) => {
+                                monthlyMainBusiness += item.currentMonthValue || 0
+                            })
+                        }
+
+                        // 累加工程板块
+                        if (mainBusinessResult.data.engineering) {
+                            mainBusinessResult.data.engineering.forEach((item: any) => {
+                                monthlyMainBusiness += item.currentMonthValue || 0
+                            })
+                        }
+
+                        mainBusinessCumulative += monthlyMainBusiness
                     }
                 }
+
             } catch (error) {
                 console.log(`跳过期间 ${monthPeriod} 的数据计算:`, error)
             }
         }
-        
-        // 更新累计值
+
+        // 更新主营业务累计值
         data.mainBusiness.cumulative = mainBusinessCumulative.toFixed(2)
-        data.nonMainBusiness.cumulative = nonMainBusinessCumulative.toFixed(2)
-        data.total.cumulative = (mainBusinessCumulative + nonMainBusinessCumulative).toFixed(2)
-        
-        // 重新计算进度
+
+        // 更新主营业务当期值（当前月的数据）
+        await updateMainBusinessCurrentValue()
+
+        // 非主营业务累计值基于手动输入的当期值计算
+        await calculateNonMainBusinessCumulative()
+
+        // 重新计算进度和合计
         calculateProgress('mainBusiness')
         calculateProgress('nonMainBusiness')
-        
+        calculateTotal()
+
     } catch (error) {
         console.error('计算累计值失败:', error)
+    }
+}
+
+// 更新主营业务当期值函数
+const updateMainBusinessCurrentValue = async () => {
+    try {
+        // 获取当前月的主营业务净利润数据
+        const mainBusinessResponse = await fetch(`http://47.111.95.19:3000/main-business-net-profit/monthly-data/${period.value}`)
+        if (mainBusinessResponse.ok) {
+            const mainBusinessResult = await mainBusinessResponse.json()
+            if (mainBusinessResult.success && mainBusinessResult.data) {
+                // 计算主营业务当期净利润总和
+                let currentMainBusiness = 0
+
+                // 累加设备板块
+                if (mainBusinessResult.data.equipment) {
+                    mainBusinessResult.data.equipment.forEach((item: any) => {
+                        currentMainBusiness += item.currentMonthValue || 0
+                    })
+                }
+
+                // 累加元件板块
+                if (mainBusinessResult.data.components) {
+                    mainBusinessResult.data.components.forEach((item: any) => {
+                        currentMainBusiness += item.currentMonthValue || 0
+                    })
+                }
+
+                // 累加工程板块
+                if (mainBusinessResult.data.engineering) {
+                    mainBusinessResult.data.engineering.forEach((item: any) => {
+                        currentMainBusiness += item.currentMonthValue || 0
+                    })
+                }
+
+                data.mainBusiness.current = currentMainBusiness.toFixed(2)
+            }
+        }
+
+    } catch (error) {
+        console.error('更新主营业务当期值失败:', error)
+    }
+}
+
+// 计算非主营业务累计值（基于手动输入的当期值）
+const calculateNonMainBusinessCumulative = async () => {
+    try {
+        const [year] = period.value.split('-')
+        let nonMainBusinessCumulative = 0
+
+        // 获取从年初到当前期间的所有非主营业务当期值
+        for (let month = 1; month <= parseInt(period.value.split('-')[1]); month++) {
+            const monthPeriod = `${year}-${month.toString().padStart(2, '0')}`
+
+            try {
+                // 从数据库获取该月的非主营业务当期值
+                const response = await fetch(`http://47.111.95.19:3000/net-profit-structure/${monthPeriod}`)
+                if (response.ok) {
+                    const result = await response.json()
+                    if (result.success && result.data && result.data.nonMainBusiness) {
+                        const monthlyValue = parseFloat(result.data.nonMainBusiness.current || result.data.nonMainBusiness.actual || 0)
+                        nonMainBusinessCumulative += monthlyValue
+                    }
+                }
+            } catch (error) {
+                console.log(`跳过期间 ${monthPeriod} 的非主营业务数据计算:`, error)
+            }
+        }
+
+        // 更新非主营业务累计值
+        data.nonMainBusiness.cumulative = nonMainBusinessCumulative.toFixed(2)
+
+    } catch (error) {
+        console.error('计算非主营业务累计值失败:', error)
     }
 }
 
 // 合并数据：将从数据库加载的数据与初始模板合并
 const mergeData = (templateData: any, loadedData: any): any => {
     if (!loadedData) return templateData
-    
+
     return {
         mainBusiness: {
             plan: loadedData.mainBusiness?.plan || templateData.mainBusiness.plan,
@@ -633,45 +755,14 @@ const loadData = async (targetPeriod: string) => {
     try {
         console.log(`正在加载净利润结构数据，期间: ${targetPeriod}`)
 
-        // 加载净利润结构数据
-        const response = await fetch(`http://47.111.95.19:3000/net-profit-structure/${targetPeriod}`)
-        let loadedData: any = null
+        // 初始化预算数据
+        const initialData = getInitialData()
+        data.mainBusiness = { ...initialData.mainBusiness }
+        data.nonMainBusiness = { ...initialData.nonMainBusiness }
+        data.total = { ...initialData.total }
 
-        if (response.ok) {
-            const result = await response.json()
-            console.log('API返回数据:', result)
-
-            if (result.success && result.data) {
-                loadedData = result.data
-                console.log('成功获取数据，开始合并...')
-
-                // 直接使用后端返回的数据（已包含预算数据）
-                data.mainBusiness = {
-                    plan: loadedData.mainBusiness?.plan || '0',
-                    current: loadedData.mainBusiness?.current || loadedData.mainBusiness?.actual || '0',
-                    cumulative: loadedData.mainBusiness?.cumulative || '0',
-                    progress: loadedData.mainBusiness?.progress || '0.00%'
-                }
-                data.nonMainBusiness = {
-                    plan: loadedData.nonMainBusiness?.plan || '0',
-                    current: loadedData.nonMainBusiness?.current || loadedData.nonMainBusiness?.actual || '0',
-                    cumulative: loadedData.nonMainBusiness?.cumulative || '0',
-                    progress: loadedData.nonMainBusiness?.progress || '0.00%'
-                }
-                data.total = {
-                    plan: loadedData.total?.plan || '0',
-                    current: loadedData.total?.current || loadedData.total?.actual || '0',
-                    cumulative: loadedData.total?.cumulative || '0',
-                    progress: loadedData.total?.progress || '0.00%'
-                }
-
-                calculateTotal()
-                console.log('合并后的数据:', data)
-            }
-        } else {
-            console.log('加载数据失败')
-            throw new Error('加载数据失败')
-        }
+        // 计算当期值和累计值（使用计算API）
+        await calculateCumulativeValues()
 
         // 加载主营业务净利润数据
         await loadMainBusinessData(targetPeriod)
@@ -1055,4 +1146,4 @@ onMounted(() => {
 .overflow-x-auto::-webkit-scrollbar-thumb:hover {
     background: #94a3b8;
 }
-</style> 
+</style>

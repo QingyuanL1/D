@@ -3,71 +3,143 @@ const router = express.Router();
 const { pool } = require('../config/database');
 const fetch = require('node-fetch');
 
-// 获取南华主营业务边际贡献率结构与质量数据（含自接项目）
+// 获取南华主营业务边际贡献率结构与质量数据（含自接项目）- 改为实时计算
 router.get('/:period', async (req, res) => {
   const { period } = req.params;
-  
+
   try {
-    // 固定的客户列表和年度计划 (根据实际截图数据，百分比格式)
-    const fixedData = {
-      customers: [
-        { customerName: '一包项目', yearlyPlan: 26.52 },
-        { customerName: '二包项目', yearlyPlan: 18.00 },
-        { customerName: '域内合作项目', yearlyPlan: 8.00 },
-        { customerName: '域外合作项目', yearlyPlan: 5.48 },
-        { customerName: '新能源项目', yearlyPlan: 25.00 },
-        { customerName: '苏州项目', yearlyPlan: 6.00 },
-        { customerName: '自接项目', yearlyPlan: 130.00 },
-        { customerName: '其他', yearlyPlan: 0 }
-      ]
-    };
-    
-    // 从数据库获取当期数据
-    const [currentRows] = await pool.execute(
-      'SELECT customer_name, yearly_plan, current_amount, deviation FROM nanhua_business_contribution_with_self_built WHERE period = ?',
-      [period]
-    );
+    console.log(`开始实时计算南华${period}期间的边际贡献率...`);
 
-    // 合并数据
-    const result = {
-      customers: fixedData.customers.map(item => {
-        const currentItem = currentRows.find(row => row.customer_name === item.customerName);
-        
-        return {
-          customerName: item.customerName,
-          yearlyPlan: item.yearlyPlan,
-          current: currentItem ? parseFloat(currentItem.current_amount) : 0,
-          deviation: currentItem ? parseFloat(currentItem.deviation) : 0
-        };
-      })
-    };
-
-    // 计算合计数据
-    const totalData = calculateNanhuaTotalData(result.customers);
-
-    // 获取加权平均数据
-    let weightedData = null;
+    // 1. 首先尝试实时计算
     try {
-      const weightedResult = await calculateNanhuaWeightedData(period);
-      weightedData = weightedResult;
-    } catch (error) {
-      console.error('获取南华加权数据失败:', error);
-      weightedData = {
-        totalIncome: 0,
-        totalCost: 0,
-        weightedContributionRate: 0,
-        marginContribution: 0
+      // 获取南华主营业务收入数据
+      const incomeResponse = await fetch(`http://47.111.95.19:3000/nanhua-business-income/${period}`);
+
+      if (!incomeResponse.ok) {
+        console.log(`${period}期间无南华收入数据，回退到数据库查询`);
+        throw new Error('无收入数据');
+      }
+
+      const incomeResult = await incomeResponse.json();
+      if (!incomeResult.success || !incomeResult.data) {
+        console.log(`${period}期间南华收入数据获取失败，回退到数据库查询`);
+        throw new Error('收入数据获取失败');
+      }
+
+      // 获取南华累计主营业务成本数据（从年初到当前月份）
+      const year = period.split('-')[0];
+      const [costRows] = await pool.execute(`
+        SELECT
+          category,
+          customer_type,
+          SUM(cumulative_material_cost) as cumulative_material_cost,
+          SUM(cumulative_labor_cost) as cumulative_labor_cost,
+          SUM(cumulative_material_cost + cumulative_labor_cost) as total_cumulative_cost
+        FROM nanhua_main_business_cost
+        WHERE period <= ? AND SUBSTRING(period, 1, 4) = ?
+        GROUP BY category, customer_type
+        ORDER BY category, customer_type
+      `, [period, year]);
+
+      if (costRows.length === 0) {
+        console.log(`${period}期间无南华成本数据，回退到数据库查询`);
+        throw new Error('无成本数据');
+      }
+
+      // 实时计算边际贡献率
+      const calculatedData = calculateNanhuaContributionRates(incomeResult.data, costRows, period);
+
+      // 计算合计数据
+      const totalData = calculateNanhuaTotalData(calculatedData.customers);
+
+      // 获取加权平均数据
+      const weightedData = calculateNanhuaWeightedData(incomeResult.data, costRows);
+
+      console.log(`✅ ${period}南华边际贡献率实时计算成功`);
+
+      res.json({
+        success: true,
+        data: {
+          ...calculatedData,
+          total: totalData,
+          weighted: weightedData
+        },
+        calculation: {
+          method: 'real_time_calculation',
+          description: '实时计算结果'
+        }
+      });
+
+    } catch (calcError) {
+      console.log(`实时计算失败，回退到数据库查询: ${calcError.message}`);
+
+      // 2. 实时计算失败，回退到数据库查询
+      // 固定的客户列表和年度计划 (根据实际截图数据，百分比格式)
+      const fixedData = {
+        customers: [
+          { customerName: '一包项目', yearlyPlan: 26.52 },
+          { customerName: '二包项目', yearlyPlan: 18.00 },
+          { customerName: '域内合作项目', yearlyPlan: 8.00 },
+          { customerName: '域外合作项目', yearlyPlan: 5.48 },
+          { customerName: '新能源项目', yearlyPlan: 25.00 },
+          { customerName: '苏州项目', yearlyPlan: 6.00 },
+          { customerName: '自接项目', yearlyPlan: 130.00 },
+          { customerName: '其他', yearlyPlan: 0 }
+        ]
       };
+
+      // 从数据库获取当期数据
+      const [currentRows] = await pool.execute(
+        'SELECT customer_name, yearly_plan, current_amount, deviation FROM nanhua_business_contribution_with_self_built WHERE period = ?',
+        [period]
+      );
+
+      // 合并数据
+      const result = {
+        customers: fixedData.customers.map(item => {
+          const currentItem = currentRows.find(row => row.customer_name === item.customerName);
+
+          return {
+            customerName: item.customerName,
+            yearlyPlan: item.yearlyPlan,
+            current: currentItem ? parseFloat(currentItem.current_amount) : 0,
+            deviation: currentItem ? parseFloat(currentItem.deviation) : 0
+          };
+        })
+      };
+
+      // 计算合计数据
+      const totalData = calculateNanhuaTotalData(result.customers);
+
+      // 获取加权平均数据
+      let weightedData = null;
+      try {
+        const weightedResult = await calculateNanhuaWeightedData(period);
+        weightedData = weightedResult;
+      } catch (error) {
+        console.error('获取南华加权数据失败:', error);
+        weightedData = {
+          totalIncome: 0,
+          totalCost: 0,
+          weightedContributionRate: 0,
+          marginContribution: 0
+        };
+      }
+
+      res.json({
+        success: true,
+        data: {
+          ...result,
+          total: totalData,
+          weighted: weightedData
+        },
+        calculation: {
+          method: 'database_fallback',
+          description: '从数据库获取'
+        }
+      });
     }
 
-    res.json({
-      success: true,
-      data: {
-        ...result,
-        total: totalData,
-        weighted: weightedData
-      }
-    });
   } catch (error) {
     console.error('获取南华主营业务边际贡献率结构与质量数据失败:', error);
     res.status(500).json({
@@ -189,15 +261,15 @@ router.post('/calculate/:period', async (req, res) => {
 function calculateNanhuaContributionRates(incomeData, costData, period) {
     console.log(`开始计算南华${period}期间边际贡献率`);
 
-    // 创建客户映射
+    // 创建客户映射（修复：使用数据库中实际的customer_type）
     const customerMapping = {
-        '一包项目': ['一包'],
-        '二包项目': ['二包'],
-        '域内合作项目': ['域内合作'],
-        '域外合作项目': ['域外合作'],
-        '新能源项目': ['新能源'],
-        '苏州项目': ['苏州'],
-        '自接项目': ['自建', '抢修', '运检'],
+        '一包项目': ['一包项目'],
+        '二包项目': ['二包项目'],
+        '域内合作项目': ['域内合作项目'],
+        '域外合作项目': ['域外合作项目'],
+        '新能源项目': ['新能源项目'],
+        '苏州项目': ['苏州项目'],
+        '自接项目': ['自建', '抢修', '运检', '运检项目'],
         '其他': ['其他']
     };
 
@@ -217,9 +289,8 @@ function calculateNanhuaContributionRates(incomeData, costData, period) {
     if (Array.isArray(costData)) {
         costData.forEach(item => {
             const customerType = item.customer_type;
-            costMap[customerType] = {
-                cost: parseFloat(item.total_cumulative_cost) || 0
-            };
+            const cost = parseFloat(item.total_cumulative_cost) || 0;
+            costMap[customerType] = { cost };
         });
     }
 
@@ -247,7 +318,7 @@ function calculateNanhuaContributionRates(incomeData, costData, period) {
         // 查找对应的成本数据
         let totalCost = 0;
         const possibleCostKeys = customerMapping[customerName] || [customerName];
-        
+
         possibleCostKeys.forEach(key => {
             if (costMap[key]) {
                 totalCost += costMap[key].cost;

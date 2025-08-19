@@ -3,63 +3,128 @@ const { pool } = require('../config/database');
 const { createBudgetMiddleware } = require('../middleware/budgetMiddleware');
 const router = express.Router();
 
-// 获取主营业务边际贡献率数据
+// 获取主营业务边际贡献率数据 (改为实时计算)
 router.get('/:period', createBudgetMiddleware('main_business_contribution_rate_structure'), async (req, res) => {
     const { period } = req.params;
-    
+
     // 验证period格式 (YYYY-MM)
     if (!/^\d{4}-\d{2}$/.test(period)) {
         return res.status(400).json({ error: '无效的期间格式，应为YYYY-MM' });
     }
-    
+
     try {
-        const [rows] = await pool.execute(
-            'SELECT * FROM business_contribution WHERE period = ? ORDER BY created_at DESC LIMIT 1',
-            [period]
-        );
-        
-        if (rows.length === 0) {
-            // 没有数据时，返回空的数据结构，让中间件填充预算数据
-            const defaultData = {
-                equipment: {
-                    shanghai: { plan: '0%', actual: '0%', difference: '0%' },
-                    national: { plan: '0%', actual: '0%', difference: '0%' },
-                    jiangsu: { plan: '0%', actual: '0%', difference: '0%' },
-                    power: { plan: '0%', actual: '0%', difference: '0%' },
-                    siemens: { plan: '0%', actual: '0%', difference: '0%' },
-                    peers: { plan: '0%', actual: '0%', difference: '0%' },
-                    users: { plan: '0%', actual: '0%', difference: '0%' },
-                    others: { plan: '0%', actual: '0%', difference: '0%' }
-                },
-                components: {
-                    users: { plan: '0%', actual: '0%', difference: '0%' }
-                },
-                engineering: {
-                    package1: { plan: '0%', actual: '0%', difference: '0%' },
-                    package2: { plan: '0%', actual: '0%', difference: '0%' },
-                    domestic: { plan: '0%', actual: '0%', difference: '0%' },
-                    international: { plan: '0%', actual: '0%', difference: '0%' },
-                    others: { plan: '0%', actual: '0%', difference: '0%' }
-                },
-                total: { plan: '0%', actual: '0%', difference: '0%' }
-            };
-            
-            return res.json({
+        console.log(`开始实时计算${period}主营业务边际贡献率...`);
+
+        // 1. 首先尝试实时计算
+        try {
+            // 获取主营业务收入数据
+            const [incomeRows] = await pool.execute(
+                'SELECT data FROM main_business_income WHERE DATE_FORMAT(period, "%Y-%m") = ?',
+                [period]
+            );
+
+            if (incomeRows.length === 0) {
+                console.log(`${period}期间无收入数据，回退到数据库查询`);
+                throw new Error('无收入数据');
+            }
+
+            // 获取累计主营业务成本数据
+            const year = period.split('-')[0];
+            const [costRows] = await pool.execute(`
+                SELECT
+                    category,
+                    customer_type,
+                    SUM(current_material_cost) as cumulative_material_cost,
+                    SUM(current_material_cost) as cumulative_direct_cost
+                FROM main_business_cost
+                WHERE period <= ? AND SUBSTRING(period, 1, 4) = ?
+                GROUP BY category, customer_type
+                ORDER BY category, customer_type
+            `, [period, year]);
+
+            if (costRows.length === 0) {
+                console.log(`${period}期间无成本数据，回退到数据库查询`);
+                throw new Error('无成本数据');
+            }
+
+            const incomeData = typeof incomeRows[0].data === 'string' ?
+                JSON.parse(incomeRows[0].data) : incomeRows[0].data;
+
+            // 实时计算边际贡献率
+            const calculatedData = calculateContributionRates(incomeData, costRows, period);
+
+            console.log(`✅ ${period}主营业务边际贡献率实时计算成功`);
+
+            res.json({
                 success: true,
-                data: defaultData,
-                period: period
+                data: calculatedData,
+                period: period,
+                calculation: {
+                    method: 'real_time_calculation',
+                    description: '实时计算结果'
+                }
+            });
+
+        } catch (calcError) {
+            console.log(`实时计算失败，回退到数据库查询: ${calcError.message}`);
+
+            // 2. 实时计算失败，回退到数据库查询
+            const [rows] = await pool.execute(
+                'SELECT * FROM business_contribution WHERE period = ? ORDER BY created_at DESC LIMIT 1',
+                [period]
+            );
+
+            if (rows.length === 0) {
+                // 没有数据时，返回空的数据结构，让中间件填充预算数据
+                const defaultData = {
+                    equipment: {
+                        shanghai: { plan: '0%', actual: '0%', difference: '0%' },
+                        national: { plan: '0%', actual: '0%', difference: '0%' },
+                        jiangsu: { plan: '0%', actual: '0%', difference: '0%' },
+                        power: { plan: '0%', actual: '0%', difference: '0%' },
+                        siemens: { plan: '0%', actual: '0%', difference: '0%' },
+                        peers: { plan: '0%', actual: '0%', difference: '0%' },
+                        users: { plan: '0%', actual: '0%', difference: '0%' },
+                        others: { plan: '0%', actual: '0%', difference: '0%' }
+                    },
+                    components: {
+                        users: { plan: '0%', actual: '0%', difference: '0%' }
+                    },
+                    engineering: {
+                        package1: { plan: '0%', actual: '0%', difference: '0%' },
+                        package2: { plan: '0%', actual: '0%', difference: '0%' },
+                        domestic: { plan: '0%', actual: '0%', difference: '0%' },
+                        international: { plan: '0%', actual: '0%', difference: '0%' },
+                        others: { plan: '0%', actual: '0%', difference: '0%' }
+                    },
+                    total: { plan: '0%', actual: '0%', difference: '0%' }
+                };
+
+                return res.json({
+                    success: true,
+                    data: defaultData,
+                    period: period,
+                    calculation: {
+                        method: 'default_structure',
+                        description: '无数据，返回默认结构'
+                    }
+                });
+            }
+
+            res.json({
+                success: true,
+                data: rows[0].data,
+                period: rows[0].period,
+                updated_at: rows[0].updated_at,
+                calculation: {
+                    method: 'database_fallback',
+                    description: '从数据库获取'
+                }
             });
         }
-        
-        res.json({
-            success: true,
-            data: rows[0].data,
-            period: rows[0].period,
-            updated_at: rows[0].updated_at
-        });
-        
+
     } catch (error) {
-        console.error('获取数据失败:', error);
+        console.error('获取主营业务边际贡献率数据失败:', error);
         res.status(500).json({ error: '获取数据失败' });
     }
 });

@@ -28,32 +28,60 @@ router.get('/:period', async (req, res) => {
     
     // 从数据库获取当期数据
     const [currentRows] = await pool.execute(
-      'SELECT customer_name, category, yearly_planned_income, current_income, accumulated_income, contribution_rate FROM nanhua_cost_center_structure WHERE period = ?',
+      'SELECT customer_name, category, yearly_planned_income, current_income, accumulated_income, contribution_rate, marketing, management, finance, production FROM nanhua_cost_center_structure WHERE period = ?',
       [period]
     );
 
     // 计算累计收入（从年初到当前月份的所有当期收入总和）
-    const currentYear = period.split('-')[0];
+    const [year, month] = period.split('-');
+    const currentMonth = parseInt(month);
+
+    // 构建从年初到当前月份的期间条件
+    const periodConditions = [];
+    const periodParams = [];
+    for (let m = 1; m <= currentMonth; m++) {
+      const monthPeriod = `${year}-${m.toString().padStart(2, '0')}`;
+      periodConditions.push('period = ?');
+      periodParams.push(monthPeriod);
+    }
+
     const [accumulatedRows] = await pool.execute(
-      'SELECT customer_name, category, SUM(current_income) as total_accumulated FROM nanhua_cost_center_structure WHERE period LIKE ? GROUP BY customer_name, category',
-      [`${currentYear}-%`]
+      `SELECT customer_name, category, SUM(current_income) as total_accumulated, SUM(marketing) as total_marketing, SUM(management) as total_management, SUM(finance) as total_finance, SUM(production) as total_production FROM nanhua_cost_center_structure WHERE (${periodConditions.join(' OR ')}) GROUP BY customer_name, category`,
+      periodParams
     );
 
     // 合并工程数据
     const engineeringResult = fixedData.customers.map(item => {
       const currentItem = currentRows.find(row => row.customer_name === item.customerName && row.category === '工程');
       const accumulatedItem = accumulatedRows.find(row => row.customer_name === item.customerName && row.category === '工程');
-      
-      const currentIncome = currentItem ? parseFloat(currentItem.current_income) : 0;
-      const accumulatedIncome = accumulatedItem ? parseFloat(accumulatedItem.total_accumulated) : 0;
-      
+
+      // 计算累计收入（四个分解值的累计总和）
+      const accumulatedMarketing = accumulatedItem ? parseFloat(accumulatedItem.total_marketing) : 0;
+      const accumulatedManagement = accumulatedItem ? parseFloat(accumulatedItem.total_management) : 0;
+      const accumulatedFinance = accumulatedItem ? parseFloat(accumulatedItem.total_finance) : 0;
+      const accumulatedProduction = accumulatedItem ? parseFloat(accumulatedItem.total_production) : 0;
+      const accumulatedIncome = accumulatedMarketing + accumulatedManagement + accumulatedFinance + accumulatedProduction;
+
+      // 获取分解值
+      const marketing = currentItem ? parseFloat(currentItem.marketing) : 0;
+      const management = currentItem ? parseFloat(currentItem.management) : 0;
+      const finance = currentItem ? parseFloat(currentItem.finance) : 0;
+      const production = currentItem ? parseFloat(currentItem.production) : 0;
+
+      // 计算当期计入损益（四个分解值的总和）
+      const calculatedCurrentIncome = marketing + management + finance + production;
+
       // 计算分摊损益占比
       const contributionRate = item.yearlyPlannedIncome > 0 ? (accumulatedIncome / item.yearlyPlannedIncome * 100) : 0;
-      
+
       return {
         customerName: item.customerName,
         yearlyPlannedIncome: item.yearlyPlannedIncome,
-        currentIncome: currentIncome,
+        currentIncome: calculatedCurrentIncome,
+        marketing: marketing,
+        management: management,
+        finance: finance,
+        production: production,
         accumulatedIncome: accumulatedIncome,
         contributionRate: parseFloat(contributionRate.toFixed(2))
       };
@@ -63,17 +91,34 @@ router.get('/:period', async (req, res) => {
     const nonMainBusinessResult = fixedData.nonMainBusiness.map(item => {
       const currentItem = currentRows.find(row => row.customer_name === item.customerName && row.category === '非主营业务');
       const accumulatedItem = accumulatedRows.find(row => row.customer_name === item.customerName && row.category === '非主营业务');
-      
-      const currentIncome = currentItem ? parseFloat(currentItem.current_income) : 0;
-      const accumulatedIncome = accumulatedItem ? parseFloat(accumulatedItem.total_accumulated) : 0;
-      
+
+      // 计算累计收入（四个分解值的累计总和）
+      const accumulatedMarketing = accumulatedItem ? parseFloat(accumulatedItem.total_marketing) : 0;
+      const accumulatedManagement = accumulatedItem ? parseFloat(accumulatedItem.total_management) : 0;
+      const accumulatedFinance = accumulatedItem ? parseFloat(accumulatedItem.total_finance) : 0;
+      const accumulatedProduction = accumulatedItem ? parseFloat(accumulatedItem.total_production) : 0;
+      const accumulatedIncome = accumulatedMarketing + accumulatedManagement + accumulatedFinance + accumulatedProduction;
+
+      // 获取分解值
+      const marketing = currentItem ? parseFloat(currentItem.marketing) : 0;
+      const management = currentItem ? parseFloat(currentItem.management) : 0;
+      const finance = currentItem ? parseFloat(currentItem.finance) : 0;
+      const production = currentItem ? parseFloat(currentItem.production) : 0;
+
+      // 计算当期计入损益（四个分解值的总和）
+      const calculatedCurrentIncome = marketing + management + finance + production;
+
       // 计算分摊损益占比
       const contributionRate = item.yearlyPlannedIncome > 0 ? (accumulatedIncome / item.yearlyPlannedIncome * 100) : 0;
-      
+
       return {
         customerName: item.customerName,
         yearlyPlannedIncome: item.yearlyPlannedIncome,
-        currentIncome: currentIncome,
+        currentIncome: calculatedCurrentIncome,
+        marketing: marketing,
+        management: management,
+        finance: finance,
+        production: production,
         accumulatedIncome: accumulatedIncome,
         contributionRate: parseFloat(contributionRate.toFixed(2))
       };
@@ -122,17 +167,27 @@ router.post('/', async (req, res) => {
     // 插入工程数据
     if (data.engineering) {
       for (const item of data.engineering) {
-        if (item.currentIncome > 0) {
+        const marketing = item.marketing || 0;
+        const management = item.management || 0;
+        const finance = item.finance || 0;
+        const production = item.production || 0;
+        const currentIncome = marketing + management + finance + production;
+
+        if (currentIncome > 0 || marketing > 0 || management > 0 || finance > 0 || production > 0) {
           await connection.execute(
-            `INSERT INTO nanhua_cost_center_structure 
-             (period, customer_name, category, yearly_planned_income, current_income) 
-             VALUES (?, ?, ?, ?, ?)`,
+            `INSERT INTO nanhua_cost_center_structure
+             (period, customer_name, category, yearly_planned_income, current_income, marketing, management, finance, production)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [
               period,
               item.customerName,
               '工程',
               item.yearlyPlannedIncome || 0,
-              item.currentIncome || 0
+              currentIncome,
+              marketing,
+              management,
+              finance,
+              production
             ]
           );
         }
@@ -142,17 +197,27 @@ router.post('/', async (req, res) => {
     // 插入非主营业务数据
     if (data.nonMainBusiness) {
       for (const item of data.nonMainBusiness) {
-        if (item.currentIncome > 0) {
+        const marketing = item.marketing || 0;
+        const management = item.management || 0;
+        const finance = item.finance || 0;
+        const production = item.production || 0;
+        const currentIncome = marketing + management + finance + production;
+
+        if (currentIncome > 0 || marketing > 0 || management > 0 || finance > 0 || production > 0) {
           await connection.execute(
-            `INSERT INTO nanhua_cost_center_structure 
-             (period, customer_name, category, yearly_planned_income, current_income) 
-             VALUES (?, ?, ?, ?, ?)`,
+            `INSERT INTO nanhua_cost_center_structure
+             (period, customer_name, category, yearly_planned_income, current_income, marketing, management, finance, production)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [
               period,
               item.customerName,
               '非主营业务',
               item.yearlyPlannedIncome || 0,
-              item.currentIncome || 0
+              currentIncome,
+              marketing,
+              management,
+              finance,
+              production
             ]
           );
         }

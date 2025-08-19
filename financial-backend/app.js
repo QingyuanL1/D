@@ -103,6 +103,7 @@ const nanhuaCostProvisionRoutes = require('./routes/nanhuaCostProvision');
 const nanhuaReceiptStructureRoutes = require('./routes/nanhuaReceiptStructure');
 const nanhuaContractInventoryEvaluationRoutes = require('./routes/nanhuaContractInventoryEvaluation');
 const nanhuaCostCenterStructureRoutes = require('./routes/nanhuaCostCenterStructure');
+const tuoyuanCostCenterStructureRoutes = require('./routes/tuoyuanCostCenterStructure');
 const departmentCostCenterActualRoutes = require('./routes/departmentCostCenterActual');
 const nanhuaDepartmentCostCenterActualRoutes = require('./routes/nanhuaDepartmentCostCenterActual');
 const nanhuaDepartmentCostInputRoutes = require('./routes/nanhuaDepartmentCostInput');
@@ -145,6 +146,7 @@ const tuoyuanConstructionPlanExecutionRoutes = require('./routes/tuoyuan-constru
 const tuoyuanMajorInvestmentRoutes = require('./routes/tuoyuan-major-investment');
 const tuoyuanMainBusinessProductionValueSelfConstructionRoutes = require('./routes/tuoyuan-main-business-production-value-self-construction');
 const tuoyuanConstructionExecutionStatusRoutes = require('./routes/tuoyuan-construction-execution-status');
+const tuoyuanMainBusinessNetProfitRoutes = require('./routes/tuoyuanMainBusinessNetProfit');
 
 // 南华和拓源公司财务报表路由
 const nanhuaFinancialReportsRoutes = require('./routes/nanhuaFinancialReports');
@@ -261,6 +263,7 @@ app.use('/nanhua-cost-provision', nanhuaCostProvisionRoutes);
 app.use('/nanhua-receipt-structure', nanhuaReceiptStructureRoutes);
 app.use('/nanhua-contract-inventory-evaluation', nanhuaContractInventoryEvaluationRoutes);
 app.use('/nanhua-cost-center-structure', nanhuaCostCenterStructureRoutes);
+app.use('/tuoyuan-cost-center-structure', tuoyuanCostCenterStructureRoutes);
 app.use('/department-cost-center-actual', departmentCostCenterActualRoutes);
 app.use('/nanhua-department-cost-center-actual', nanhuaDepartmentCostCenterActualRoutes);
 app.use('/nanhua-department-cost-input', nanhuaDepartmentCostInputRoutes);
@@ -303,6 +306,7 @@ app.use('/tuoyuan-construction-plan-execution', tuoyuanConstructionPlanExecution
 app.use('/tuoyuan-major-investment', tuoyuanMajorInvestmentRoutes);
 app.use('/tuoyuan-main-business-production-value-self-construction', tuoyuanMainBusinessProductionValueSelfConstructionRoutes);
 app.use('/tuoyuan-construction-execution-status', tuoyuanConstructionExecutionStatusRoutes);
+app.use('/tuoyuan-main-business-net-profit', tuoyuanMainBusinessNetProfitRoutes);
 
 // 南华和拓源公司财务报表路由
 app.use('/financial-reports/nanhua', nanhuaFinancialReportsRoutes);

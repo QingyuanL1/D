@@ -1472,25 +1472,157 @@ router.get('/completion-rates/:year', async (req, res) => {
   }
 });
 
-// 获取边际贡献率数据 - 年度分析
+// 获取边际贡献率数据 - 年度分析 (改为实时计算)
 router.get('/contribution-rate/:year', async (req, res) => {
   try {
     const { year } = req.params;
+    const fetch = require('node-fetch');
 
-    console.log(`获取${year}年边际贡献率数据`);
+    console.log(`开始实时计算${year}年主营业务边际贡献率数据...`);
 
-    // 获取该年度所有月份的边际贡献率数据
-    const [rows] = await pool.execute(`
-      SELECT period, data
-      FROM business_contribution
-      WHERE YEAR(CONCAT(period, '-01')) = ?
-      ORDER BY period
-    `, [year]);
+    // 处理数据
+    const months = [];
+    const monthlyData = [];
+    const segmentData = [
+      { name: '设备', plan: 25.5, actual: 0, rate: 0 },
+      { name: '元件', plan: 15.0, actual: 0, rate: 0 },
+      { name: '工程', plan: 22.8, actual: 0, rate: 0 }
+    ];
 
-    console.log(`找到${rows.length}条边际贡献率数据记录`);
+    // 用于累计各板块的数据
+    const segmentAccumulator = {
+      equipment: { total: 0, count: 0 },
+      components: { total: 0, count: 0 },
+      engineering: { total: 0, count: 0 }
+    };
 
-    if (rows.length === 0) {
-      // 如果没有数据，返回空数据状态
+    let hasAnyData = false;
+
+    // 遍历12个月，实时计算每月的边际贡献率
+    for (let month = 1; month <= 12; month++) {
+      const monthStr = month.toString().padStart(2, '0');
+      const period = `${year}-${monthStr}`;
+      const monthLabel = `${monthStr}月`;
+
+      try {
+        console.log(`🔍 开始实时计算${period}主营业务边际贡献率...`);
+
+        // 调用实时计算API
+        const calculateResponse = await fetch(`http://47.111.95.19:3000/business-contribution/${period}`);
+
+        if (calculateResponse.ok) {
+          const calculateResult = await calculateResponse.json();
+
+          if (calculateResult.success && calculateResult.data) {
+            console.log(`✅ ${period}实时计算成功`);
+            hasAnyData = true;
+
+            months.push(monthLabel);
+            const data = calculateResult.data;
+
+            // 辅助函数：解析贡献率值
+            const parseContributionRate = (value) => {
+              if (!value) return 0;
+
+              // 如果是字符串
+              if (typeof value === 'string') {
+                // 跳过 '/' 或 '当期无收入' 等无效值
+                if (value === '/' || value.includes('无收入')) return 0;
+
+                // 提取数字（包括小数和负数）
+                const match = value.match(/(-?\d+(?:\.\d+)?)/);
+                if (match) {
+                  const rate = parseFloat(match[1]);
+                  // 允许负值和较大的正值
+                  return (!isNaN(rate) && rate >= -1000 && rate <= 1000) ? rate : 0;
+                }
+              }
+
+              // 如果是数字
+              if (typeof value === 'number') {
+                // 允许负值和较大的正值
+                return (value >= -1000 && value <= 1000) ? value : 0;
+              }
+
+              return 0;
+            };
+
+            // 设备板块（包括automation数据）
+            const equipmentRates = [];
+            if (data.equipment) {
+              Object.keys(data.equipment).forEach(customerKey => {
+                const item = data.equipment[customerKey];
+                const rate = parseContributionRate(item.actual);
+                console.log(`设备-${customerKey}: actual=${item.actual}, 解析后=${rate}`);
+                if (rate !== 0) equipmentRates.push(rate);
+              });
+            }
+
+            if (equipmentRates.length > 0) {
+              const avgRate = equipmentRates.reduce((sum, rate) => sum + rate, 0) / equipmentRates.length;
+              segmentAccumulator.equipment.total += avgRate;
+              segmentAccumulator.equipment.count += 1;
+              console.log(`设备板块平均贡献率: ${avgRate.toFixed(2)}%`);
+            }
+
+            // 元件板块
+            const componentRates = [];
+            if (data.components) {
+              Object.keys(data.components).forEach(customerKey => {
+                const item = data.components[customerKey];
+                const rate = parseContributionRate(item.actual);
+                console.log(`元件-${customerKey}: actual=${item.actual}, 解析后=${rate}`);
+                if (rate !== 0) componentRates.push(rate);
+              });
+            }
+
+            if (componentRates.length > 0) {
+              const avgRate = componentRates.reduce((sum, rate) => sum + rate, 0) / componentRates.length;
+              segmentAccumulator.components.total += avgRate;
+              segmentAccumulator.components.count += 1;
+              console.log(`元件板块平均贡献率: ${avgRate.toFixed(2)}%`);
+            }
+
+            // 工程板块
+            const engineeringRates = [];
+            if (data.engineering) {
+              Object.keys(data.engineering).forEach(customerKey => {
+                const item = data.engineering[customerKey];
+                const rate = parseContributionRate(item.actual);
+                console.log(`工程-${customerKey}: actual=${item.actual}, 解析后=${rate}`);
+                if (rate !== 0) engineeringRates.push(rate);
+              });
+            }
+
+            if (engineeringRates.length > 0) {
+              const avgRate = engineeringRates.reduce((sum, rate) => sum + rate, 0) / engineeringRates.length;
+              segmentAccumulator.engineering.total += avgRate;
+              segmentAccumulator.engineering.count += 1;
+              console.log(`工程板块平均贡献率: ${avgRate.toFixed(2)}%`);
+            }
+
+            // 使用实时计算的total字段作为月度数据
+            let monthRate = 0;
+            if (data.total && data.total.actual) {
+              monthRate = parseContributionRate(data.total.actual);
+              console.log(`${period}月总体边际贡献率: total.actual=${data.total.actual}, 解析后=${monthRate}%`);
+            } else {
+              console.log(`${period}月缺少total.actual字段，数据结构:`, data.total);
+            }
+            monthlyData.push(Number(monthRate.toFixed(2)));
+          } else {
+            console.log(`❌ ${period}实时计算失败或无数据`);
+          }
+        } else {
+          console.log(`❌ ${period}API调用失败`);
+        }
+      } catch (error) {
+        console.error(`实时计算${period}主营业务边际贡献率失败:`, error);
+      }
+    }
+
+    // 如果没有任何数据，返回空数据状态
+    if (!hasAnyData) {
       return res.json({
         success: true,
         data: {
@@ -1509,140 +1641,8 @@ router.get('/contribution-rate/:year', async (req, res) => {
       });
     }
 
-    // 处理数据
-    const months = [];
-    const monthlyData = [];
-    const segmentData = [
-      { name: '设备', plan: 25.5, actual: 0, rate: 0 },
-      { name: '元件', plan: 15.0, actual: 0, rate: 0 },
-      { name: '工程', plan: 22.8, actual: 0, rate: 0 }
-    ];
-
-    // 用于累计各板块的数据
-    const segmentAccumulator = {
-      equipment: { total: 0, count: 0 },
-      components: { total: 0, count: 0 },
-      engineering: { total: 0, count: 0 }
-    };
-
-    rows.forEach((row, index) => {
-      const monthLabel = row.period.split('-')[1] + '月';
-      months.push(monthLabel);
-
-      console.log(`处理第${index + 1}个月份数据: ${row.period}`);
-
-      let data;
-      try {
-        data = typeof row.data === 'string' ? JSON.parse(row.data) : row.data;
-        console.log(`${row.period}月数据结构:`, JSON.stringify(data, null, 2));
-      } catch (e) {
-        console.error('JSON解析错误:', e, 'data:', row.data);
-        monthlyData.push(0);
-        return;
-      }
-
-      // 辅助函数：解析贡献率值
-      const parseContributionRate = (value) => {
-        if (!value) return 0;
-
-        // 如果是字符串
-        if (typeof value === 'string') {
-          // 跳过 '/' 或 '当期无收入' 等无效值
-          if (value === '/' || value.includes('无收入')) return 0;
-
-          // 提取数字（包括小数）
-          const match = value.match(/(\d+(?:\.\d+)?)/);
-          if (match) {
-            const rate = parseFloat(match[1]);
-            // 过滤异常值（超过200%的可能是错误数据，但允许一些合理的高值）
-            return (!isNaN(rate) && rate >= 0 && rate <= 200) ? rate : 0;
-          }
-        }
-
-        // 如果是数字
-        if (typeof value === 'number') {
-          // 过滤异常值
-          return (value >= 0 && value <= 200) ? value : 0;
-        }
-
-        return 0;
-      };
-
-      // 设备板块（包括automation数据）
-      const equipmentRates = [];
-      if (data.equipment) {
-        Object.keys(data.equipment).forEach(customerKey => {
-          const item = data.equipment[customerKey];
-          const rate = parseContributionRate(item.actual);
-          console.log(`设备-${customerKey}: actual=${item.actual}, 解析后=${rate}`);
-          if (rate > 0) equipmentRates.push(rate);
-        });
-      }
-      // 兼容旧数据结构中的automation字段
-      if (data.automation) {
-        Object.keys(data.automation).forEach(customerKey => {
-          const item = data.automation[customerKey];
-          const rate = parseContributionRate(item.actual);
-          console.log(`自动化-${customerKey}: actual=${item.actual}, 解析后=${rate}`);
-          if (rate > 0) equipmentRates.push(rate);
-        });
-      }
-
-      if (equipmentRates.length > 0) {
-        const avgRate = equipmentRates.reduce((sum, rate) => sum + rate, 0) / equipmentRates.length;
-        segmentAccumulator.equipment.total += avgRate;
-        segmentAccumulator.equipment.count += 1;
-        console.log(`设备板块平均贡献率: ${avgRate.toFixed(2)}%`);
-      }
-
-      // 元件板块
-      const componentRates = [];
-      if (data.components) {
-        Object.keys(data.components).forEach(customerKey => {
-          const item = data.components[customerKey];
-          const rate = parseContributionRate(item.actual);
-          console.log(`元件-${customerKey}: actual=${item.actual}, 解析后=${rate}`);
-          if (rate > 0) componentRates.push(rate);
-        });
-      }
-
-      if (componentRates.length > 0) {
-        const avgRate = componentRates.reduce((sum, rate) => sum + rate, 0) / componentRates.length;
-        segmentAccumulator.components.total += avgRate;
-        segmentAccumulator.components.count += 1;
-        console.log(`元件板块平均贡献率: ${avgRate.toFixed(2)}%`);
-      }
-
-      // 工程板块
-      const engineeringRates = [];
-      if (data.engineering) {
-        Object.keys(data.engineering).forEach(customerKey => {
-          const item = data.engineering[customerKey];
-          const rate = parseContributionRate(item.actual);
-          console.log(`工程-${customerKey}: actual=${item.actual}, 解析后=${rate}`);
-          if (rate > 0) engineeringRates.push(rate);
-        });
-      }
-
-      if (engineeringRates.length > 0) {
-        const avgRate = engineeringRates.reduce((sum, rate) => sum + rate, 0) / engineeringRates.length;
-        segmentAccumulator.engineering.total += avgRate;
-        segmentAccumulator.engineering.count += 1;
-        console.log(`工程板块平均贡献率: ${avgRate.toFixed(2)}%`);
-      }
-
-      // 使用数据库中已计算好的total字段作为月度数据
-      let monthRate = 0;
-      if (data.total && data.total.actual) {
-        monthRate = parseContributionRate(data.total.actual);
-        console.log(`${row.period}月总体边际贡献率: total.actual=${data.total.actual}, 解析后=${monthRate}%`);
-      } else {
-        console.log(`${row.period}月缺少total.actual字段，数据结构:`, data.total);
-      }
-      monthlyData.push(Number(monthRate.toFixed(2)));
-    });
-
     console.log('月度数据汇总:', monthlyData);
+    console.log(`✅ ${year}年主营业务边际贡献率实时计算完成，共${months.length}个月有数据`);
 
     // 计算各板块的最终平均值
     if (segmentAccumulator.equipment.count > 0) {
@@ -1695,38 +1695,13 @@ router.get('/contribution-rate/:year', async (req, res) => {
   }
 });
 
-// 获取毛利率数据 - 年度分析
+// 获取毛利率数据 - 年度分析 (改为实时计算)
 router.get('/profit-margin/:year', async (req, res) => {
   try {
     const { year } = req.params;
+    const fetch = require('node-fetch');
 
-    // 获取该年度所有月份的毛利率数据
-    const [rows] = await pool.execute(`
-      SELECT period, data
-      FROM business_profit_margin
-      WHERE YEAR(CONCAT(period, '-01')) = ?
-      ORDER BY period
-    `, [year]);
-
-    if (rows.length === 0) {
-      // 如果没有数据，返回空数据状态
-      return res.json({
-        success: true,
-        data: {
-          months: [],
-          monthlyData: [],
-          currentRate: 0,
-          targetRate: 24.00,
-          segmentData: [
-            { name: '设备', plan: 21.99, actual: 0, rate: 0 },
-            { name: '元件', plan: 15.0, actual: 0, rate: 0 },
-            { name: '工程', plan: 26.0, actual: 0, rate: 0 }
-          ],
-          hasData: false,
-          message: '该年份暂无毛利率数据'
-        }
-      });
-    }
+    console.log(`开始实时计算${year}年主营业务毛利率数据...`);
 
     // 处理数据
     const months = [];
@@ -1744,92 +1719,133 @@ router.get('/profit-margin/:year', async (req, res) => {
       engineering: { total: 0, count: 0 }
     };
 
-    rows.forEach(row => {
-      const monthLabel = row.period.split('-')[1] + '月';
-      months.push(monthLabel);
+    let hasAnyData = false;
 
-      let data;
+    // 遍历12个月，实时计算每月的毛利率
+    for (let month = 1; month <= 12; month++) {
+      const monthStr = month.toString().padStart(2, '0');
+      const period = `${year}-${monthStr}`;
+      const monthLabel = `${monthStr}月`;
+
       try {
-        data = typeof row.data === 'string' ? JSON.parse(row.data) : row.data;
-      } catch (e) {
-        console.error('JSON解析错误:', e, 'data:', row.data);
-        monthlyData.push(0);
-        return;
-      }
+        console.log(`🔍 开始实时计算${period}主营业务毛利率...`);
 
-      // 辅助函数：解析毛利率值
-      const parseProfitMarginRate = (value) => {
-        if (!value) return 0;
+        // 调用实时计算API
+        const calculateResponse = await fetch(`http://47.111.95.19:3000/business-profit-margin/calculate/${period}`);
 
-        if (typeof value === 'string') {
-          if (value === '/' || value.includes('无收入')) return 0;
-          const match = value.match(/(\d+(?:\.\d+)?)/);
-          if (match) {
-            const rate = parseFloat(match[1]);
-            return (!isNaN(rate) && rate >= 0 && rate <= 200) ? rate : 0;
+        if (calculateResponse.ok) {
+          const calculateResult = await calculateResponse.json();
+
+          if (calculateResult.success && calculateResult.data) {
+            console.log(`✅ ${period}实时计算成功`);
+            hasAnyData = true;
+
+            months.push(monthLabel);
+            const data = calculateResult.data;
+
+            // 辅助函数：解析毛利率值
+            const parseProfitMarginRate = (value) => {
+              if (!value) return 0;
+
+              if (typeof value === 'string') {
+                if (value === '/' || value.includes('无收入')) return 0;
+                const match = value.match(/(-?\d+(?:\.\d+)?)/);
+                if (match) {
+                  const rate = parseFloat(match[1]);
+                  return (!isNaN(rate) && rate >= -1000 && rate <= 1000) ? rate : 0;
+                }
+              }
+
+              if (typeof value === 'number') {
+                return (value >= -1000 && value <= 1000) ? value : 0;
+              }
+
+              return 0;
+            };
+
+            // 使用实时计算的total字段作为月度数据
+            let monthRate = 0;
+            if (data.total && data.total.actual) {
+              monthRate = parseProfitMarginRate(data.total.actual);
+            }
+            monthlyData.push(Number(monthRate.toFixed(2)));
+
+            // 累计各板块数据用于最终平均值计算
+            // 设备板块
+            const equipmentRates = [];
+            if (data.equipment) {
+              Object.values(data.equipment).forEach(item => {
+                const rate = parseProfitMarginRate(item.actual);
+                if (rate !== 0) equipmentRates.push(rate);
+              });
+            }
+
+            if (equipmentRates.length > 0) {
+              const avgRate = equipmentRates.reduce((sum, rate) => sum + rate, 0) / equipmentRates.length;
+              segmentAccumulator.equipment.total += avgRate;
+              segmentAccumulator.equipment.count += 1;
+            }
+
+            // 元件板块
+            const componentRates = [];
+            if (data.components) {
+              Object.values(data.components).forEach(item => {
+                const rate = parseProfitMarginRate(item.actual);
+                if (rate !== 0) componentRates.push(rate);
+              });
+            }
+
+            if (componentRates.length > 0) {
+              const avgRate = componentRates.reduce((sum, rate) => sum + rate, 0) / componentRates.length;
+              segmentAccumulator.components.total += avgRate;
+              segmentAccumulator.components.count += 1;
+            }
+
+            // 工程板块
+            const engineeringRates = [];
+            if (data.engineering) {
+              Object.values(data.engineering).forEach(item => {
+                const rate = parseProfitMarginRate(item.actual);
+                if (rate !== 0) engineeringRates.push(rate);
+              });
+            }
+
+            if (engineeringRates.length > 0) {
+              const avgRate = engineeringRates.reduce((sum, rate) => sum + rate, 0) / engineeringRates.length;
+              segmentAccumulator.engineering.total += avgRate;
+              segmentAccumulator.engineering.count += 1;
+            }
+          } else {
+            console.log(`❌ ${period}实时计算失败或无数据`);
+            // 没有数据的月份，不添加到months和monthlyData中
           }
+        } else {
+          console.log(`❌ ${period}API调用失败`);
         }
+      } catch (error) {
+        console.error(`实时计算${period}主营业务毛利率失败:`, error);
+      }
+    }
 
-        if (typeof value === 'number') {
-          return (value >= 0 && value <= 200) ? value : 0;
+    // 如果没有任何数据，返回空数据状态
+    if (!hasAnyData) {
+      return res.json({
+        success: true,
+        data: {
+          months: [],
+          monthlyData: [],
+          currentRate: 0,
+          targetRate: 24.00,
+          segmentData: [
+            { name: '设备', plan: 21.99, actual: 0, rate: 0 },
+            { name: '元件', plan: 15.0, actual: 0, rate: 0 },
+            { name: '工程', plan: 26.0, actual: 0, rate: 0 }
+          ],
+          hasData: false,
+          message: '该年份暂无毛利率数据'
         }
-
-        return 0;
-      };
-
-      // 使用数据库中已计算好的total字段作为月度数据
-      let monthRate = 0;
-      if (data.total && data.total.actual) {
-        monthRate = parseProfitMarginRate(data.total.actual);
-      }
-      monthlyData.push(Number(monthRate.toFixed(2)));
-
-      // 累计各板块数据用于最终平均值计算
-      // 设备板块
-      const equipmentRates = [];
-      if (data.equipment) {
-        Object.values(data.equipment).forEach(item => {
-          const rate = parseProfitMarginRate(item.actual);
-          if (rate > 0) equipmentRates.push(rate);
-        });
-      }
-
-      if (equipmentRates.length > 0) {
-        const avgRate = equipmentRates.reduce((sum, rate) => sum + rate, 0) / equipmentRates.length;
-        segmentAccumulator.equipment.total += avgRate;
-        segmentAccumulator.equipment.count += 1;
-      }
-
-      // 元件板块
-      const componentRates = [];
-      if (data.components) {
-        Object.values(data.components).forEach(item => {
-          const rate = parseProfitMarginRate(item.actual);
-          if (rate > 0) componentRates.push(rate);
-        });
-      }
-
-      if (componentRates.length > 0) {
-        const avgRate = componentRates.reduce((sum, rate) => sum + rate, 0) / componentRates.length;
-        segmentAccumulator.components.total += avgRate;
-        segmentAccumulator.components.count += 1;
-      }
-
-      // 工程板块
-      const engineeringRates = [];
-      if (data.engineering) {
-        Object.values(data.engineering).forEach(item => {
-          const rate = parseProfitMarginRate(item.actual);
-          if (rate > 0) engineeringRates.push(rate);
-        });
-      }
-
-      if (engineeringRates.length > 0) {
-        const avgRate = engineeringRates.reduce((sum, rate) => sum + rate, 0) / engineeringRates.length;
-        segmentAccumulator.engineering.total += avgRate;
-        segmentAccumulator.engineering.count += 1;
-      }
-    });
+      });
+    }
 
     // 计算各板块的最终平均值
     if (segmentAccumulator.equipment.count > 0) {
@@ -1853,6 +1869,8 @@ router.get('/profit-margin/:year', async (req, res) => {
     // 计算当前毛利率（最新月份的数据）
     const currentRate = monthlyData.length > 0 ? monthlyData[monthlyData.length - 1] : 0;
     const targetRate = 24.00; // 固定目标值
+
+    console.log(`✅ ${year}年主营业务毛利率实时计算完成，共${months.length}个月有数据`);
 
     res.json({
       success: true,
@@ -2654,13 +2672,191 @@ router.get('/inventory-metrics/:year', async (req, res) => {
   }
 });
 
+// ==================== 拓源毛利率计算辅助函数 ====================
+
+// 获取拓源年度计划值
+function getTuoyuanYearlyPlan(segmentAttribute, customerAttribute) {
+  const plans = {
+    '设备': {
+      '电业项目': 8.00,
+      '用户项目': 0,
+      '贸易': 0,
+      '代理设备': 24.99
+    },
+    '其他': {
+      '代理工程': 0,
+      '代理设计': 100
+    }
+  };
+
+  return plans[segmentAttribute] && plans[segmentAttribute][customerAttribute] !== undefined
+    ? plans[segmentAttribute][customerAttribute]
+    : 0;
+}
+
+// 计算拓源历史累计成本
+async function calculateTuoyuanHistoricalCosts(currentPeriod, customerAttribute, costType) {
+  try {
+    const [year, month] = currentPeriod.split('-');
+    const currentMonth = parseInt(month);
+    let totalCost = 0;
+
+    // 累计从年初到当前月份的所有当期成本
+    for (let m = 1; m <= currentMonth; m++) {
+      const monthPeriod = `${year}-${m.toString().padStart(2, '0')}`;
+
+      try {
+        const [rows] = await pool.execute(
+          'SELECT * FROM tuoyuan_main_business_cost_structure_quality WHERE period = ?',
+          [monthPeriod]
+        );
+
+        const monthCostItem = rows.find(row => row.customer_type === customerAttribute);
+        if (monthCostItem) {
+          let monthCost = 0;
+          if (costType === 'labor') {
+            monthCost = parseFloat(monthCostItem.current_labor_cost || 0);
+          } else if (costType === 'material') {
+            monthCost = parseFloat(monthCostItem.current_material_cost || 0);
+          }
+
+          if (monthCost > 0) {
+            totalCost += monthCost;
+          }
+        }
+      } catch (monthError) {
+        continue;
+      }
+    }
+
+    return totalCost;
+
+  } catch (error) {
+    console.error('计算历史累计成本失败:', error);
+    return 0;
+  }
+}
+
+// 计算拓源单月毛利率数据 - 始终使用实时计算
+async function calculateTuoyuanMonthlyProfitMargin(period) {
+  try {
+    // 验证period格式 (YYYY-MM)
+    if (!/^\d{4}-\d{2}$/.test(period)) {
+      return null;
+    }
+
+    const fetch = require('node-fetch');
+
+    console.log(`🔍 开始实时计算拓源毛利率: ${period}`);
+
+    // 进行实时计算
+    // 获取主营业务收入数据
+    const incomeResponse = await fetch(`http://47.111.95.19:3000/tuoyuan-main-business-income-breakdown/${period}`);
+    let incomeData = null;
+
+    if (incomeResponse.ok) {
+      const incomeResult = await incomeResponse.json();
+      if (incomeResult.success) {
+        incomeData = incomeResult.data;
+      }
+    }
+
+    if (!incomeData) {
+      return null;
+    }
+
+    // 获取主营业务成本数据
+    const costResponse = await fetch(`http://47.111.95.19:3000/tuoyuan-main-business-cost-structure-quality/${period}`);
+    let costData = null;
+
+    if (costResponse.ok) {
+      const costResult = await costResponse.json();
+      if (costResult.success) {
+        costData = costResult.data;
+      }
+    }
+
+    if (!costData) {
+      return null;
+    }
+
+    // 3. 计算各板块的毛利率 - 完全复制原始逻辑
+    const calculatedItems = [];
+
+    // 遍历收入数据计算毛利率
+    for (const incomeItem of incomeData.items) {
+      const segmentAttribute = incomeItem.segmentAttribute;
+      const customerAttribute = incomeItem.customerAttribute;
+      const cumulativeIncome = incomeItem.currentCumulative || 0;
+
+      // 查找对应的成本数据
+      let totalCost = 0;
+      if (costData.equipment) {
+        const costItem = costData.equipment.find(cost =>
+          cost.customerType === customerAttribute
+        );
+
+        if (costItem) {
+          // 获取累计材料成本（直接费用）和累计人工成本（制造费用）
+          const cumulativeMaterialCost = parseFloat(costItem.cumulativeMaterialCost || 0);
+          const cumulativeLaborCost = parseFloat(costItem.cumulativeLaborCost || 0);
+
+          let materialCost = cumulativeMaterialCost;
+          let laborCost = cumulativeLaborCost;
+
+          // 如果累计成本为0，则计算前面所有月份的当期成本总和
+          if (materialCost === 0) {
+            materialCost = await calculateTuoyuanHistoricalCosts(period, customerAttribute, 'material');
+          }
+          if (laborCost === 0) {
+            laborCost = await calculateTuoyuanHistoricalCosts(period, customerAttribute, 'labor');
+          }
+
+          // 总成本 = 材料成本（直接费用） + 人工成本（制造费用）
+          totalCost = materialCost + laborCost;
+        }
+      }
+
+      // 计算毛利率：(收入-成本)/收入 * 100%
+      let profitMargin = 0;
+      if (cumulativeIncome > 0) {
+        profitMargin = ((cumulativeIncome - totalCost) / cumulativeIncome) * 100;
+      }
+
+      // 获取年度计划值
+      const yearlyPlan = getTuoyuanYearlyPlan(segmentAttribute, customerAttribute);
+      const deviation = profitMargin - yearlyPlan;
+
+      calculatedItems.push({
+        segmentAttribute: segmentAttribute,
+        customerAttribute: customerAttribute,
+        yearlyPlan: yearlyPlan,
+        currentActual: Number(profitMargin.toFixed(2)),
+        deviation: Number(deviation.toFixed(2))
+      });
+    }
+
+    return {
+      success: true,
+      data: {
+        period: period,
+        items: calculatedItems
+      }
+    };
+
+  } catch (error) {
+    console.error('计算拓源公司毛利率失败:', error);
+    return null;
+  }
+}
+
 // 获取拓源毛利率数据 - 年度分析
 router.get('/tuoyuan-profit-margin/:year', async (req, res) => {
   try {
     const { year } = req.params;
-    const fetch = require('node-fetch');
 
-    // 使用计算逻辑获取拓源毛利率数据
+    // 使用实时计算逻辑获取拓源毛利率数据 - 不依赖存储数据
+    console.log(`开始实时计算${year}年拓源毛利率数据...`);
     const months = [];
     const monthlyData = [];
     const segmentAccumulator = {
@@ -2678,47 +2874,50 @@ router.get('/tuoyuan-profit-margin/:year', async (req, res) => {
       months.push(monthLabel);
 
       try {
-        // 调用计算API获取该月数据
-        const response = await fetch(`http://47.111.95.19:3000/tuoyuan-main-business-profit-margin/calculate/${period}`);
-        
-        if (response.ok) {
-          const result = await response.json();
-          
-          if (result.success && result.data && result.data.items) {
-            // 计算该月的加权平均毛利率
-            let totalWeightedRate = 0;
-            let totalWeight = 0;
-            
-            result.data.items.forEach(item => {
-              const rate = item.currentActual || 0;
-              const weight = item.yearlyPlan > 0 ? item.yearlyPlan : 1; // 使用年度计划作为权重
-              
-              totalWeightedRate += rate * weight;
-              totalWeight += weight;
-              
-              // 累计各板块数据
-              if (segmentAccumulator[item.segmentAttribute] && rate > 0) {
-                segmentAccumulator[item.segmentAttribute].total += rate;
-                segmentAccumulator[item.segmentAttribute].count += 1;
-              }
-            });
-            
-            const monthRate = totalWeight > 0 ? totalWeightedRate / totalWeight : 0;
-            monthlyData.push(Number(monthRate.toFixed(2)));
-            
-            if (result.data.items.some(item => item.currentActual > 0)) {
-              hasAnyData = true;
+        // 实时计算该月数据 - 不使用存储数据
+        console.log(`🔍 开始实时计算${period}数据...`);
+        const result = await calculateTuoyuanMonthlyProfitMargin(period);
+
+        if (result && result.success && result.data && result.data.items) {
+          console.log(`✅ ${period}实时计算成功，获得${result.data.items.length}条数据`);
+
+          // 计算该月的加权平均毛利率
+          let totalWeightedRate = 0;
+          let totalWeight = 0;
+
+          console.log(`📊 ${period}加权计算过程:`);
+          result.data.items.forEach(item => {
+            const rate = item.currentActual || 0;
+            const weight = item.yearlyPlan > 0 ? item.yearlyPlan : 1; // 使用年度计划作为权重
+            const weightedValue = rate * weight;
+
+            totalWeightedRate += weightedValue;
+            totalWeight += weight;
+
+            console.log(`   ${item.customerAttribute}: ${rate}% × ${weight} = ${weightedValue.toFixed(2)}`);
+
+            // 累计各板块数据
+            if (segmentAccumulator[item.segmentAttribute] && rate > 0) {
+              segmentAccumulator[item.segmentAttribute].total += rate;
+              segmentAccumulator[item.segmentAttribute].count += 1;
             }
-          } else {
-            // 没有数据的月份
-            monthlyData.push(null);
+          });
+
+          const monthRate = totalWeight > 0 ? totalWeightedRate / totalWeight : 0;
+          console.log(`   总加权值: ${totalWeightedRate.toFixed(2)}, 总权重: ${totalWeight}, 加权平均: ${monthRate.toFixed(2)}%`);
+
+          monthlyData.push(Number(monthRate.toFixed(2)));
+
+          if (result.data.items.some(item => item.currentActual > 0)) {
+            hasAnyData = true;
           }
         } else {
-          // API调用失败的月份
+          console.log(`❌ ${period}实时计算失败或无数据`);
+          // 没有数据的月份
           monthlyData.push(null);
         }
       } catch (error) {
-        console.error(`获取${period}拓源毛利率数据失败:`, error);
+        console.error(`实时计算${period}拓源毛利率数据失败:`, error);
         monthlyData.push(null);
       }
     }

@@ -114,8 +114,17 @@ const fetchTuoyuanProfitMarginData = async () => {
           ]
         } else {
           // 有数据的情况
-          months.value = result.data.months || []
-          monthlyData.value = result.data.monthlyData || []
+          months.value = ['01月', '02月', '03月', '04月', '05月', '06月', '07月', '08月', '09月', '10月', '11月', '12月']
+
+          // 确保monthlyData有12个元素，对应12个月
+          const rawData = result.data.monthlyData || []
+          monthlyData.value = new Array(12).fill(null)
+
+          // 填充有数据的月份
+          for (let i = 0; i < Math.min(rawData.length, 12); i++) {
+            monthlyData.value[i] = rawData[i]
+          }
+
           currentRate.value = result.data.currentRate || 0
 
           if (result.data.segmentData) {
@@ -214,7 +223,13 @@ const initChart = () => {
       formatter: function(params: any[]) {
         let result = `${params[0].name}<br/>`
         params.forEach(param => {
-          if (param.value !== null && param.value !== undefined) {
+          if (param.seriesName === '实际毛利率') {
+            if (param.value !== null && param.value !== undefined) {
+              result += `${param.seriesName}: ${formatNumber(param.value)}%<br/>`
+            } else {
+              result += `${param.seriesName}: 暂无数据<br/>`
+            }
+          } else if (param.seriesName === '目标毛利率') {
             result += `${param.seriesName}: ${formatNumber(param.value)}%<br/>`
           }
         })
@@ -234,7 +249,7 @@ const initChart = () => {
     },
     xAxis: {
       type: 'category',
-      data: months.value,
+      data: ['01月', '02月', '03月', '04月', '05月', '06月', '07月', '08月', '09月', '10月', '11月', '12月'],
       axisLabel: {
         rotate: 0,
         fontSize: 12
@@ -283,7 +298,7 @@ const initChart = () => {
       {
         name: '目标毛利率',
         type: 'line',
-        data: new Array(months.value.length).fill(targetRate.value),
+        data: new Array(12).fill(targetRate.value),
         lineStyle: {
           width: 2,
           color: '#EF4444',

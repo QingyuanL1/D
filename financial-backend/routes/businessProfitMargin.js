@@ -4,35 +4,75 @@ const { createBudgetMiddleware } = require('../middleware/budgetMiddleware');
 const fetch = require('node-fetch');
 const router = express.Router();
 
-// 获取主营业务毛利率数据
+// 获取主营业务毛利率数据 - 改为实时计算
 router.get('/:period', createBudgetMiddleware('main_business_gross_profit_rate_structure'), async (req, res) => {
     const { period } = req.params;
-    
+
     // 验证period格式 (YYYY-MM)
     if (!/^\d{4}-\d{2}$/.test(period)) {
         return res.status(400).json({ error: '无效的期间格式，应为YYYY-MM' });
     }
-    
+
     try {
-        const [rows] = await pool.execute(
-            'SELECT * FROM business_profit_margin WHERE period = ? ORDER BY created_at DESC LIMIT 1',
-            [period]
-        );
-        
-        if (rows.length === 0) {
-            return res.status(404).json({ error: '未找到指定期间的数据' });
+        console.log(`实时计算主营业务毛利率数据，期间: ${period}`);
+
+        // 先尝试自动计算毛利率
+        let calculatedData = null;
+        try {
+            console.log('尝试自动计算毛利率...');
+            const calculateResponse = await fetch(`http://47.111.95.19:3000/business-profit-margin/calculate/${period}`);
+
+            if (calculateResponse.ok) {
+                const calculateResult = await calculateResponse.json();
+                if (calculateResult.success && calculateResult.data) {
+                    calculatedData = calculateResult.data;
+                    console.log('自动计算成功:', calculatedData);
+                }
+            }
+        } catch (calcError) {
+            console.log('自动计算失败，将使用现有数据:', calcError.message);
         }
-        
+
+        // 如果自动计算成功，使用计算结果；否则加载现有数据
+        let finalData = calculatedData;
+
+        if (!finalData) {
+            // 回退到数据库查询
+            const [rows] = await pool.execute(
+                'SELECT * FROM business_profit_margin WHERE period = ? ORDER BY created_at DESC LIMIT 1',
+                [period]
+            );
+
+            if (rows.length > 0) {
+                finalData = rows[0].data;
+                console.log('使用数据库存储数据:', finalData);
+            }
+        }
+
+        if (!finalData) {
+            return res.status(404).json({
+                success: false,
+                message: '未找到指定期间的数据，且自动计算失败'
+            });
+        }
+
         res.json({
             success: true,
-            data: rows[0].data,
-            period: rows[0].period,
-            updated_at: rows[0].updated_at
+            data: finalData,
+            period: period,
+            calculation: {
+                method: calculatedData ? 'real_time_calculation' : 'stored_data',
+                description: calculatedData ? '实时计算结果' : '数据库存储数据'
+            }
         });
-        
+
     } catch (error) {
-        console.error('获取数据失败:', error);
-        res.status(500).json({ error: '获取数据失败' });
+        console.error('获取毛利率数据失败:', error);
+        res.status(500).json({
+            success: false,
+            message: '获取数据失败',
+            error: error.message
+        });
     }
 });
 

@@ -1,7 +1,7 @@
 <template>
     <div class="max-w-[1500px] mx-auto bg-white rounded-lg shadow-lg p-6">
         <div class="flex justify-between items-center mb-6">
-            <h1 class="text-2xl font-bold">净利润结构与质量（单位：万元）</h1>
+            <h1 class="text-2xl font-bold">利润总额结构与质量（单位：万元）</h1>
             <div class="text-gray-500">(按年度计划口径分解)</div>
             <div class="flex items-center space-x-4">
                 <input v-model="period" type="month" class="px-3 py-2 border rounded" />
@@ -24,18 +24,22 @@
                     <!-- 主营业务 -->
                     <tr>
                         <td class="border border-gray-300 px-4 py-2 text-center">1</td>
-                        <td class="border border-gray-300 px-4 py-2">主营业务</td>
+                        <td class="border border-gray-300 px-4 py-2">主营业务利润总额</td>
                         <td class="border border-gray-300 px-4 py-2">
-                            <input v-model="data.mainBusiness.plan" type="text" class="w-full px-2 py-1 border rounded bg-gray-100" readonly />
+                            <input v-model="data.mainBusiness.plan" type="text"
+                                class="w-full px-2 py-1 border rounded bg-gray-100" readonly />
                         </td>
                         <td class="border border-gray-300 px-4 py-2">
-                            <input v-model="data.mainBusiness.current" type="text" class="w-full px-2 py-1 border rounded bg-gray-100" readonly />
+                            <input v-model="data.mainBusiness.current" type="text"
+                                class="w-full px-2 py-1 border rounded bg-gray-100" readonly />
                         </td>
                         <td class="border border-gray-300 px-4 py-2">
-                            <input v-model="data.mainBusiness.cumulative" type="text" class="w-full px-2 py-1 border rounded bg-gray-100" readonly />
+                            <input v-model="data.mainBusiness.cumulative" type="text"
+                                class="w-full px-2 py-1 border rounded bg-gray-100" readonly />
                         </td>
                         <td class="border border-gray-300 px-4 py-2">
-                            <input v-model="data.mainBusiness.progress" type="text" class="w-full px-2 py-1 border rounded bg-gray-100" readonly />
+                            <input v-model="data.mainBusiness.progress" type="text"
+                                class="w-full px-2 py-1 border rounded bg-gray-100" readonly />
                         </td>
                     </tr>
 
@@ -44,16 +48,20 @@
                         <td class="border border-gray-300 px-4 py-2 text-center">2</td>
                         <td class="border border-gray-300 px-4 py-2">非主营业务</td>
                         <td class="border border-gray-300 px-4 py-2">
-                            <input v-model="data.nonMainBusiness.plan" type="text" class="w-full px-2 py-1 border rounded bg-gray-100" readonly />
+                            <input v-model="data.nonMainBusiness.plan" type="text"
+                                class="w-full px-2 py-1 border rounded bg-gray-100" readonly />
                         </td>
                         <td class="border border-gray-300 px-4 py-2">
-                            <input v-model="data.nonMainBusiness.current" type="text" class="w-full px-2 py-1 border rounded bg-gray-100" readonly />
+                            <input v-model="data.nonMainBusiness.current" type="text"
+                                class="w-full px-2 py-1 border rounded bg-gray-100" readonly />
                         </td>
                         <td class="border border-gray-300 px-4 py-2">
-                            <input v-model="data.nonMainBusiness.cumulative" type="text" class="w-full px-2 py-1 border rounded bg-gray-100" readonly />
+                            <input v-model="data.nonMainBusiness.cumulative" type="text"
+                                class="w-full px-2 py-1 border rounded bg-gray-100" readonly />
                         </td>
                         <td class="border border-gray-300 px-4 py-2">
-                            <input v-model="data.nonMainBusiness.progress" type="text" class="w-full px-2 py-1 border rounded bg-gray-100" readonly />
+                            <input v-model="data.nonMainBusiness.progress" type="text"
+                                class="w-full px-2 py-1 border rounded bg-gray-100" readonly />
                         </td>
                     </tr>
 
@@ -61,16 +69,20 @@
                     <tr class="bg-gray-50 font-bold">
                         <td class="border border-gray-300 px-4 py-2 text-center" colspan="2">合计</td>
                         <td class="border border-gray-300 px-4 py-2">
-                            <input v-model="data.total.plan" type="text" class="w-full px-2 py-1 border rounded font-bold bg-gray-100" readonly />
+                            <input v-model="data.total.plan" type="text"
+                                class="w-full px-2 py-1 border rounded font-bold bg-gray-100" readonly />
                         </td>
                         <td class="border border-gray-300 px-4 py-2">
-                            <input v-model="data.total.current" type="text" class="w-full px-2 py-1 border rounded font-bold bg-gray-100" readonly />
+                            <input v-model="data.total.current" type="text"
+                                class="w-full px-2 py-1 border rounded font-bold bg-gray-100" readonly />
                         </td>
                         <td class="border border-gray-300 px-4 py-2">
-                            <input v-model="data.total.cumulative" type="text" class="w-full px-2 py-1 border rounded font-bold bg-gray-100" readonly />
+                            <input v-model="data.total.cumulative" type="text"
+                                class="w-full px-2 py-1 border rounded font-bold bg-gray-100" readonly />
                         </td>
                         <td class="border border-gray-300 px-4 py-2">
-                            <input v-model="data.total.progress" type="text" class="w-full px-2 py-1 border rounded font-bold bg-gray-100" readonly />
+                            <input v-model="data.total.progress" type="text"
+                                class="w-full px-2 py-1 border rounded font-bold bg-gray-100" readonly />
                         </td>
                     </tr>
                 </tbody>
@@ -79,7 +91,13 @@
 
         <!-- 主营业务净利润贡献情况表 -->
         <div class="mt-8">
-            <h2 class="text-xl font-bold mb-4">主营业务净利润贡献情况（单位：万元）</h2>
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold">主营业务利润总额贡献情况（单位：万元）</h2>
+                <div class="bg-blue-50 px-3 py-1 rounded-lg">
+                    <span class="text-blue-600 text-sm font-medium">✨ 自动计算</span>
+                    <small class="block text-blue-500 text-xs">基于营业收入和成本数据实时计算</small>
+                </div>
+            </div>
             <div class="overflow-x-auto my-6">
                 <table class="w-full border-collapse border border-gray-300">
                     <thead class="sticky top-0 bg-white">
@@ -96,7 +114,8 @@
                         <!-- 工程板块 -->
                         <template v-for="(item, index) in mainBusinessData" :key="`main-${index}`">
                             <tr>
-                                <td v-if="index === 0" class="border border-gray-300 px-4 py-2 text-center" :rowspan="mainBusinessData.length">
+                                <td v-if="index === 0" class="border border-gray-300 px-4 py-2 text-center"
+                                    :rowspan="mainBusinessData.length">
                                     工程
                                 </td>
                                 <td class="border border-gray-300 px-4 py-2">{{ item.customerName }}</td>
@@ -104,10 +123,13 @@
                                     {{ formatNumber(item.yearlyPlan) }}
                                 </td>
                                 <td class="border border-gray-300 px-4 py-2 text-right">
-                                    <span class="font-medium">{{ formatNumber(item.currentPeriod) }}</span>
+                                    <span class="font-medium text-blue-600">{{ formatNumber(item.currentPeriod)
+                                    }}</span>
+                                    <small class="block text-gray-500 text-xs mt-1">自动计算</small>
                                 </td>
                                 <td class="border border-gray-300 px-4 py-2 text-right">
-                                    <span class="font-medium">{{ formatNumber(item.cumulative) }}</span>
+                                    <span class="font-medium text-blue-600">{{ formatNumber(item.cumulative) }}</span>
+                                    <small class="block text-gray-500 text-xs mt-1">自动计算</small>
                                 </td>
                                 <td class="border border-gray-300 px-4 py-2 text-right">
                                     {{ formatPercentage(item.annualRatio) }}%
@@ -191,12 +213,8 @@
         </div>
 
         <!-- 文件上传和备注组件 -->
-        <FormAttachmentAndRemarks 
-            :module-id="MODULE_IDS.NANHUA_NET_PROFIT_STRUCTURE"
-            :period="period"
-            v-model:remarks="remarks"
-            v-model:suggestions="suggestions"
-        />
+        <FormAttachmentAndRemarks :module-id="MODULE_IDS.NANHUA_NET_PROFIT_STRUCTURE" :period="period"
+            v-model:remarks="remarks" v-model:suggestions="suggestions" />
 
         <div class="mt-4 flex justify-end space-x-4">
             <button @click="handleSave" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
@@ -335,9 +353,41 @@ const nonMainBusinessTotalData = computed(() => {
     }
 })
 
-// 加载主营业务数据
+// 加载主营业务数据 - 改为调用计算接口
 const loadMainBusinessData = async (targetPeriod: string) => {
     try {
+        // 先尝试调用计算接口
+        const calculateResponse = await fetch(`http://47.111.95.19:3000/nanhua-main-business-net-profit/calculate/${targetPeriod}`)
+        if (calculateResponse.ok) {
+            const calculateResult = await calculateResponse.json()
+            if (calculateResult.success && calculateResult.data && calculateResult.data.customers) {
+                console.log('使用计算接口数据:', calculateResult.data)
+
+                // 计算总累计值用于计算贡献占比
+                let totalCumulative = 0
+                calculateResult.data.customers.forEach((item: any) => {
+                    totalCumulative += item.cumulative || 0
+                })
+
+                // 合并数据并计算贡献占比
+                mainBusinessData.value = getInitialMainBusinessData().map(item => {
+                    const dbItem = calculateResult.data.customers.find((c: any) => c.customerName === item.customerName)
+                    const cumulative = dbItem ? (dbItem.cumulative || 0) : 0
+                    const annualRatio = totalCumulative !== 0 ? (cumulative / totalCumulative * 100) : 0
+
+                    return {
+                        customerName: item.customerName,
+                        yearlyPlan: dbItem ? (dbItem.yearlyPlan || item.yearlyPlan) : item.yearlyPlan,
+                        currentPeriod: dbItem ? (dbItem.currentPeriod || 0) : 0,
+                        cumulative: cumulative,
+                        annualRatio: parseFloat(annualRatio.toFixed(2))
+                    }
+                })
+                return
+            }
+        }
+
+        // 如果计算接口失败，回退到原有接口
         const response = await fetch(`http://47.111.95.19:3000/nanhua-main-business-net-profit/${targetPeriod}`)
         if (response.ok) {
             const result = await response.json()
@@ -347,7 +397,7 @@ const loadMainBusinessData = async (targetPeriod: string) => {
                     const dbItem = result.data.customers.find((c: any) => c.customerName === item.customerName)
                     return {
                         customerName: item.customerName,
-                        yearlyPlan: dbItem ? (dbItem.yearlyPlan || 0) : 0,
+                        yearlyPlan: dbItem ? (dbItem.yearlyPlan || item.yearlyPlan) : item.yearlyPlan,
                         currentPeriod: dbItem ? (dbItem.currentPeriod || 0) : 0,
                         cumulative: dbItem ? (dbItem.cumulative || 0) : 0,
                         annualRatio: dbItem ? (dbItem.annualRatio || 0) : 0
@@ -436,19 +486,19 @@ const updateSummaryData = () => {
     data.mainBusiness.current = mainTotal.currentPeriod.toFixed(2)
     data.mainBusiness.cumulative = mainTotal.cumulative.toFixed(2)
     data.mainBusiness.progress = mainTotal.yearlyPlan > 0 ? ((mainTotal.cumulative / mainTotal.yearlyPlan) * 100).toFixed(2) + '%' : '0.00%'
-    
+
     // 更新非主营业务汇总
     const nonMainTotal = nonMainBusinessTotalData.value
     data.nonMainBusiness.plan = nonMainTotal.annualPlan.toFixed(2)
     data.nonMainBusiness.current = nonMainTotal.current.toFixed(2)
     data.nonMainBusiness.cumulative = nonMainTotal.accumulated.toFixed(2)
     data.nonMainBusiness.progress = nonMainTotal.annualPlan > 0 ? ((nonMainTotal.accumulated / nonMainTotal.annualPlan) * 100).toFixed(2) + '%' : '0.00%'
-    
+
     // 更新总计
     const totalPlan = parseFloat(data.mainBusiness.plan) + parseFloat(data.nonMainBusiness.plan)
     const totalCurrent = parseFloat(data.mainBusiness.current) + parseFloat(data.nonMainBusiness.current)
     const totalCumulative = parseFloat(data.mainBusiness.cumulative) + parseFloat(data.nonMainBusiness.cumulative)
-    
+
     data.total.plan = totalPlan.toFixed(2)
     data.total.current = totalCurrent.toFixed(2)
     data.total.cumulative = totalCumulative.toFixed(2)
@@ -511,10 +561,10 @@ const handleReset = () => {
     data.mainBusiness = { ...initialData.mainBusiness }
     data.nonMainBusiness = { ...initialData.nonMainBusiness }
     data.total = { ...initialData.total }
-    
+
     mainBusinessData.value = getInitialMainBusinessData()
     nonMainBusinessData.value = getInitialNonMainBusinessData()
-    
+
     remarks.value = ''
     suggestions.value = ''
 }
@@ -549,4 +599,4 @@ onMounted(async () => {
 .overflow-x-auto::-webkit-scrollbar-thumb:hover {
     background: #94a3b8;
 }
-</style> 
+</style>

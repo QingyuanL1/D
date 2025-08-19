@@ -120,7 +120,7 @@ router.post('/', async (req, res) => {
   }
 });
 
-// 为南华公司提供计算净利润的接口
+// 为南华公司提供计算净利润的接口 - 新版本：累计值通过当期值累加计算
 router.get('/calculate/:period', async (req, res) => {
     const { period } = req.params;
 
@@ -132,43 +132,8 @@ router.get('/calculate/:period', async (req, res) => {
     try {
         console.log(`开始计算南华主营业务净利润，期间: ${period}`);
 
-        // 1. 获取南华营业收入数据
-        const [incomeRows] = await pool.execute(
-            'SELECT customer_name, current_amount, accumulated_amount FROM nanhua_business_income WHERE period = ? AND category = "工程"',
-            [period]
-        );
-
-        // 2. 获取南华主营业务成本数据
-        const [costRows] = await pool.execute(
-            'SELECT customer_type, current_material_cost, current_labor_cost FROM nanhua_main_business_cost WHERE period = ? AND category = "工程"',
-            [period]
-        );
-
-        // 3. 获取南华成本中心结构数据
-        const [centerRows] = await pool.execute(
-            'SELECT customer_name, current_income, accumulated_income FROM nanhua_cost_center_structure WHERE period = ? AND category = "工程"',
-            [period]
-        );
-
-        console.log(`数据获取结果: 收入${incomeRows.length}条, 成本${costRows.length}条, 成本中心${centerRows.length}条`);
-
-        // 构建成本数据映射
-        const costMap = {};
-        costRows.forEach(row => {
-            // 匹配客户类型，处理不同命名方式
-            const key = row.customer_type;
-            costMap[key] = {
-                materialCost: parseFloat(row.current_material_cost) || 0,
-                laborCost: parseFloat(row.current_labor_cost) || 0
-            };
-        });
-
-        // 构建成本中心数据映射
-        const centerMap = {};
-        centerRows.forEach(row => {
-            const key = row.customer_name;
-            centerMap[key] = parseFloat(row.current_income) || 0;
-        });
+        const [year, month] = period.split('-');
+        const currentMonth = parseInt(month);
 
         // 固定的年度目标数据
         const yearlyPlanData = {
@@ -182,55 +147,42 @@ router.get('/calculate/:period', async (req, res) => {
             '其他': 0
         };
 
+        // 固定的客户列表
+        const customerList = Object.keys(yearlyPlanData);
+
         // 计算净利润数据
         const result = {
             customers: []
         };
 
-        // 处理工程板块数据
-        incomeRows.forEach(incomeItem => {
-            const customerName = incomeItem.customer_name;
-            const currentAmount = parseFloat(incomeItem.current_amount) || 0;
-            
-            // 查找对应的成本数据（处理不同的命名映射）
-            let materialCost = 0;
-            let laborCost = 0;
-            
-            // 尝试多种匹配方式
-            const costData = costMap[customerName] || 
-                            costMap[customerName.replace('项目', '')] || 
-                            costMap[customerName + '项目'] ||
-                            { materialCost: 0, laborCost: 0 };
-            
-            materialCost = costData.materialCost;
-            laborCost = costData.laborCost;
+        // 为每个客户计算净利润
+        for (const customerName of customerList) {
+            let currentPeriodNetProfit = 0;
+            let cumulativeNetProfit = 0;
 
-            // 查找成本中心数据
-            const centerIncome = centerMap[customerName] || 0;
+            // 计算当期净利润（当前月份）
+            currentPeriodNetProfit = await calculateMonthlyNetProfit(period, customerName);
 
-            // 计算净利润：当期收入 - 材料成本 - 人工成本 - 成本中心收入
-            const netProfit = currentAmount - materialCost - laborCost - centerIncome;
+            // 计算累计净利润（从年初到当前月份的当期净利润总和）
+            for (let m = 1; m <= currentMonth; m++) {
+                const monthPeriod = `${year}-${m.toString().padStart(2, '0')}`;
+                const monthlyNetProfit = await calculateMonthlyNetProfit(monthPeriod, customerName);
+                cumulativeNetProfit += monthlyNetProfit;
+            }
 
-            // 获取年度目标
+            // 计算年度完成率
             const yearlyPlan = yearlyPlanData[customerName] || 0;
+            const annualRatio = yearlyPlan !== 0 ? (cumulativeNetProfit / yearlyPlan * 100) : 0;
 
             result.customers.push({
                 customerName: customerName,
                 yearlyPlan: yearlyPlan,
-                currentPeriod: netProfit,
-                cumulative: 0, // 将在前端或后续计算
-                decompositionRatio: 0,
-                annualRatio: 0,
-                // 调试信息
-                debug: {
-                    currentAmount: currentAmount,
-                    materialCost: materialCost,
-                    laborCost: laborCost,
-                    centerIncome: centerIncome,
-                    calculation: `${currentAmount} - ${materialCost} - ${laborCost} - ${centerIncome} = ${netProfit}`
-                }
+                currentPeriod: parseFloat(currentPeriodNetProfit.toFixed(2)),
+                cumulative: parseFloat(cumulativeNetProfit.toFixed(2)),
+                decompositionRatio: 0, // 可以后续计算
+                annualRatio: parseFloat(annualRatio.toFixed(2))
             });
-        });
+        }
 
         console.log(`计算完成，期间: ${period}, 结果数量: ${result.customers.length}`);
 
@@ -239,8 +191,9 @@ router.get('/calculate/:period', async (req, res) => {
             data: result,
             period: period,
             calculation: {
-                formula: '净利润 = 当期收入 - 材料成本 - 人工成本 - 成本中心收入',
-                description: '基于nanhua_business_income.current_amount - nanhua_main_business_cost.current_material_cost - nanhua_main_business_cost.current_labor_cost - nanhua_cost_center_structure.current_income计算'
+                formula: '净利润 = 营业收入 - 累计直接成本 - 累计间接成本 - 营销费用 - 管理费用 - 财务费用',
+                description: '累计值通过当期值累加计算，不直接取累计数据',
+                method: 'cumulative_calculation'
             }
         });
 
@@ -249,5 +202,73 @@ router.get('/calculate/:period', async (req, res) => {
         res.status(500).json({ error: '计算失败: ' + error.message });
     }
 });
+
+// 计算单月净利润的辅助函数
+async function calculateMonthlyNetProfit(period, customerName) {
+    try {
+        // 1. 获取营业收入（从订单转收入数据计算）
+        let monthlyIncome = 0;
+
+        // 获取当月订单转收入
+        const [orderRows] = await pool.execute(
+            'SELECT current_amount FROM nanhua_order_to_income WHERE period = ? AND customer_name = ?',
+            [period, customerName]
+        );
+
+        if (orderRows.length > 0) {
+            monthlyIncome += parseFloat(orderRows[0].current_amount) || 0;
+        }
+
+        // 获取存量订单转收入
+        const [stockRows] = await pool.execute(
+            'SELECT current_amount FROM nanhua_stock_order_to_income WHERE period = ? AND customer_name = ?',
+            [period, customerName]
+        );
+
+        if (stockRows.length > 0) {
+            monthlyIncome += parseFloat(stockRows[0].current_amount) || 0;
+        }
+
+        // 2. 获取主营业务成本数据（当期直接成本和间接成本）- 移除category限制，因为不同月份的category可能不同
+        const [costRows] = await pool.execute(
+            'SELECT current_material_cost, current_labor_cost FROM nanhua_main_business_cost WHERE period = ? AND customer_type = ?',
+            [period, customerName]
+        );
+
+        let materialCost = 0;
+        let laborCost = 0;
+        if (costRows.length > 0) {
+            materialCost = parseFloat(costRows[0].current_material_cost) || 0;
+            laborCost = parseFloat(costRows[0].current_labor_cost) || 0;
+        }
+
+        // 3. 获取成本中心费用（营销、管理、财务）- 移除category限制
+        const [centerRows] = await pool.execute(
+            'SELECT marketing, management, finance FROM nanhua_cost_center_structure WHERE period = ? AND customer_name = ?',
+            [period, customerName]
+        );
+
+        let marketingCost = 0;
+        let managementCost = 0;
+        let financeCost = 0;
+        if (centerRows.length > 0) {
+            marketingCost = parseFloat(centerRows[0].marketing) || 0;
+            managementCost = parseFloat(centerRows[0].management) || 0;
+            financeCost = parseFloat(centerRows[0].finance) || 0;
+        }
+
+        // 4. 计算净利润
+        // 净利润 = 营业收入 - 直接成本 - 间接成本 - 营销费用 - 管理费用 - 财务费用
+        const netProfit = monthlyIncome - materialCost - laborCost - marketingCost - managementCost - financeCost;
+
+        console.log(`${customerName} ${period}: 收入=${monthlyIncome}, 材料=${materialCost}, 人工=${laborCost}, 营销=${marketingCost}, 管理=${managementCost}, 财务=${financeCost}, 净利润=${netProfit}`);
+
+        return netProfit;
+
+    } catch (error) {
+        console.error(`计算${customerName} ${period}净利润失败:`, error);
+        return 0;
+    }
+}
 
 module.exports = router;
