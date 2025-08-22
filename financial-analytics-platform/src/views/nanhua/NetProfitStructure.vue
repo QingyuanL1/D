@@ -471,7 +471,7 @@ const loadData = async (targetPeriod: string) => {
         ])
 
         // 根据加载的数据更新汇总
-        updateSummaryData()
+        await updateSummaryData()
 
     } catch (error) {
         console.error('加载数据失败:', error)
@@ -479,11 +479,39 @@ const loadData = async (targetPeriod: string) => {
 }
 
 // 更新汇总数据
-const updateSummaryData = () => {
+const updateSummaryData = async () => {
     // 更新主营业务汇总
     const mainTotal = mainBusinessTotalData.value
     data.mainBusiness.plan = mainTotal.yearlyPlan.toFixed(2)
-    data.mainBusiness.current = mainTotal.currentPeriod.toFixed(2)
+
+    // 获取主营业务当期值，并减去营业税金及附加和所得税
+    let adjustedCurrentPeriod = mainTotal.currentPeriod
+
+    try {
+        // 获取上海南华兰陵实业利润表数据
+        const incomeStatementResponse = await fetch(`http://47.111.95.19:3000/shanghai-nanhua-lanling-income-statement/${period.value}`)
+        if (incomeStatementResponse.ok) {
+            const incomeStatementResult = await incomeStatementResponse.json()
+            if (incomeStatementResult.success && incomeStatementResult.data) {
+                // 使用正确的字段名：main_business_taxes 和 income_tax
+                const mainBusinessTaxes = parseFloat(incomeStatementResult.data.main_business_taxes?.current_amount) || 0
+                const incomeTax = parseFloat(incomeStatementResult.data.income_tax?.current_amount) || 0
+
+                console.log(`南华主营业务税金及附加当期值: ${mainBusinessTaxes}`)
+                console.log(`南华所得税当期值: ${incomeTax}`)
+                console.log(`南华主营业务利润总额(扣减前): ${adjustedCurrentPeriod}`)
+
+                // 从主营业务利润总额中减去主营业务税金及附加和所得税
+                adjustedCurrentPeriod = adjustedCurrentPeriod - mainBusinessTaxes - incomeTax
+
+                console.log(`南华主营业务利润总额(扣减后): ${adjustedCurrentPeriod}`)
+            }
+        }
+    } catch (incomeStatementError) {
+        console.error('获取南华利润表数据失败:', incomeStatementError)
+    }
+
+    data.mainBusiness.current = adjustedCurrentPeriod.toFixed(2)
     data.mainBusiness.cumulative = mainTotal.cumulative.toFixed(2)
     data.mainBusiness.progress = mainTotal.yearlyPlan > 0 ? ((mainTotal.cumulative / mainTotal.yearlyPlan) * 100).toFixed(2) + '%' : '0.00%'
 

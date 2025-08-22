@@ -23,8 +23,7 @@
                 <tbody>
                     <template v-for="(item, index) in contributionRateData.items" :key="`contribution-${index}`">
                         <tr>
-                            <td v-if="isFirstInSegment(index)" 
-                                :rowspan="getSegmentRowspan(item.segmentAttribute)" 
+                            <td v-if="isFirstInSegment(index)" :rowspan="getSegmentRowspan(item.segmentAttribute)"
                                 class="border border-gray-300 px-4 py-2 font-medium text-center">
                                 {{ item.segmentAttribute }}
                             </td>
@@ -40,7 +39,8 @@
                                 </span>
                             </td>
                             <td class="border border-gray-300 px-4 py-2 text-right">
-                                <span class="text-sm font-medium" :class="item.deviation >= 0 ? 'text-green-600' : 'text-red-600'">
+                                <span class="text-sm font-medium"
+                                    :class="item.deviation >= 0 ? 'text-green-600' : 'text-red-600'">
                                     {{ formatPercentage(item.deviation) }}%
                                 </span>
                             </td>
@@ -57,12 +57,13 @@
                             {{ formatPercentage(totalData.currentActual) }}%
                         </td>
                         <td class="border border-gray-300 px-4 py-2 text-right">
-                            <span class="text-sm font-bold" :class="totalData.deviation >= 0 ? 'text-green-600' : 'text-red-600'">
+                            <span class="text-sm font-bold"
+                                :class="totalData.deviation >= 0 ? 'text-green-600' : 'text-red-600'">
                                 {{ formatPercentage(totalData.deviation) }}%
                             </span>
                         </td>
                     </tr>
-                    
+
                     <!-- 加权平均行 -->
                     <tr class="bg-blue-50 font-bold text-blue-800" v-if="weightedData">
                         <td colspan="2" class="border border-gray-300 px-4 py-2 text-center">
@@ -83,12 +84,8 @@
         </div>
 
         <!-- 文件上传和备注组件 -->
-        <FormAttachmentAndRemarks 
-            :module-id="MODULE_IDS.TUOYUAN_MAIN_BUSINESS_CONTRIBUTION_RATE"
-            :period="period"
-            v-model:remarks="remarks"
-            v-model:suggestions="suggestions"
-        />
+        <FormAttachmentAndRemarks :module-id="MODULE_IDS.TUOYUAN_MAIN_BUSINESS_CONTRIBUTION_RATE" :period="period"
+            v-model:remarks="remarks" v-model:suggestions="suggestions" />
 
         <div class="mt-4 flex justify-end space-x-4">
             <button @click="handleSave" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
@@ -124,7 +121,7 @@ interface ContributionRateData {
 
 const fixedPlanData: ContributionRateData = {
     items: [
-        { segmentAttribute: '设备', customerAttribute: '申业项目', yearlyPlan: 15.47, currentActual: 0, deviation: 0 },
+        { segmentAttribute: '设备', customerAttribute: '电业项目', yearlyPlan: 15.47, currentActual: 0, deviation: 0 },
         { segmentAttribute: '设备', customerAttribute: '用户项目', yearlyPlan: 0, currentActual: 0, deviation: 0 },
         { segmentAttribute: '设备', customerAttribute: '贸易', yearlyPlan: 6.00, currentActual: 0, deviation: 0 },
         { segmentAttribute: '设备', customerAttribute: '代理设备', yearlyPlan: 26.67, currentActual: 0, deviation: 0 },
@@ -190,14 +187,14 @@ const calculateTotalData = () => {
         deviation: 0,
         simpleAverage: 0
     }
-    
+
     contributionRateData.value.items.forEach(item => {
         totalData.value.yearlyPlan += item.yearlyPlan || 0
         totalData.value.currentActual += item.currentActual || 0
     })
-    
+
     totalData.value.deviation = totalData.value.currentActual - totalData.value.yearlyPlan
-    
+
     // 计算简单平均
     totalData.value.simpleAverage = totalData.value.yearlyPlan / contributionRateData.value.items.length
 }
@@ -213,7 +210,7 @@ const loadData = async (targetPeriod: string) => {
                 throw new Error('加载数据失败')
             }
             console.log(`${targetPeriod}期间无数据，尝试自动计算...`)
-            
+
             // 尝试自动计算
             try {
                 const calculateResponse = await fetch(`http://47.111.95.19:3000/tuoyuan-main-business-contribution-rate/calculate/${targetPeriod}`, {
@@ -222,7 +219,7 @@ const loadData = async (targetPeriod: string) => {
                         'Content-Type': 'application/json'
                     }
                 })
-                
+
                 if (calculateResponse.ok) {
                     const calculateResult = await calculateResponse.json()
                     if (calculateResult.success && calculateResult.data && calculateResult.data.items) {
@@ -233,7 +230,7 @@ const loadData = async (targetPeriod: string) => {
                             currentActual: Number(item.currentActual) || 0,
                             deviation: Number(item.deviation) || 0
                         }))
-                        
+
                         // 处理合计和加权数据
                         if (calculateResult.data.summary) {
                             const summary = calculateResult.data.summary
@@ -244,10 +241,10 @@ const loadData = async (targetPeriod: string) => {
                                 marginContribution: Number(summary.totalIncome - summary.totalCost) || 0
                             }
                         }
-                        
+
                         // 计算合计数据
                         calculateTotalData()
-                        
+
                         console.log('自动计算成功，数据已加载')
                         return
                     }
@@ -255,7 +252,7 @@ const loadData = async (targetPeriod: string) => {
             } catch (calcError) {
                 console.log('自动计算失败，使用默认数据:', calcError)
             }
-            
+
             // 如果自动计算失败，重置为默认数据
             resetToDefaultData()
             return
@@ -269,7 +266,7 @@ const loadData = async (targetPeriod: string) => {
                 currentActual: Number(item.currentActual) || 0,
                 deviation: Number(item.deviation) || 0
             }))
-            
+
             // 使用后端返回的真实合计数据
             if (result.data.total) {
                 totalData.value = {
@@ -279,7 +276,7 @@ const loadData = async (targetPeriod: string) => {
                     simpleAverage: Number(result.data.total.simpleAverage) || 0
                 }
             }
-            
+
             // 使用后端返回的真实加权数据
             if (result.data.weighted) {
                 weightedData.value = {
@@ -290,7 +287,7 @@ const loadData = async (targetPeriod: string) => {
                 }
             }
         }
-        
+
         // 重新计算偏差
         calculateDeviation()
     } catch (error) {

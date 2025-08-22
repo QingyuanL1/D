@@ -1087,29 +1087,22 @@ const fetchContributionRateCompletionData = async () => {
           completionRate: 0
         }
       } else {
-        // 有数据的情况 - 使用各板块数据计算加权平均
-        const segmentData = result.data.segmentData || []
-        let weightedSum = 0
-        let totalWeight = 0
-        
-        // 根据各板块的计划值作为权重计算加权平均
-        segmentData.forEach(segment => {
-          if (segment.actual > 0 && segment.plan > 0) {
-            weightedSum += segment.actual * segment.plan
-            totalWeight += segment.plan
-          }
-        })
-        
-        // 如果没有有效的板块数据，尝试使用API返回的currentRate
+        // 有数据的情况 - 直接取当月的边际贡献率
+        const currentMonth = new Date().getMonth() + 1 // 1-12
         let currentRate = 0
-        if (totalWeight > 0) {
-          currentRate = Number((weightedSum / totalWeight).toFixed(2))
-        } else {
-          currentRate = result.data.currentRate || 0
+
+        // 优先使用当月数据
+        if (result.data.monthlyData && result.data.monthlyData.length >= currentMonth) {
+          currentRate = result.data.monthlyData[currentMonth - 1] || 0
+          console.log(`使用当月(${currentMonth}月)边际贡献率: ${currentRate}%`)
+        } else if (result.data.currentRate !== undefined) {
+          // 如果没有当月数据，使用API返回的currentRate
+          currentRate = result.data.currentRate
+          console.log(`使用API返回的边际贡献率: ${currentRate}%`)
         }
-        
+
         const completionRate = Math.min(100, Math.round((currentRate / 21.98) * 100))
-        
+
         contributionRateData.value = {
           targetRate: 21.98,
           currentRate,

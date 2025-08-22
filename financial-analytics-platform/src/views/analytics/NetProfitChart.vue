@@ -103,7 +103,7 @@
   const availableCompanies = ref([
     { key: 'main', name: '电气公司', table: 'income_statement' },
     { key: 'nanhua', name: '南华公司', table: 'nanhua_income_statement' },
-    { key: 'tuoyuan', name: '拓元公司', table: 'tuoyuan_income_statement' }
+    { key: 'tuoyuan', name: '拓源公司', table: 'tuoyuan_income_statement' }
   ])
   const loading = ref(true)
   

@@ -58,7 +58,7 @@ router.get('/:period', async (req, res) => {
             
             // 生成基础数据结构
             const baseData = [
-                { segmentAttribute: '设备', customerAttribute: '申业项目' },
+                { segmentAttribute: '设备', customerAttribute: '电业项目' },
                 { segmentAttribute: '设备', customerAttribute: '用户项目' },
                 { segmentAttribute: '设备', customerAttribute: '贸易' },
                 { segmentAttribute: '设备', customerAttribute: '代理设备' },

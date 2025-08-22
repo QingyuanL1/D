@@ -1666,8 +1666,25 @@ router.get('/contribution-rate/:year', async (req, res) => {
       console.log(`工程板块最终平均贡献率: ${avgRate.toFixed(2)}%`);
     }
 
-    // 计算当前贡献率（最新月份的数据）
-    const currentRate = monthlyData.length > 0 ? monthlyData[monthlyData.length - 1] : 0;
+    // 计算当前贡献率（当前月份的数据，而不是最后一个月份）
+    const currentMonth = new Date().getMonth() + 1; // 1-12
+    let currentRate = 0;
+
+    // 如果当前月份有数据，使用当前月份的数据
+    if (monthlyData.length >= currentMonth && monthlyData[currentMonth - 1] !== undefined) {
+      currentRate = monthlyData[currentMonth - 1];
+      console.log(`使用当前月份(${currentMonth}月)的贡献率: ${currentRate}%`);
+    } else if (monthlyData.length > 0) {
+      // 如果当前月份没有数据，找最近有数据的月份
+      for (let i = currentMonth - 1; i >= 0; i--) {
+        if (monthlyData[i] !== undefined && monthlyData[i] !== 0) {
+          currentRate = monthlyData[i];
+          console.log(`使用最近有数据的月份(${i + 1}月)的贡献率: ${currentRate}%`);
+          break;
+        }
+      }
+    }
+
     const targetRate = 21.98; // 固定目标值
 
     console.log(`最终结果: 当前贡献率=${currentRate}%, 目标贡献率=${targetRate}%`);
@@ -1712,11 +1729,11 @@ router.get('/profit-margin/:year', async (req, res) => {
       { name: '工程', plan: 26.0, actual: 0, rate: 0 }
     ];
 
-    // 用于累计各板块的数据
+    // 用于累计各板块的数据 - 改为收入成本汇总
     const segmentAccumulator = {
-      equipment: { total: 0, count: 0 },
-      components: { total: 0, count: 0 },
-      engineering: { total: 0, count: 0 }
+      equipment: { totalIncome: 0, totalCost: 0 },
+      components: { totalIncome: 0, totalCost: 0 },
+      engineering: { totalIncome: 0, totalCost: 0 }
     };
 
     let hasAnyData = false;
@@ -1770,50 +1787,65 @@ router.get('/profit-margin/:year', async (req, res) => {
             }
             monthlyData.push(Number(monthRate.toFixed(2)));
 
-            // 累计各板块数据用于最终平均值计算
-            // 设备板块
-            const equipmentRates = [];
-            if (data.equipment) {
-              Object.values(data.equipment).forEach(item => {
-                const rate = parseProfitMarginRate(item.actual);
-                if (rate !== 0) equipmentRates.push(rate);
-              });
-            }
+            // 累计各板块数据用于最终汇总计算
+            if (calculateResult.segmentMargins) {
+              // 使用新的板块汇总数据
+              if (calculateResult.calculation && calculateResult.calculation.segmentTotals) {
+                const totals = calculateResult.calculation.segmentTotals;
+                segmentAccumulator.equipment.totalIncome += totals.equipment.totalIncome || 0;
+                segmentAccumulator.equipment.totalCost += totals.equipment.totalCost || 0;
+                segmentAccumulator.components.totalIncome += totals.components.totalIncome || 0;
+                segmentAccumulator.components.totalCost += totals.components.totalCost || 0;
+                segmentAccumulator.engineering.totalIncome += totals.engineering.totalIncome || 0;
+                segmentAccumulator.engineering.totalCost += totals.engineering.totalCost || 0;
+              }
+            } else {
+              // 兼容旧版本：使用平均值计算
+              // 设备板块
+              const equipmentRates = [];
+              if (data.equipment) {
+                Object.values(data.equipment).forEach(item => {
+                  const rate = parseProfitMarginRate(item.actual);
+                  if (rate !== 0) equipmentRates.push(rate);
+                });
+              }
 
-            if (equipmentRates.length > 0) {
-              const avgRate = equipmentRates.reduce((sum, rate) => sum + rate, 0) / equipmentRates.length;
-              segmentAccumulator.equipment.total += avgRate;
-              segmentAccumulator.equipment.count += 1;
-            }
+              if (equipmentRates.length > 0) {
+                const avgRate = equipmentRates.reduce((sum, rate) => sum + rate, 0) / equipmentRates.length;
+                // 模拟收入成本数据
+                segmentAccumulator.equipment.totalIncome += 100;
+                segmentAccumulator.equipment.totalCost += 100 - (avgRate * 100 / 100);
+              }
 
-            // 元件板块
-            const componentRates = [];
-            if (data.components) {
-              Object.values(data.components).forEach(item => {
-                const rate = parseProfitMarginRate(item.actual);
-                if (rate !== 0) componentRates.push(rate);
-              });
-            }
+              // 元件板块
+              const componentRates = [];
+              if (data.components) {
+                Object.values(data.components).forEach(item => {
+                  const rate = parseProfitMarginRate(item.actual);
+                  if (rate !== 0) componentRates.push(rate);
+                });
+              }
 
-            if (componentRates.length > 0) {
-              const avgRate = componentRates.reduce((sum, rate) => sum + rate, 0) / componentRates.length;
-              segmentAccumulator.components.total += avgRate;
-              segmentAccumulator.components.count += 1;
-            }
+              if (componentRates.length > 0) {
+                const avgRate = componentRates.reduce((sum, rate) => sum + rate, 0) / componentRates.length;
+                segmentAccumulator.components.totalIncome += 100;
+                segmentAccumulator.components.totalCost += 100 - (avgRate * 100 / 100);
+              }
 
-            // 工程板块
-            const engineeringRates = [];
-            if (data.engineering) {
-              Object.values(data.engineering).forEach(item => {
-                const rate = parseProfitMarginRate(item.actual);
-                if (rate !== 0) engineeringRates.push(rate);
-              });
-            }
+              // 工程板块
+              const engineeringRates = [];
+              if (data.engineering) {
+                Object.values(data.engineering).forEach(item => {
+                  const rate = parseProfitMarginRate(item.actual);
+                  if (rate !== 0) engineeringRates.push(rate);
+                });
+              }
 
-            if (engineeringRates.length > 0) {
-              const avgRate = engineeringRates.reduce((sum, rate) => sum + rate, 0) / engineeringRates.length;
-              segmentAccumulator.engineering.total += avgRate;
-              segmentAccumulator.engineering.count += 1;
+              if (engineeringRates.length > 0) {
+                const avgRate = engineeringRates.reduce((sum, rate) => sum + rate, 0) / engineeringRates.length;
+                segmentAccumulator.engineering.totalIncome += 100;
+                segmentAccumulator.engineering.totalCost += 100 - (avgRate * 100 / 100);
+              }
             }
           } else {
             console.log(`❌ ${period}实时计算失败或无数据`);
@@ -1847,23 +1879,23 @@ router.get('/profit-margin/:year', async (req, res) => {
       });
     }
 
-    // 计算各板块的最终平均值
-    if (segmentAccumulator.equipment.count > 0) {
-      const avgRate = segmentAccumulator.equipment.total / segmentAccumulator.equipment.count;
-      segmentData[0].actual = Number(avgRate.toFixed(2));
-      segmentData[0].rate = Number(avgRate.toFixed(2));
+    // 计算各板块的最终汇总毛利率
+    if (segmentAccumulator.equipment.totalIncome > 0) {
+      const marginRate = ((segmentAccumulator.equipment.totalIncome - segmentAccumulator.equipment.totalCost) / segmentAccumulator.equipment.totalIncome) * 100;
+      segmentData[0].actual = Number(marginRate.toFixed(2));
+      segmentData[0].rate = Number(marginRate.toFixed(2));
     }
 
-    if (segmentAccumulator.components.count > 0) {
-      const avgRate = segmentAccumulator.components.total / segmentAccumulator.components.count;
-      segmentData[1].actual = Number(avgRate.toFixed(2));
-      segmentData[1].rate = Number(avgRate.toFixed(2));
+    if (segmentAccumulator.components.totalIncome > 0) {
+      const marginRate = ((segmentAccumulator.components.totalIncome - segmentAccumulator.components.totalCost) / segmentAccumulator.components.totalIncome) * 100;
+      segmentData[1].actual = Number(marginRate.toFixed(2));
+      segmentData[1].rate = Number(marginRate.toFixed(2));
     }
 
-    if (segmentAccumulator.engineering.count > 0) {
-      const avgRate = segmentAccumulator.engineering.total / segmentAccumulator.engineering.count;
-      segmentData[2].actual = Number(avgRate.toFixed(2));
-      segmentData[2].rate = Number(avgRate.toFixed(2));
+    if (segmentAccumulator.engineering.totalIncome > 0) {
+      const marginRate = ((segmentAccumulator.engineering.totalIncome - segmentAccumulator.engineering.totalCost) / segmentAccumulator.engineering.totalIncome) * 100;
+      segmentData[2].actual = Number(marginRate.toFixed(2));
+      segmentData[2].rate = Number(marginRate.toFixed(2));
     }
 
     // 计算当前毛利率（最新月份的数据）
@@ -2423,16 +2455,108 @@ router.get('/asset-liability-ratio/:year', async (req, res) => {
 
     console.log(`Fetching asset liability ratio data for year: ${year}, company: ${company}, table: ${tableName}`);
 
-    // 获取该年份的资产负债表数据
-    const [rows] = await pool.execute(`
-      SELECT DATE_FORMAT(period, '%Y-%m') as period_ym, data
-      FROM ${tableName}
-      WHERE YEAR(period) = ?
-      ORDER BY period ASC
-    `, [year]);
-    
+    // 根据公司类型获取不同的数据结构
+    let rows = [];
+    if (company === 'nanhua' || company === 'tuoyuan') {
+      // 对于南华和拓源公司，使用专门的表结构
+      const [balanceSheetRows] = await pool.execute(`
+        SELECT period, assets_total_current, liabilities_total_current, equity_total_current, equity_items
+        FROM ${tableName}
+        WHERE period LIKE ?
+        ORDER BY period ASC
+      `, [`${year}-%`]);
+
+      // 转换为统一格式
+      rows = balanceSheetRows.map(row => {
+        const totalAssets = Number(row.assets_total_current || 0);
+        let totalLiabilities = Number(row.liabilities_total_current || 0);
+        let equityTotal = Number(row.equity_total_current || 0);
+
+        // 如果权益总计为0，尝试从equity_items中计算
+        if (equityTotal === 0 && row.equity_items) {
+          try {
+            const equityItems = typeof row.equity_items === 'string' ?
+              JSON.parse(row.equity_items) : row.equity_items;
+
+            if (Array.isArray(equityItems)) {
+              equityTotal = equityItems.reduce((sum, item) => {
+                const endBalance = Number(item.endBalance || 0);
+                const beginBalance = Number(item.beginBalance || 0);
+                // 优先使用期末余额，如果为0则使用期初余额
+                const balance = endBalance !== 0 ? endBalance : beginBalance;
+                return sum + balance;
+              }, 0);
+            }
+          } catch (error) {
+            console.error(`解析权益项目失败: ${row.period}`, error);
+          }
+        }
+
+        // 如果负债为0但资产和权益都有值，使用会计恒等式计算负债
+        if (totalLiabilities === 0 && totalAssets > 0 && equityTotal > 0) {
+          totalLiabilities = totalAssets - equityTotal;
+        }
+
+        return {
+          period_ym: row.period,
+          totalAssets,
+          totalLiabilities,
+          equityTotal
+        };
+      });
+    } else {
+      // 对于主公司，使用原有的JSON数据结构
+      const [jsonRows] = await pool.execute(`
+        SELECT DATE_FORMAT(period, '%Y-%m') as period_ym, data
+        FROM ${tableName}
+        WHERE YEAR(period) = ?
+        ORDER BY period ASC
+      `, [year]);
+
+      rows = jsonRows.map(row => {
+        try {
+          const parsedData = typeof row.data === 'string' ?
+            JSON.parse(row.data) : row.data;
+
+          // 计算资产总计 = 流动资产总计 + 非流动资产总计
+          const currentAssets = parsedData.assets && parsedData.assets.currentTotal &&
+            parsedData.assets.currentTotal.endBalance !== null ?
+            Number(parsedData.assets.currentTotal.endBalance) : 0;
+          const nonCurrentAssets = parsedData.assets && parsedData.assets.nonCurrentTotal &&
+            parsedData.assets.nonCurrentTotal.endBalance !== null ?
+            Number(parsedData.assets.nonCurrentTotal.endBalance) : 0;
+          const totalAssets = currentAssets + nonCurrentAssets;
+
+          // 计算所有者权益总计
+          let equityTotal = 0;
+          if (parsedData.equity && Array.isArray(parsedData.equity)) {
+            parsedData.equity.forEach(item => {
+              if (item.endBalance && typeof item.endBalance === 'number') {
+                equityTotal += item.endBalance;
+              }
+            });
+          }
+
+          return {
+            period_ym: row.period_ym,
+            totalAssets,
+            totalLiabilities: totalAssets - equityTotal, // 使用会计恒等式
+            equityTotal
+          };
+        } catch (error) {
+          console.error(`解析${row.period_ym}数据失败:`, error);
+          return {
+            period_ym: row.period_ym,
+            totalAssets: 0,
+            totalLiabilities: 0,
+            equityTotal: 0
+          };
+        }
+      });
+    }
+
     console.log(`Found ${rows.length} balance sheet records`);
-    
+
     if (rows.length === 0) {
       return res.json({
         success: true,
@@ -2445,61 +2569,33 @@ router.get('/asset-liability-ratio/:year', async (req, res) => {
         }
       });
     }
-    
+
     // 处理数据
     const monthlyData = [];
     let latestRate = 0;
-    
+
     // 为每个可用月份计算资产负债率
     for (let i = 0; i < availableMonths.length; i++) {
       const month = availableMonths[i];
       const targetPeriod = `${year}-${month}`;
-      
+
       // 查找对应月份的数据
       const monthData = rows.find(row => row.period_ym === targetPeriod);
-      
+
       let assetLiabilityRatio = 0;
-      
+
       if (monthData) {
-        try {
-          const parsedData = typeof monthData.data === 'string' ? 
-            JSON.parse(monthData.data) : monthData.data;
-          
-          // 计算资产总计 = 流动资产总计 + 非流动资产总计
-          const currentAssets = parsedData.assets && parsedData.assets.currentTotal && 
-            parsedData.assets.currentTotal.endBalance !== null ? 
-            Number(parsedData.assets.currentTotal.endBalance) : 0;
-          const nonCurrentAssets = parsedData.assets && parsedData.assets.nonCurrentTotal && 
-            parsedData.assets.nonCurrentTotal.endBalance !== null ? 
-            Number(parsedData.assets.nonCurrentTotal.endBalance) : 0;
-          const totalAssets = currentAssets + nonCurrentAssets;
-          
-          // 计算所有者权益总计
-          let equityTotal = 0;
-          if (parsedData.equity && Array.isArray(parsedData.equity)) {
-            parsedData.equity.forEach(item => {
-              if (item.endBalance && typeof item.endBalance === 'number') {
-                equityTotal += item.endBalance;
-              }
-            });
-          }
-          
-          // 使用会计恒等式计算负债：负债 = 资产 - 所有者权益
-          const totalLiabilities = totalAssets - equityTotal;
-          
-          // 计算资产负债率 = 负债合计 / 资产合计 * 100
-          if (totalAssets > 0) {
-            assetLiabilityRatio = parseFloat(((totalLiabilities / totalAssets) * 100).toFixed(2));
-            latestRate = assetLiabilityRatio;
-          }
-          
-          console.log(`Period: ${targetPeriod}, Current assets: ${currentAssets}元, Non-current assets: ${nonCurrentAssets}元, Total assets: ${totalAssets}元, Equity total: ${equityTotal}元, Total liabilities: ${totalLiabilities}元, Ratio: ${assetLiabilityRatio}%`);
-          
-        } catch (error) {
-          console.error(`解析${month}月数据失败:`, error);
+        const { totalAssets, totalLiabilities, equityTotal } = monthData;
+
+        // 计算资产负债率 = 负债合计 / 资产合计 * 100
+        if (totalAssets > 0) {
+          assetLiabilityRatio = parseFloat(((totalLiabilities / totalAssets) * 100).toFixed(2));
+          latestRate = assetLiabilityRatio;
         }
+
+        console.log(`Period: ${targetPeriod}, Total assets: ${totalAssets}元, Total liabilities: ${totalLiabilities}元, Equity total: ${equityTotal}元, Ratio: ${assetLiabilityRatio}%`);
       }
-      
+
       monthlyData.push(assetLiabilityRatio);
     }
     
@@ -2625,27 +2721,50 @@ router.get('/inventory-metrics/:year', async (req, res) => {
       }
     }
     
-    // 计算最新月份的构成分布
+    // 计算当前存量构成分布 - 使用最新有效月份的各项数据总和
+    let currentTotal = 0;
+    let currentPreBid = 0;
+    let currentInProgress = 0;
+    let currentInventory = 0;
+
     if (monthlyData.length > 0) {
-      const latestData = monthlyData[monthlyData.length - 1];
-      const total = latestData.total;
-      
-      if (total > 0) {
+      // 找到最新有完整数据的月份
+      let latestValidData = null;
+      for (let i = monthlyData.length - 1; i >= 0; i--) {
+        const monthData = monthlyData[i];
+        if (monthData.inProgress > 0 || monthData.inventory > 0) {
+          latestValidData = monthData;
+          break;
+        }
+      }
+
+      // 如果没找到有在产或库存数据的月份，使用最新月份
+      if (!latestValidData) {
+        latestValidData = monthlyData[monthlyData.length - 1];
+      }
+
+      // 使用找到的有效月份数据
+      currentPreBid = latestValidData.preBid;
+      currentInProgress = latestValidData.inProgress;
+      currentInventory = latestValidData.inventory;
+      currentTotal = currentPreBid + currentInProgress + currentInventory;
+
+      if (currentTotal > 0) {
         compositionData.push(
           {
             name: '预中标',
-            value: latestData.preBid,
-            percentage: parseFloat(((latestData.preBid / total) * 100).toFixed(1))
+            value: currentPreBid,
+            percentage: parseFloat(((currentPreBid / currentTotal) * 100).toFixed(1))
           },
           {
             name: '在产',
-            value: latestData.inProgress,
-            percentage: parseFloat(((latestData.inProgress / total) * 100).toFixed(1))
+            value: currentInProgress,
+            percentage: parseFloat(((currentInProgress / currentTotal) * 100).toFixed(1))
           },
           {
             name: '库存',
-            value: latestData.inventory,
-            percentage: parseFloat(((latestData.inventory / total) * 100).toFixed(1))
+            value: currentInventory,
+            percentage: parseFloat(((currentInventory / currentTotal) * 100).toFixed(1))
           }
         );
       }
@@ -2657,7 +2776,7 @@ router.get('/inventory-metrics/:year', async (req, res) => {
         months: monthlyData.map(item => item.month),
         monthlyData: monthlyData,
         compositionData: compositionData,
-        currentTotal: monthlyData.length > 0 ? monthlyData[monthlyData.length - 1].total : 0,
+        currentTotal: currentTotal,
         hasData: hasData
       }
     });
@@ -3296,7 +3415,16 @@ router.get('/tuoyuan-new-orders/:year', async (req, res) => {
 
     // 计算汇总数据
     const totalYearlyPlan = fixedPlanData.reduce((sum, item) => sum + item.yearlyPlan, 0);
-    const totalCumulative = monthlyData['设备'].cumulative[11] || 0;
+
+    // 获取最新有效的累计数据（从后往前找第一个大于100的值，避免异常的小数值）
+    let totalCumulative = 0;
+    for (let i = monthlyData['设备'].cumulative.length - 1; i >= 0; i--) {
+      if (monthlyData['设备'].cumulative[i] > 100) {
+        totalCumulative = monthlyData['设备'].cumulative[i];
+        break;
+      }
+    }
+
     const completionRate = totalYearlyPlan > 0 ? Number(((totalCumulative / totalYearlyPlan) * 100).toFixed(2)) : 0;
 
     const summary = {
@@ -3442,6 +3570,7 @@ router.get('/net-profit-curve/:year', async (req, res) => {
 router.get('/monthly-quality-indicators/:year/:month', async (req, res) => {
   try {
     const { year, month } = req.params;
+    const { company = 'main' } = req.query; // 获取公司参数，默认为主公司
     const period = `${year}-${month.padStart(2, '0')}`;
 
     const indicators = {
@@ -3615,57 +3744,91 @@ router.get('/monthly-quality-indicators/:year/:month', async (req, res) => {
 
     // 5. 获取当月资产负债率数据
     try {
-      const periodWithDay = `${period}-01`;
-      const [balanceRows] = await pool.execute(`
-        SELECT data FROM balance_sheet
-        WHERE period = ?
-        LIMIT 1
-      `, [periodWithDay]);
+      // 根据公司参数确定表名
+      const tableMap = {
+        'main': 'balance_sheet',
+        'nanhua': 'nanhua_balance_sheet',
+        'tuoyuan': 'tuoyuan_balance_sheet'
+      };
+      const tableName = tableMap[company] || 'balance_sheet';
 
-      if (balanceRows.length > 0) {
-        const balanceData = typeof balanceRows[0].data === 'string' ?
-          JSON.parse(balanceRows[0].data) : balanceRows[0].data;
+      if (company === 'nanhua' || company === 'tuoyuan') {
+        // 对于南华和拓源公司，直接从专门的表获取计算好的总计
+        const [balanceRows] = await pool.execute(`
+          SELECT assets_total_current, liabilities_total_current, equity_total_current
+          FROM ${tableName}
+          WHERE period = ?
+          LIMIT 1
+        `, [period]);
 
-        // 修复数据结构：使用实际的数据结构 assets.total 和 liabilities.total
-        let totalAssets = 0;
-        let totalLiabilities = 0;
+        if (balanceRows.length > 0) {
+          const totalAssets = Number(balanceRows[0].assets_total_current || 0);
+          const totalLiabilities = Number(balanceRows[0].liabilities_total_current || 0);
+          const equityTotal = Number(balanceRows[0].equity_total_current || 0);
 
-        // 方法1：从 assets.total 和 liabilities.total 获取
-        if (balanceData.assets?.total?.endBalance !== undefined) {
-          totalAssets = Number(balanceData.assets.total.endBalance) || 0;
-        }
-        if (balanceData.liabilities?.total?.endBalance !== undefined) {
-          totalLiabilities = Number(balanceData.liabilities.total.endBalance) || 0;
-        }
+          // 如果负债为0，使用会计恒等式计算
+          const actualLiabilities = totalLiabilities > 0 ? totalLiabilities : (totalAssets - equityTotal);
 
-        // 方法2：如果方法1没有数据，尝试从 assetsTotal 和 liabilitiesTotal 获取（兼容旧数据结构）
-        if (totalAssets === 0 && balanceData.assetsTotal?.endBalance !== undefined) {
-          totalAssets = Number(balanceData.assetsTotal.endBalance) || 0;
-        }
-        if (totalLiabilities === 0 && balanceData.liabilitiesTotal?.endBalance !== undefined) {
-          totalLiabilities = Number(balanceData.liabilitiesTotal.endBalance) || 0;
-        }
-
-        // 方法3：如果还没有负债数据，使用会计恒等式：负债 = 资产 - 所有者权益
-        if (totalLiabilities === 0 && totalAssets > 0 && balanceData.equity) {
-          let equityTotal = 0;
-          if (Array.isArray(balanceData.equity)) {
-            balanceData.equity.forEach(item => {
-              if (item.endBalance && typeof item.endBalance === 'number') {
-                equityTotal += item.endBalance;
-              }
-            });
-          } else if (balanceData.equityTotal?.endBalance) {
-            equityTotal = Number(balanceData.equityTotal.endBalance) || 0;
+          if (totalAssets > 0) {
+            indicators.assetLiabilityRatio.current = Number(((actualLiabilities / totalAssets) * 100).toFixed(2));
           }
-          totalLiabilities = totalAssets - equityTotal;
-        }
 
-        if (totalAssets > 0) {
-          indicators.assetLiabilityRatio.current = Number(((totalLiabilities / totalAssets) * 100).toFixed(2));
+          console.log(`当月资产负债率数据(${company}) - 总资产: ${totalAssets}元, 总负债: ${actualLiabilities}元, 所有者权益: ${equityTotal}元, 资产负债率: ${indicators.assetLiabilityRatio.current}%`);
         }
+      } else {
+        // 对于主公司，使用原有的JSON数据结构
+        const periodWithDay = `${period}-01`;
+        const [balanceRows] = await pool.execute(`
+          SELECT data FROM balance_sheet
+          WHERE period = ?
+          LIMIT 1
+        `, [periodWithDay]);
 
-        console.log(`当月资产负债率数据 - 总资产: ${totalAssets}万元, 总负债: ${totalLiabilities}万元, 资产负债率: ${indicators.assetLiabilityRatio.current}%`);
+        if (balanceRows.length > 0) {
+          const balanceData = typeof balanceRows[0].data === 'string' ?
+            JSON.parse(balanceRows[0].data) : balanceRows[0].data;
+
+          // 修复数据结构：使用实际的数据结构 assets.total 和 liabilities.total
+          let totalAssets = 0;
+          let totalLiabilities = 0;
+
+          // 方法1：从 assets.total 和 liabilities.total 获取
+          if (balanceData.assets?.total?.endBalance !== undefined) {
+            totalAssets = Number(balanceData.assets.total.endBalance) || 0;
+          }
+          if (balanceData.liabilities?.total?.endBalance !== undefined) {
+            totalLiabilities = Number(balanceData.liabilities.total.endBalance) || 0;
+          }
+
+          // 方法2：如果方法1没有数据，尝试从 assetsTotal 和 liabilitiesTotal 获取（兼容旧数据结构）
+          if (totalAssets === 0 && balanceData.assetsTotal?.endBalance !== undefined) {
+            totalAssets = Number(balanceData.assetsTotal.endBalance) || 0;
+          }
+          if (totalLiabilities === 0 && balanceData.liabilitiesTotal?.endBalance !== undefined) {
+            totalLiabilities = Number(balanceData.liabilitiesTotal.endBalance) || 0;
+          }
+
+          // 方法3：如果还没有负债数据，使用会计恒等式：负债 = 资产 - 所有者权益
+          if (totalLiabilities === 0 && totalAssets > 0 && balanceData.equity) {
+            let equityTotal = 0;
+            if (Array.isArray(balanceData.equity)) {
+              balanceData.equity.forEach(item => {
+                if (item.endBalance && typeof item.endBalance === 'number') {
+                  equityTotal += item.endBalance;
+                }
+              });
+            } else if (balanceData.equityTotal?.endBalance) {
+              equityTotal = Number(balanceData.equityTotal.endBalance) || 0;
+            }
+            totalLiabilities = totalAssets - equityTotal;
+          }
+
+          if (totalAssets > 0) {
+            indicators.assetLiabilityRatio.current = Number(((totalLiabilities / totalAssets) * 100).toFixed(2));
+          }
+
+          console.log(`当月资产负债率数据(main) - 总资产: ${totalAssets}万元, 总负债: ${totalLiabilities}万元, 资产负债率: ${indicators.assetLiabilityRatio.current}%`);
+        }
       }
     } catch (error) {
       console.error('获取当月资产负债率数据失败:', error);

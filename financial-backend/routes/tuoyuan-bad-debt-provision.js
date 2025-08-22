@@ -11,7 +11,7 @@ router.get('/:period', async (req, res) => {
         // 定义默认数据结构
         const defaultData = {
             items: [
-                { segmentAttribute: '设备', customerAttribute: '申业项目', yearBeginningBalance: 0, yearNewIncrease: 0, currentCollected: 0, cumulativeCollected: 0, provisionBalance: 0 },
+                { segmentAttribute: '设备', customerAttribute: '电业项目', yearBeginningBalance: 0, yearNewIncrease: 0, currentCollected: 0, cumulativeCollected: 0, provisionBalance: 0 },
                 { segmentAttribute: '设备', customerAttribute: '用户项目', yearBeginningBalance: 0, yearNewIncrease: 0, currentCollected: 0, cumulativeCollected: 0, provisionBalance: 0 },
                 { segmentAttribute: '设备', customerAttribute: '贸易', yearBeginningBalance: 0, yearNewIncrease: 0, currentCollected: 0, cumulativeCollected: 0, provisionBalance: 0 },
                 { segmentAttribute: '设备', customerAttribute: '代理设备', yearBeginningBalance: 0, yearNewIncrease: 0, currentCollected: 0, cumulativeCollected: 0, provisionBalance: 0 },

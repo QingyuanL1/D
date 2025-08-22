@@ -221,9 +221,9 @@ router.post('/calculate/:period', async (req, res) => {
         // 收入数据映射
         incomeRows.forEach(row => {
             let customerAttr = row.customer_attribute;
-            // 数据兼容性处理：'电业项目' -> '申业项目'
+            // 数据兼容性处理：'电业项目' -> '电业项目'
             if (customerAttr === '电业项目') {
-                customerAttr = '申业项目';
+                customerAttr = '电业项目';
             }
             
             let segmentAttr = row.segment_attribute;
@@ -239,9 +239,9 @@ router.post('/calculate/:period', async (req, res) => {
         // 成本数据映射
         costRows.forEach(row => {
             let customerAttr = row.customer_type;
-            // 数据兼容性处理：'电业项目' -> '申业项目'
+            // 数据兼容性处理：'电业项目' -> '电业项目'
             if (customerAttr === '电业项目') {
-                customerAttr = '申业项目';
+                customerAttr = '电业项目';
             }
             
             let segmentAttr = row.category;
@@ -326,7 +326,7 @@ router.post('/calculate/:period', async (req, res) => {
 function calculateTuoyuanContributionRatesNew(incomeMap, costMap) {
     // 固定的年度计划数据
     const planData = [
-        { segmentAttribute: '设备', customerAttribute: '申业项目', yearlyPlan: 15.47 },
+        { segmentAttribute: '设备', customerAttribute: '电业项目', yearlyPlan: 15.47 },
         { segmentAttribute: '设备', customerAttribute: '用户项目', yearlyPlan: 0 },
         { segmentAttribute: '设备', customerAttribute: '贸易', yearlyPlan: 6.00 },
         { segmentAttribute: '设备', customerAttribute: '代理设备', yearlyPlan: 26.67 },
@@ -401,7 +401,7 @@ function calculateWeightedContributionRate(incomeRows, costRows) {
     incomeRows.forEach(row => {
         let customerAttr = row.customer_attribute;
         if (customerAttr === '电业项目') {
-            customerAttr = '申业项目';
+            customerAttr = '电业项目';
         }
         
         let segmentAttr = row.segment_attribute;
@@ -417,7 +417,7 @@ function calculateWeightedContributionRate(incomeRows, costRows) {
     costRows.forEach(row => {
         let customerAttr = row.customer_type;
         if (customerAttr === '电业项目') {
-            customerAttr = '申业项目';
+            customerAttr = '电业项目';
         }
         
         let segmentAttr = row.category;

@@ -1,7 +1,7 @@
 <template>
     <div class="max-w-[1500px] mx-auto bg-white rounded-lg shadow-lg p-6">
         <div class="flex justify-between items-center mb-6">
-            <h1 class="text-2xl font-bold">利润总额结构与质量（单位：万元）</h1>
+            <h1 class="text-2xl font-bold">净利润结构与质量（单位：万元）</h1>
             <div class="text-gray-500">(按年度计划口径分解)</div>
             <div class="flex items-center space-x-4">
                 <input v-model="period" type="month" class="px-3 py-2 border rounded" />
@@ -24,7 +24,7 @@
                     <!-- 主营业务 -->
                     <tr>
                         <td class="border border-gray-300 px-4 py-2 text-center">1</td>
-                        <td class="border border-gray-300 px-4 py-2">主营业务利润总额</td>
+                        <td class="border border-gray-300 px-4 py-2">主营业务净利润</td>
                         <td class="border border-gray-300 px-4 py-2">
                             <input v-model="data.mainBusiness.plan" type="text"
                                 class="w-full px-2 py-1 border rounded bg-gray-100" readonly />
@@ -285,10 +285,39 @@ const loadNetProfitData = async (targetPeriod: string) => {
                 // 更新成本中心费用
                 centerCosts.value = result.data.centerCosts || null
 
-                // 更新汇总数据
+                // 获取原始净利润数据
                 const totals = result.data.totals || {}
-                data.mainBusiness.current = totals.totalNetProfit?.toFixed(2) || '0'
-                data.mainBusiness.cumulative = totals.totalNetProfit?.toFixed(2) || '0'
+                let adjustedCurrentProfit = parseFloat(totals.totalNetProfit?.toFixed(2) || '0')
+                let adjustedCumulativeProfit = parseFloat(totals.totalNetProfit?.toFixed(2) || '0')
+
+                // 获取拓源利润表数据，扣减营业税金及附加和所得税
+                try {
+                    const incomeStatementResponse = await fetch(`http://47.111.95.19:3000/changzhou-tuoyuan-income-statement/${targetPeriod}`)
+                    if (incomeStatementResponse.ok) {
+                        const incomeStatementResult = await incomeStatementResponse.json()
+                        if (incomeStatementResult.success && incomeStatementResult.data) {
+                            // 使用拓源利润表的正确字段名：main_business_taxes 和 income_tax
+                            const taxesAndSurcharges = parseFloat(incomeStatementResult.data.main_business_taxes?.current_amount) || 0
+                            const incomeTaxExpense = parseFloat(incomeStatementResult.data.income_tax?.current_amount) || 0
+
+                            console.log(`拓源营业税金及附加当期值: ${taxesAndSurcharges}`)
+                            console.log(`拓源所得税当期值: ${incomeTaxExpense}`)
+                            console.log(`拓源主营业务净利润(扣减前): ${adjustedCurrentProfit}`)
+
+                            // 从主营业务净利润中减去营业税金及附加和所得税
+                            adjustedCurrentProfit = adjustedCurrentProfit - taxesAndSurcharges - incomeTaxExpense
+                            adjustedCumulativeProfit = adjustedCumulativeProfit - taxesAndSurcharges - incomeTaxExpense
+
+                            console.log(`拓源主营业务净利润(扣减后): ${adjustedCurrentProfit}`)
+                        }
+                    }
+                } catch (incomeStatementError) {
+                    console.error('获取拓源利润表数据失败:', incomeStatementError)
+                }
+
+                // 更新汇总数据（使用调整后的值）
+                data.mainBusiness.current = adjustedCurrentProfit.toFixed(2)
+                data.mainBusiness.cumulative = adjustedCumulativeProfit.toFixed(2)
 
                 // 非主营业务暂时为0
                 data.nonMainBusiness.current = '0'

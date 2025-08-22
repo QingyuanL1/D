@@ -273,16 +273,22 @@
                 </svg>
               </div>
               <div class="text-right">
-                <div class="text-sm font-semibold text-purple-600">实时</div>
-                <div class="text-xs text-gray-500">营业结构</div>
+                <div class="text-sm font-semibold text-purple-600">
+                  {{ businessStructureData.totalRevenue > 0 ? businessStructureData.equipmentPercentage + '%' : '暂无' }}
+                </div>
+                <div class="text-xs text-gray-500">设备占比</div>
               </div>
             </div>
             <h4 class="text-lg font-medium text-gray-900 mb-2">营业结构分析</h4>
-            <p class="text-sm text-gray-600 mb-3 h-12">分析设备板块与其他板块收入趋势</p>
+            <p class="text-sm text-gray-600 mb-3 h-12">
+              设备板块: {{ formatNumber(businessStructureData.equipmentTotal) }}万元<br/>
+              其他板块: {{ formatNumber(businessStructureData.otherTotal) }}万元
+            </p>
             <div class="mb-4">
               <div style="width: 100%; height: 8px; background-color: #e5e7eb; border-radius: 4px;">
-                <div 
-                  style="height: 8px; border-radius: 4px; background-color: #9333ea; transition: width 0.3s ease; width: 85%;"
+                <div
+                  style="height: 8px; border-radius: 4px; background-color: #9333ea; transition: width 0.3s ease;"
+                  :style="`width: ${Math.max(businessStructureData.equipmentPercentage, 3)}%;`"
                 ></div>
               </div>
             </div>
@@ -591,6 +597,14 @@ const loadingAnnouncements = ref(false)
 
 // 新签订单趋势相关
 const newOrdersProgress = ref(0)
+
+// 营业结构相关
+const businessStructureData = ref({
+  equipmentTotal: 0,
+  otherTotal: 0,
+  totalRevenue: 0,
+  equipmentPercentage: 0
+})
 
 // 图表相关变量
 const revenueChartRef = ref<HTMLElement | null>(null)
@@ -981,22 +995,15 @@ const fetchTuoyuanContributionRateData = async () => {
 // 获取新签订单进度数据
 const fetchNewOrdersProgress = async () => {
   try {
-    const currentMonth = new Date()
-    const period = `${currentMonth.getFullYear()}-${(currentMonth.getMonth() + 1).toString().padStart(2, '0')}`
-    const response = await fetch(`http://47.111.95.19:3000/tuoyuan-new-order-structure/${period}`)
-    
+    const currentYear = new Date().getFullYear()
+    const response = await fetch(`http://47.111.95.19:3000/analytics/tuoyuan-new-orders/${currentYear}`)
+
     if (response.ok) {
       const result = await response.json()
-      if (result.success && result.data && result.data.items) {
-        let totalCumulative = 0
-        let totalAnnualPlan = 0
-        
-        result.data.items.forEach((item: any) => {
-          totalCumulative += item.currentCumulative || 0
-          totalAnnualPlan += item.annualPlan || 0
-        })
-        
-        const progress = totalAnnualPlan > 0 ? (totalCumulative / totalAnnualPlan) * 100 : 0
+      if (result.success && result.data && result.data.summary && result.data.summary['设备']) {
+        const equipmentData = result.data.summary['设备']
+        const progress = equipmentData.yearly_plan > 0 ?
+          (equipmentData.current_total / equipmentData.yearly_plan) * 100 : 0
         newOrdersProgress.value = parseFloat(progress.toFixed(2))
       } else {
         newOrdersProgress.value = 0
@@ -1007,6 +1014,68 @@ const fetchNewOrdersProgress = async () => {
   } catch (error) {
     console.error('获取新签订单进度数据失败:', error)
     newOrdersProgress.value = 0
+  }
+}
+
+// 获取营业结构数据
+const fetchBusinessStructureData = async () => {
+  try {
+    const currentDate = new Date()
+    const currentYear = currentDate.getFullYear()
+    const currentMonth = currentDate.getMonth() + 1
+    const period = `${currentYear}-${currentMonth.toString().padStart(2, '0')}`
+
+    const response = await fetch(`http://47.111.95.19:3000/tuoyuan-main-business-income-breakdown/${period}`)
+
+    if (response.ok) {
+      const result = await response.json()
+      if (result.success && result.data && result.data.items) {
+        let equipmentTotal = 0
+        let otherTotal = 0
+
+        result.data.items.forEach((item: any) => {
+          if (item.segmentAttribute === '设备') {
+            equipmentTotal += item.currentPeriod || 0
+          } else if (item.segmentAttribute === '其他') {
+            otherTotal += item.currentPeriod || 0
+          }
+        })
+
+        console.log(`${period} 营业结构数据:`, { equipmentTotal, otherTotal, items: result.data.items })
+
+        const totalRevenue = equipmentTotal + otherTotal
+        const equipmentPercentage = totalRevenue > 0 ? (equipmentTotal / totalRevenue) * 100 : 0
+
+        businessStructureData.value = {
+          equipmentTotal: parseFloat(equipmentTotal.toFixed(2)),
+          otherTotal: parseFloat(otherTotal.toFixed(2)),
+          totalRevenue: parseFloat(totalRevenue.toFixed(2)),
+          equipmentPercentage: parseFloat(equipmentPercentage.toFixed(1))
+        }
+      } else {
+        businessStructureData.value = {
+          equipmentTotal: 0,
+          otherTotal: 0,
+          totalRevenue: 0,
+          equipmentPercentage: 0
+        }
+      }
+    } else {
+      businessStructureData.value = {
+        equipmentTotal: 0,
+        otherTotal: 0,
+        totalRevenue: 0,
+        equipmentPercentage: 0
+      }
+    }
+  } catch (error) {
+    console.error('获取营业结构数据失败:', error)
+    businessStructureData.value = {
+      equipmentTotal: 0,
+      otherTotal: 0,
+      totalRevenue: 0,
+      equipmentPercentage: 0
+    }
   }
 }
 
@@ -1308,7 +1377,8 @@ onMounted(async () => {
     fetchAssetLiabilityRatioData(),
     fetchTuoyuanProfitMarginData(),
     fetchTuoyuanContributionRateData(),
-    fetchNewOrdersProgress()
+    fetchNewOrdersProgress(),
+    fetchBusinessStructureData()
   ])
   
   // 先获取图表数据，再初始化图表

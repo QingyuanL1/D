@@ -3,8 +3,7 @@
         <div class="flex justify-between items-center mb-6">
             <h1 class="text-2xl font-bold">利润表（月报）</h1>
             <div class="text-sm text-gray-600">
-                编制单位：常州拓源电气集团有限公司
-            </div>
+                            </div>
         </div>
 
         <div class="flex justify-between items-center mb-4">

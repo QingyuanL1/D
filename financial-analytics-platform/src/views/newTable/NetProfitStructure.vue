@@ -120,7 +120,7 @@
                                 <td class="border border-gray-300 px-4 py-2">
                                     <span class="font-medium">{{
                                         formatNumber(parseFloat(item.currentMonthValue?.replace(/,/g, '')) || 0)
-                                    }}</span>
+                                        }}</span>
                                 </td>
                                 <td class="border border-gray-300 px-4 py-2">
                                     <span class="font-medium">{{ item.actual }}</span>
@@ -146,7 +146,7 @@
                                 <td class="border border-gray-300 px-4 py-2">
                                     <span class="font-medium">{{
                                         formatNumber(parseFloat(item.currentMonthValue?.replace(/,/g, '')) || 0)
-                                    }}</span>
+                                        }}</span>
                                 </td>
                                 <td class="border border-gray-300 px-4 py-2">
                                     <span class="font-medium">{{ item.actual }}</span>
@@ -172,7 +172,7 @@
                                 <td class="border border-gray-300 px-4 py-2">
                                     <span class="font-medium">{{
                                         formatNumber(parseFloat(item.currentMonthValue?.replace(/,/g, '')) || 0)
-                                    }}</span>
+                                        }}</span>
                                 </td>
                                 <td class="border border-gray-300 px-4 py-2">
                                     <span class="font-medium">{{ item.actual }}</span>
@@ -680,6 +680,29 @@ const updateMainBusinessCurrentValue = async () => {
                     mainBusinessResult.data.engineering.forEach((item: any) => {
                         currentMainBusiness += item.currentMonthValue || 0
                     })
+                }
+
+                // 获取利润表数据，减去营业税金及附加和所得税的当期值
+                try {
+                    const incomeStatementResponse = await fetch(`http://47.111.95.19:3000/income-statement/${period.value}`)
+                    if (incomeStatementResponse.ok) {
+                        const incomeStatementResult = await incomeStatementResponse.json()
+                        if (incomeStatementResult.success && incomeStatementResult.data) {
+                            const taxesAndSurcharges = parseFloat(incomeStatementResult.data.taxes_and_surcharges?.current_amount) || 0
+                            const incomeTaxExpense = parseFloat(incomeStatementResult.data.income_tax_expense?.current_amount) || 0
+
+                            console.log(`营业税金及附加当期值: ${taxesAndSurcharges}`)
+                            console.log(`所得税当期值: ${incomeTaxExpense}`)
+                            console.log(`主营业务利润总额(扣减前): ${currentMainBusiness}`)
+
+                            // 从主营业务利润总额中减去营业税金及附加和所得税
+                            currentMainBusiness = currentMainBusiness - taxesAndSurcharges - incomeTaxExpense
+
+                            console.log(`主营业务利润总额(扣减后): ${currentMainBusiness}`)
+                        }
+                    }
+                } catch (incomeStatementError) {
+                    console.error('获取利润表数据失败:', incomeStatementError)
                 }
 
                 data.mainBusiness.current = currentMainBusiness.toFixed(2)

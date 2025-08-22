@@ -20,14 +20,14 @@
                         <th class="border border-gray-300 px-4 py-2 w-24">累计开票</th>
                         <th class="border border-gray-300 px-4 py-2 w-24">当期收款</th>
                         <th class="border border-gray-300 px-4 py-2 w-24">累计收款</th>
-                        <th class="border border-gray-300 px-4 py-2 w-24">当期应收余额 <span class="text-xs text-gray-500">已减去坏账准备</span></th>
+                        <th class="border border-gray-300 px-4 py-2 w-24">当期应收余额 <span
+                                class="text-xs text-gray-500">已减去坏账准备</span></th>
                     </tr>
                 </thead>
                 <tbody>
                     <template v-for="(item, index) in accountsReceivableData.items" :key="`accounts-${index}`">
                         <tr>
-                            <td v-if="isFirstInSegment(index)" 
-                                :rowspan="getSegmentRowspan(item.segmentAttribute)" 
+                            <td v-if="isFirstInSegment(index)" :rowspan="getSegmentRowspan(item.segmentAttribute)"
                                 class="border border-gray-300 px-4 py-2 font-medium text-center">
                                 {{ item.segmentAttribute }}
                             </td>
@@ -38,25 +38,15 @@
                                 {{ formatNumber(item.yearBeginningBalance) }}
                             </td>
                             <td class="border border-gray-300 px-4 py-2">
-                                <input 
-                                    v-model="item.currentInvoicing" 
-                                    type="number" 
-                                    class="w-full px-2 py-1 border rounded text-right" 
-                                    step="0.01"
-                                    placeholder="0.00"
-                                />
+                                <input v-model="item.currentInvoicing" type="number"
+                                    class="w-full px-2 py-1 border rounded text-right" step="0.01" placeholder="0.00" />
                             </td>
                             <td class="border border-gray-300 px-4 py-2 text-right">
                                 {{ formatNumber(item.cumulativeInvoicing) }}
                             </td>
                             <td class="border border-gray-300 px-4 py-2">
-                                <input 
-                                    v-model="item.currentCollection" 
-                                    type="number" 
-                                    class="w-full px-2 py-1 border rounded text-right" 
-                                    step="0.01"
-                                    placeholder="0.00"
-                                />
+                                <input v-model="item.currentCollection" type="number"
+                                    class="w-full px-2 py-1 border rounded text-right" step="0.01" placeholder="0.00" />
                             </td>
                             <td class="border border-gray-300 px-4 py-2 text-right">
                                 {{ formatNumber(item.cumulativeCollection) }}
@@ -94,12 +84,8 @@
         </div>
 
         <!-- 文件上传和备注组件 -->
-        <FormAttachmentAndRemarks 
-            :module-id="MODULE_IDS.TUOYUAN_ACCOUNTS_RECEIVABLE"
-            :period="period"
-            v-model:remarks="remarks"
-            v-model:suggestions="suggestions"
-        />
+        <FormAttachmentAndRemarks :module-id="MODULE_IDS.TUOYUAN_ACCOUNTS_RECEIVABLE" :period="period"
+            v-model:remarks="remarks" v-model:suggestions="suggestions" />
 
         <div class="mt-4 flex justify-end space-x-4">
             <button @click="handleSave" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
@@ -138,7 +124,7 @@ interface AccountsReceivableData {
 
 const fixedPlanData: AccountsReceivableData = {
     items: [
-        { segmentAttribute: '设备', customerAttribute: '申业项目', yearBeginningBalance: 0, currentInvoicing: 0, cumulativeInvoicing: 0, currentCollection: 0, cumulativeCollection: 0, currentReceivableBalance: 0 },
+        { segmentAttribute: '设备', customerAttribute: '电业项目', yearBeginningBalance: 0, currentInvoicing: 0, cumulativeInvoicing: 0, currentCollection: 0, cumulativeCollection: 0, currentReceivableBalance: 0 },
         { segmentAttribute: '设备', customerAttribute: '用户项目', yearBeginningBalance: 0, currentInvoicing: 0, cumulativeInvoicing: 0, currentCollection: 0, cumulativeCollection: 0, currentReceivableBalance: 0 },
         { segmentAttribute: '设备', customerAttribute: '贸易', yearBeginningBalance: 0, currentInvoicing: 0, cumulativeInvoicing: 0, currentCollection: 0, cumulativeCollection: 0, currentReceivableBalance: 0 },
         { segmentAttribute: '设备', customerAttribute: '代理设备', yearBeginningBalance: 0, currentInvoicing: 0, cumulativeInvoicing: 0, currentCollection: 0, cumulativeCollection: 0, currentReceivableBalance: 0 },
@@ -172,12 +158,12 @@ const calculateCumulativeValues = async (targetPeriod: string) => {
     try {
         const [year] = targetPeriod.split('-')
         const currentMonth = parseInt(targetPeriod.split('-')[1])
-        
+
         // 为每个项目计算累计值
         for (let item of accountsReceivableData.value.items) {
             let totalInvoicing = 0
             let totalCollection = 0
-            
+
             // 从1月累计到当前月份的所有当期值
             for (let m = 1; m <= currentMonth; m++) {
                 const monthPeriod = `${year}-${m.toString().padStart(2, '0')}`
@@ -185,8 +171,8 @@ const calculateCumulativeValues = async (targetPeriod: string) => {
                     const response = await fetch(`http://47.111.95.19:3000/tuoyuan-accounts-receivable/${monthPeriod}`)
                     if (response.ok) {
                         const result = await response.json()
-                        const itemData = result.data.items.find((i: any) => 
-                            i.segmentAttribute === item.segmentAttribute && 
+                        const itemData = result.data.items.find((i: any) =>
+                            i.segmentAttribute === item.segmentAttribute &&
                             i.customerAttribute === item.customerAttribute
                         )
                         if (itemData) {
@@ -198,13 +184,13 @@ const calculateCumulativeValues = async (targetPeriod: string) => {
                     console.warn(`无法加载${monthPeriod}的数据:`, error)
                 }
             }
-            
+
             item.cumulativeInvoicing = totalInvoicing
             item.cumulativeCollection = totalCollection
-            
+
             // 注意：不在此处计算currentReceivableBalance，因为后端已经包含了坏账准备的扣减
         }
-        
+
     } catch (error) {
         console.error('计算累计值失败:', error)
     }
@@ -222,7 +208,7 @@ const totalData = computed(() => {
         cumulativeCollection: 0,
         currentReceivableBalance: 0
     }
-    
+
     accountsReceivableData.value.items.forEach(item => {
         total.yearBeginningBalance += item.yearBeginningBalance || 0
         total.currentInvoicing += item.currentInvoicing || 0
@@ -231,7 +217,7 @@ const totalData = computed(() => {
         total.cumulativeCollection += item.cumulativeCollection || 0
         total.currentReceivableBalance += item.currentReceivableBalance || 0
     })
-    
+
     return total
 })
 

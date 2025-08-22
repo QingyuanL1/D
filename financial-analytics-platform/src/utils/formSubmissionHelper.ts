@@ -236,7 +236,7 @@ export const MODULE_IDS = {
   TUOYUAN_BIDDING_STATUS: 403,            // 拓源招投标情况
   MAIN_BUSINESS_INCOME_BREAKDOWN: 404,    // 主营业务收入分解情况
   TUOYUAN_ORDER_TO_INCOME: 405,           // 拓源当年订单转收入
-  STOCK_ORDER_TO_INCOME: 406,            // 拓源存量订单转收入
+  TUOYUAN_STOCK_ORDER_TO_INCOME: 406,            // 拓源存量订单转收入
   TUOYUAN_NON_MAIN_BUSINESS: 407,        // 拓源非主营业务情况
   TUOYUAN_INVENTORY_STRUCTURE: 408,      // 拓源存量结构与质量
   TUOYUAN_BID_FULFILLMENT: 409,          // 拓源中标未履约情况
@@ -359,7 +359,7 @@ export const MODULE_TITLES = {
   [MODULE_IDS.TUOYUAN_BIDDING_STATUS]: '拓源招投标情况',
   [MODULE_IDS.MAIN_BUSINESS_INCOME_BREAKDOWN]: '主营业务收入分解情况',
   [MODULE_IDS.TUOYUAN_ORDER_TO_INCOME]: '拓源当年订单转收入',
-  [MODULE_IDS.STOCK_ORDER_TO_INCOME]: '拓源存量订单转收入',
+  [MODULE_IDS.TUOYUAN_STOCK_ORDER_TO_INCOME]: '拓源存量订单转收入',
   [MODULE_IDS.TUOYUAN_NON_MAIN_BUSINESS]: '拓源非主营业务情况',
   [MODULE_IDS.TUOYUAN_INVENTORY_STRUCTURE]: '拓源存量结构与质量',
   [MODULE_IDS.TUOYUAN_BID_FULFILLMENT]: '拓源中标未履约情况',

@@ -24,8 +24,7 @@
                 <tbody>
                     <template v-for="(item, index) in businessIncomeData.items" :key="`income-${index}`">
                         <tr>
-                            <td v-if="isFirstInSegment(index)" 
-                                :rowspan="getSegmentRowspan(item.segmentAttribute)" 
+                            <td v-if="isFirstInSegment(index)" :rowspan="getSegmentRowspan(item.segmentAttribute)"
                                 class="border border-gray-300 px-4 py-2 font-medium text-center">
                                 {{ item.segmentAttribute }}
                             </td>
@@ -86,8 +85,8 @@
                     <tbody>
                         <template v-for="(item, index) in orderToIncomeData.items" :key="`order-${index}`">
                             <tr>
-                                <td v-if="isFirstInOrderSegment(index)" 
-                                    :rowspan="getOrderSegmentRowspan(item.segmentAttribute)" 
+                                <td v-if="isFirstInOrderSegment(index)"
+                                    :rowspan="getOrderSegmentRowspan(item.segmentAttribute)"
                                     class="border border-gray-300 px-4 py-2 font-medium text-center">
                                     {{ item.segmentAttribute }}
                                 </td>
@@ -113,52 +112,7 @@
             </div>
         </div>
 
-        <!-- 存量订单转收入详细数据 -->
-        <div v-if="stockOrderData" class="mt-8">
-            <h2 class="text-xl font-bold mb-4">存量订单转收入明细</h2>
-            <div class="overflow-x-auto my-6">
-                <table class="w-full border-collapse border border-gray-300">
-                    <thead class="sticky top-0 bg-white">
-                        <tr class="bg-green-50">
-                            <th class="border border-gray-300 px-4 py-2">板块</th>
-                            <th class="border border-gray-300 px-4 py-2">客户属性</th>
-                            <th class="border border-gray-300 px-4 py-2">期初存量订单余额</th>
-                            <th class="border border-gray-300 px-4 py-2">当期转收入</th>
-                            <th class="border border-gray-300 px-4 py-2">当期转收入累计</th>
-                            <th class="border border-gray-300 px-4 py-2">存量订单转收入率</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <template v-for="(item, index) in stockOrderData.items" :key="`stock-${index}`">
-                            <tr>
-                                <td v-if="isFirstInStockSegment(index)" 
-                                    :rowspan="getStockSegmentRowspan(item.segmentAttribute)" 
-                                    class="border border-gray-300 px-4 py-2 font-medium text-center">
-                                    {{ item.segmentAttribute }}
-                                </td>
-                                <td class="border border-gray-300 px-4 py-2">
-                                    {{ item.customerAttribute }}
-                                </td>
-                                <td class="border border-gray-300 px-4 py-2 text-right">
-                                    {{ formatNumber(item.initialStockOrderBalance) }}
-                                </td>
-                                <td class="border border-gray-300 px-4 py-2 text-right">
-                                    {{ formatNumber(item.currentPeriodIncome) }}
-                                </td>
-                                <td class="border border-gray-300 px-4 py-2 text-right">
-                                    {{ formatNumber(item.currentIncomeCumulative) }}
-                                </td>
-                                <td class="border border-gray-300 px-4 py-2 text-right">
-                                    {{ formatPercentage(item.stockOrderIncomeRatio) }}%
-                                </td>
-                            </tr>
-                        </template>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- 完整的存量订单转收入表格 -->
+        <!-- 存量订单转收入表格 -->
         <div class="mt-12 border-t-2 border-gray-200 pt-8">
             <h2 class="text-2xl font-bold mb-6">存量订单转收入</h2>
             <div class="overflow-x-auto my-6">
@@ -176,8 +130,8 @@
                     <tbody>
                         <template v-for="(item, index) in editableStockData.items" :key="`edit-stock-${index}`">
                             <tr>
-                                <td v-if="isFirstInEditStockSegment(index)" 
-                                    :rowspan="getEditStockSegmentRowspan(item.segmentAttribute)" 
+                                <td v-if="isFirstInEditStockSegment(index)"
+                                    :rowspan="getEditStockSegmentRowspan(item.segmentAttribute)"
                                     class="border border-gray-300 px-4 py-2 font-medium text-center">
                                     {{ item.segmentAttribute }}
                                 </td>
@@ -188,18 +142,15 @@
                                     {{ formatNumber(item.initialStockOrderBalance) }}
                                 </td>
                                 <td class="border border-gray-300 px-4 py-2">
-                                    <input 
-                                        v-model="item.currentPeriodIncome" 
-                                        type="number" 
-                                        class="w-full px-2 py-1 border rounded text-right" 
-                                        step="0.01"
-                                    />
+                                    <input v-model="item.currentPeriodIncome" type="number"
+                                        class="w-full px-2 py-1 border rounded text-right" step="0.01" />
                                 </td>
                                 <td class="border border-gray-300 px-4 py-2 text-right">
                                     {{ formatNumber(item.currentIncomeCumulative) }}
                                 </td>
                                 <td class="border border-gray-300 px-4 py-2 text-right">
-                                    <span class="text-sm font-medium">{{ formatPercentage(item.stockOrderIncomeRatio) }}%</span>
+                                    <span class="text-sm font-medium">{{ formatPercentage(item.stockOrderIncomeRatio)
+                                        }}%</span>
                                 </td>
                             </tr>
                         </template>
@@ -217,7 +168,9 @@
                                 {{ formatNumber(editStockTotalData.currentIncomeCumulative) }}
                             </td>
                             <td class="border border-gray-300 px-4 py-2 text-right">
-                                <span class="text-sm font-bold">{{ formatPercentage(editStockTotalData.stockOrderIncomeRatio) }}%</span>
+                                <span class="text-sm font-bold">{{
+                                    formatPercentage(editStockTotalData.stockOrderIncomeRatio)
+                                    }}%</span>
                             </td>
                         </tr>
                     </tbody>
@@ -226,12 +179,8 @@
         </div>
 
         <!-- 文件上传和备注组件 -->
-        <FormAttachmentAndRemarks 
-            :module-id="MODULE_IDS.MAIN_BUSINESS_INCOME_BREAKDOWN"
-            :period="period"
-            v-model:remarks="remarks"
-            v-model:suggestions="suggestions"
-        />
+        <FormAttachmentAndRemarks :module-id="MODULE_IDS.MAIN_BUSINESS_INCOME_BREAKDOWN" :period="period"
+            v-model:remarks="remarks" v-model:suggestions="suggestions" />
 
         <div class="mt-4 flex justify-end space-x-4">
             <button @click="handleSaveAll" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
@@ -289,7 +238,7 @@ const orderToIncomeData = ref<{ items: OrderToIncomeItem[] } | null>(null)
 const stockOrderData = ref<{ items: StockOrderItem[] } | null>(null)
 
 // 可编辑的存量订单转收入数据
-const editableStockData = ref<{ items: StockOrderItem[] }>({ 
+const editableStockData = ref<{ items: StockOrderItem[] }>({
     items: [
         { segmentAttribute: '设备', customerAttribute: '电业项目', initialStockOrderBalance: 1104.53, currentPeriodIncome: 0, currentIncomeCumulative: 0, stockOrderIncomeRatio: 0 },
         { segmentAttribute: '设备', customerAttribute: '用户项目', initialStockOrderBalance: 374.66, currentPeriodIncome: 0, currentIncomeCumulative: 0, stockOrderIncomeRatio: 0 },
@@ -335,17 +284,7 @@ const getOrderSegmentRowspan = (segmentAttribute: string): number => {
     return orderToIncomeData.value.items.filter(item => item.segmentAttribute === segmentAttribute).length
 }
 
-// 存量订单转收入表格的板块合并逻辑
-const isFirstInStockSegment = (index: number): boolean => {
-    if (!stockOrderData.value) return false
-    if (index === 0) return true
-    return stockOrderData.value.items[index].segmentAttribute !== stockOrderData.value.items[index - 1].segmentAttribute
-}
 
-const getStockSegmentRowspan = (segmentAttribute: string): number => {
-    if (!stockOrderData.value) return 1
-    return stockOrderData.value.items.filter(item => item.segmentAttribute === segmentAttribute).length
-}
 
 // 可编辑存量订单转收入表格的板块合并逻辑
 const isFirstInEditStockSegment = (index: number): boolean => {
@@ -365,16 +304,16 @@ const totalData = computed(() => {
         currentCumulative: 0,
         executionProgress: 0
     }
-    
+
     businessIncomeData.value.items.forEach(item => {
         total.annualPlan += item.annualPlan || 0
         total.currentPeriod += item.currentPeriod || 0
         total.currentCumulative += item.currentCumulative || 0
     })
-    
+
     // 计算总执行进度
     total.executionProgress = total.annualPlan > 0 ? (total.currentCumulative / total.annualPlan) * 100 : 0
-    
+
     return total
 })
 
@@ -383,10 +322,10 @@ const calculateEditStockIncomeCumulative = async (targetPeriod: string) => {
     try {
         const [year] = targetPeriod.split('-')
         const currentMonth = parseInt(targetPeriod.split('-')[1])
-        
+
         for (let item of editableStockData.value.items) {
             let cumulativeIncome = 0
-            
+
             // 从1月累计到当前月份前一个月的"当期转收入"
             for (let m = 1; m < currentMonth; m++) {
                 const monthPeriod = `${year}-${m.toString().padStart(2, '0')}`
@@ -394,8 +333,8 @@ const calculateEditStockIncomeCumulative = async (targetPeriod: string) => {
                     const response = await fetch(`http://47.111.95.19:3000/tuoyuan-stock-order-to-income/${monthPeriod}`)
                     if (response.ok) {
                         const result = await response.json()
-                        const projectData = result.data.items.find((p: any) => 
-                            p.segmentAttribute === item.segmentAttribute && 
+                        const projectData = result.data.items.find((p: any) =>
+                            p.segmentAttribute === item.segmentAttribute &&
                             p.customerAttribute === item.customerAttribute
                         )
                         if (projectData) {
@@ -406,12 +345,12 @@ const calculateEditStockIncomeCumulative = async (targetPeriod: string) => {
                     console.warn(`无法加载${monthPeriod}的数据:`, error)
                 }
             }
-            
+
             // 加上当前月份的当期转收入
             cumulativeIncome += item.currentPeriodIncome || 0
-            
+
             item.currentIncomeCumulative = cumulativeIncome
-            
+
             // 计算存量订单转收入比率
             item.stockOrderIncomeRatio = item.initialStockOrderBalance > 0 ? (item.currentIncomeCumulative / item.initialStockOrderBalance) * 100 : 0
         }
@@ -421,7 +360,7 @@ const calculateEditStockIncomeCumulative = async (targetPeriod: string) => {
 }
 
 // 监听可编辑数据变化，自动重新计算累计和比率
-watch(() => editableStockData.value.items, async (newItems) => {
+watch(() => editableStockData.value.items, async () => {
     await calculateEditStockIncomeCumulative(period.value)
 }, { deep: true })
 
@@ -433,16 +372,16 @@ const editStockTotalData = computed(() => {
         currentIncomeCumulative: 0,
         stockOrderIncomeRatio: 0
     }
-    
+
     editableStockData.value.items.forEach(item => {
         total.initialStockOrderBalance += item.initialStockOrderBalance || 0
         total.currentPeriodIncome += item.currentPeriodIncome || 0
         total.currentIncomeCumulative += item.currentIncomeCumulative || 0
     })
-    
+
     // 计算总转收入比率
     total.stockOrderIncomeRatio = total.initialStockOrderBalance > 0 ? (total.currentIncomeCumulative / total.initialStockOrderBalance) * 100 : 0
-    
+
     return total
 })
 
@@ -490,8 +429,8 @@ const loadEditableStockData = async (targetPeriod: string) => {
             if (result.data && result.data.items) {
                 const dbItems = result.data.items
                 editableStockData.value.items = editableStockData.value.items.map(defaultItem => {
-                    const dbItem = dbItems.find((item: any) => 
-                        item.segmentAttribute === defaultItem.segmentAttribute && 
+                    const dbItem = dbItems.find((item: any) =>
+                        item.segmentAttribute === defaultItem.segmentAttribute &&
                         item.customerAttribute === defaultItem.customerAttribute
                     )
                     return {
@@ -513,7 +452,7 @@ const loadEditableStockData = async (targetPeriod: string) => {
 
 // 重置可编辑数据
 const resetEditableData = () => {
-    editableStockData.value = { 
+    editableStockData.value = {
         items: [
             { segmentAttribute: '设备', customerAttribute: '电业项目', initialStockOrderBalance: 1104.53, currentPeriodIncome: 0, currentIncomeCumulative: 0, stockOrderIncomeRatio: 0 },
             { segmentAttribute: '设备', customerAttribute: '用户项目', initialStockOrderBalance: 374.66, currentPeriodIncome: 0, currentIncomeCumulative: 0, stockOrderIncomeRatio: 0 },
@@ -557,30 +496,7 @@ watch(period, async (newPeriod, oldPeriod) => {
     }
 })
 
-const handleSave = async () => {
-    try {
-        const response = await fetch('http://47.111.95.19:3000/tuoyuan-main-business-income-breakdown', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                period: period.value,
-                data: businessIncomeData.value
-            })
-        })
 
-        if (!response.ok) {
-            throw new Error('保存失败')
-        }
-
-        await recordFormSubmission(MODULE_IDS.MAIN_BUSINESS_INCOME_BREAKDOWN, period.value, businessIncomeData.value, remarks.value, suggestions.value)
-        alert('保存成功')
-    } catch (error) {
-        console.error('保存失败:', error)
-        alert('保存失败')
-    }
-}
 
 const handleSaveAll = async () => {
     try {
@@ -627,7 +543,7 @@ const handleSaveAll = async () => {
         alert('全部数据保存成功')
     } catch (error) {
         console.error('保存失败:', error)
-        alert(`保存失败: ${error.message}`)
+        alert(`保存失败: ${error instanceof Error ? error.message : '未知错误'}`)
     }
 }
 

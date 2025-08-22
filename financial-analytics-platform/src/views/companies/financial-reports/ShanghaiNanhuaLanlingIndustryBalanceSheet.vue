@@ -1,15 +1,11 @@
 <template>
   <div class="bg-gray-100 p-8">
     <div class="max-w-[1600px] mx-auto bg-white rounded-lg shadow-lg p-6">
-      <h1 class="text-2xl font-bold text-center mb-6">{{ data.companyInfo.name }} - 资产负债表</h1>
-      <div class="text-center mb-4">
-        <p class="text-sm text-gray-600">金额单位：万元</p>
-      </div>
-
-      <!-- 添加期间输入 -->
-      <div class="mb-4">
-        <label class="block text-gray-700">期间：</label>
-        <input type="month" v-model="period" class="w-full px-2 py-1 border rounded" />
+      <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold">资产负债表(主表)（单位：万元）</h1>
+        <div class="flex items-center space-x-4">
+          <input v-model="period" type="month" class="px-3 py-2 border rounded" />
+        </div>
       </div>
 
       <div class="grid grid-cols-2 gap-6">

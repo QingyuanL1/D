@@ -25,8 +25,7 @@
                 <tbody>
                     <template v-for="(item, index) in badDebtProvisionData.items" :key="`bad-debt-${index}`">
                         <tr>
-                            <td v-if="isFirstInSegment(index)" 
-                                :rowspan="getSegmentRowspan(item.segmentAttribute)" 
+                            <td v-if="isFirstInSegment(index)" :rowspan="getSegmentRowspan(item.segmentAttribute)"
                                 class="border border-gray-300 px-4 py-2 font-medium text-center">
                                 {{ item.segmentAttribute }}
                             </td>
@@ -37,24 +36,14 @@
                                 {{ formatNumber(item.yearBeginningBalance) }}
                             </td>
                             <td class="border border-gray-300 px-4 py-2">
-                                <input 
-                                    v-model.number="item.yearNewIncrease" 
-                                    type="number" 
-                                    class="w-full px-2 py-1 border rounded text-right" 
-                                    step="0.01"
-                                    placeholder="0.00"
-                                    @input="calculateProvisionBalance(item)"
-                                />
+                                <input v-model.number="item.yearNewIncrease" type="number"
+                                    class="w-full px-2 py-1 border rounded text-right" step="0.01" placeholder="0.00"
+                                    @input="calculateProvisionBalance(item)" />
                             </td>
                             <td class="border border-gray-300 px-4 py-2">
-                                <input 
-                                    v-model.number="item.currentCollected" 
-                                    type="number" 
-                                    class="w-full px-2 py-1 border rounded text-right" 
-                                    step="0.01"
-                                    placeholder="0.00"
-                                    @input="onCurrentCollectedChange(item)"
-                                />
+                                <input v-model.number="item.currentCollected" type="number"
+                                    class="w-full px-2 py-1 border rounded text-right" step="0.01" placeholder="0.00"
+                                    @input="onCurrentCollectedChange(item)" />
                             </td>
                             <td class="border border-gray-300 px-4 py-2 text-right">
                                 {{ formatNumber(item.cumulativeCollected) }}
@@ -93,12 +82,8 @@
         </div>
 
         <!-- 文件上传和备注组件 -->
-        <FormAttachmentAndRemarks 
-            :module-id="MODULE_IDS.TUOYUAN_BAD_DEBT_PROVISION"
-            :period="period"
-            v-model:remarks="remarks"
-            v-model:suggestions="suggestions"
-        />
+        <FormAttachmentAndRemarks :module-id="MODULE_IDS.TUOYUAN_BAD_DEBT_PROVISION" :period="period"
+            v-model:remarks="remarks" v-model:suggestions="suggestions" />
 
         <div class="mt-4 flex justify-end space-x-4">
             <button @click="handleSave" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
@@ -136,7 +121,7 @@ interface BadDebtProvisionData {
 
 const fixedPlanData: BadDebtProvisionData = {
     items: [
-        { segmentAttribute: '设备', customerAttribute: '申业项目', yearBeginningBalance: 0, yearNewIncrease: 0, currentCollected: 0, cumulativeCollected: 0, provisionBalance: 0 },
+        { segmentAttribute: '设备', customerAttribute: '电业项目', yearBeginningBalance: 0, yearNewIncrease: 0, currentCollected: 0, cumulativeCollected: 0, provisionBalance: 0 },
         { segmentAttribute: '设备', customerAttribute: '用户项目', yearBeginningBalance: 0, yearNewIncrease: 0, currentCollected: 0, cumulativeCollected: 0, provisionBalance: 0 },
         { segmentAttribute: '设备', customerAttribute: '贸易', yearBeginningBalance: 0, yearNewIncrease: 0, currentCollected: 0, cumulativeCollected: 0, provisionBalance: 0 },
         { segmentAttribute: '设备', customerAttribute: '代理设备', yearBeginningBalance: 0, yearNewIncrease: 0, currentCollected: 0, cumulativeCollected: 0, provisionBalance: 0 },
@@ -188,11 +173,11 @@ const calculateCumulativeCollected = async (targetPeriod: string) => {
     try {
         const [year] = targetPeriod.split('-')
         const currentMonth = parseInt(targetPeriod.split('-')[1])
-        
+
         // 为每个项目计算累计已收款
         for (let item of badDebtProvisionData.value.items) {
             let totalCollected = 0
-            
+
             // 从1月累计到当前月份前一个月的历史数据，加上当前月份的当期已收款
             for (let m = 1; m < currentMonth; m++) {
                 const monthPeriod = `${year}-${m.toString().padStart(2, '0')}`
@@ -200,8 +185,8 @@ const calculateCumulativeCollected = async (targetPeriod: string) => {
                     const response = await fetch(`http://47.111.95.19:3000/tuoyuan-bad-debt-provision/${monthPeriod}`)
                     if (response.ok) {
                         const result = await response.json()
-                        const itemData = result.data.items.find((i: any) => 
-                            i.segmentAttribute === item.segmentAttribute && 
+                        const itemData = result.data.items.find((i: any) =>
+                            i.segmentAttribute === item.segmentAttribute &&
                             i.customerAttribute === item.customerAttribute
                         )
                         if (itemData) {
@@ -212,16 +197,16 @@ const calculateCumulativeCollected = async (targetPeriod: string) => {
                     console.warn(`无法加载${monthPeriod}的数据:`, error)
                 }
             }
-            
+
             // 加上当前月份的当期已收款
             totalCollected += item.currentCollected || 0
-            
+
             item.cumulativeCollected = totalCollected
-            
+
             // 计算坏账准备余额 = 年初余额 + 本年新增 - 累计已收款
             item.provisionBalance = (item.yearBeginningBalance || 0) + (item.yearNewIncrease || 0) - item.cumulativeCollected
         }
-        
+
     } catch (error) {
         console.error('计算累计已收款失败:', error)
     }
@@ -243,7 +228,7 @@ const totalData = computed(() => {
         cumulativeCollected: 0,
         provisionBalance: 0
     }
-    
+
     badDebtProvisionData.value.items.forEach(item => {
         total.yearBeginningBalance += item.yearBeginningBalance || 0
         total.yearNewIncrease += item.yearNewIncrease || 0
@@ -251,7 +236,7 @@ const totalData = computed(() => {
         total.cumulativeCollected += item.cumulativeCollected || 0
         total.provisionBalance += item.provisionBalance || 0
     })
-    
+
     return total
 })
 
@@ -279,7 +264,7 @@ const loadData = async (targetPeriod: string) => {
                 provisionBalance: Number(item.provisionBalance) || 0
             }))
         }
-        
+
         // 重新计算累计值
         await calculateCumulativeCollected(targetPeriod)
     } catch (error) {
@@ -311,10 +296,10 @@ const loadRemarksAndSuggestions = async (targetPeriod: string) => {
 watch(() => route.query.period, async (newPeriod) => {
     if (newPeriod) {
         period.value = newPeriod.toString()
-            resetToDefaultData()
-    await loadData(newPeriod.toString())
-    await calculateCumulativeCollected(newPeriod.toString())
-    loadRemarksAndSuggestions(newPeriod.toString())
+        resetToDefaultData()
+        await loadData(newPeriod.toString())
+        await calculateCumulativeCollected(newPeriod.toString())
+        loadRemarksAndSuggestions(newPeriod.toString())
     }
 })
 

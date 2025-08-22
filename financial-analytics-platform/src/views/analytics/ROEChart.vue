@@ -67,7 +67,7 @@ const availableYears = ref<string[]>([])
 const availableCompanies = ref([
   { key: 'main', name: '电气公司', incomeTable: 'income_statement', balanceTable: 'balance_sheet' },
   { key:'nanhua', name: '南华公司', incomeTable: 'nanhua_income_statement', balanceTable: 'nanhua_balance_sheet' },
-  { key: 'tuoyuan', name: '拓元公司', incomeTable: 'tuoyuan_income_statement', balanceTable: 'tuoyuan_balance_sheet' }
+  { key: 'tuoyuan', name: '拓源公司', incomeTable: 'tuoyuan_income_statement', balanceTable: 'tuoyuan_balance_sheet' }
 ])
 const loading = ref(true)
 

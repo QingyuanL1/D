@@ -1,11 +1,11 @@
 <template>
   <div class="bg-gray-100 p-8">
     <div class="max-w-[1600px] mx-auto bg-white rounded-lg shadow-lg p-6">
-      <h1 class="text-2xl font-bold text-center mb-6">资产负债表(主表)（单位：万元）</h1>
-      <!-- 添加期间输入 -->
-      <div class="mb-4">
-        <label class="block text-gray-700">期间：</label>
-        <input type="month" v-model="period" class="w-full px-2 py-1 border rounded" />
+      <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold">资产负债表(主表)（单位：万元）</h1>
+        <div class="flex items-center space-x-4">
+          <input v-model="period" type="month" class="px-3 py-2 border rounded" />
+        </div>
       </div>
       <div class="grid grid-cols-2 gap-6">
         <!-- 左侧：资产部分 -->
@@ -51,7 +51,7 @@
                 </td>
                 <td class="border border-gray-300 px-4 py-2">
                   <span class="block w-full px-2 py-1 bg-yellow-50 font-bold text-blue-700">{{
-                    data.assets.currentTotal.beginBalance || 0 }}</span>
+                    formatNumber(data.assets.currentTotal.beginBalance) }}</span>
                 </td>
               </tr>
               <!-- 非流动资产部分 -->
@@ -89,7 +89,7 @@
                 </td>
                 <td class="border border-gray-300 px-4 py-2">
                   <span class="block w-full px-2 py-1 bg-yellow-50 font-bold text-blue-700">{{
-                    data.assets.nonCurrentTotal.beginBalance || 0 }}</span>
+                    formatNumber(data.assets.nonCurrentTotal.beginBalance) }}</span>
                 </td>
               </tr>
 
@@ -110,7 +110,7 @@
                 </td>
                 <td class="border border-gray-300 px-4 py-2">
                   <span class="block w-full px-2 py-1 bg-blue-50 font-bold text-blue-800">{{
-                    data.assets.total.beginBalance || 0 }}</span>
+                    formatNumber(data.assets.total.beginBalance) }}</span>
                 </td>
               </tr>
             </tbody>
@@ -165,7 +165,7 @@
                 </td>
                 <td class="border border-gray-300 px-4 py-2">
                   <span class="block w-full px-2 py-1 bg-yellow-50 font-bold text-blue-700">{{
-                    data.liabilities.currentTotal.beginBalance || 0 }}</span>
+                    formatNumber(data.liabilities.currentTotal.beginBalance) }}</span>
                 </td>
               </tr>
               <!-- 非流动负债部分 -->
@@ -203,7 +203,7 @@
                 </td>
                 <td class="border border-gray-300 px-4 py-2">
                   <span class="block w-full px-2 py-1 bg-yellow-50 font-bold text-blue-700">{{
-                    data.liabilities.nonCurrentTotal.beginBalance || 0 }}</span>
+                    formatNumber(data.liabilities.nonCurrentTotal.beginBalance) }}</span>
                 </td>
               </tr>
 
@@ -218,7 +218,7 @@
                 </td>
                 <td class="border border-gray-300 px-4 py-2">
                   <span class="block w-full px-2 py-1 bg-orange-50 font-bold text-orange-800">{{
-                    data.liabilities.total.beginBalance || 0 }}</span>
+                    formatNumber(data.liabilities.total.beginBalance) }}</span>
                 </td>
               </tr>
 
@@ -251,7 +251,7 @@
               </tr>
               <!-- 所有者权益合计 -->
               <tr class="bg-yellow-50 font-bold">
-                <td class="border border-gray-300 px-4 py-2">所有者权益合计 <span class="text-blue-600 text-xs">[自动计算]</span>
+                <td class="border border-gray-300 px-4 py-2">所有者权益合计
                 </td>
                 <td class="border border-gray-300 px-4 py-2">
                   <input type="number" v-model.number="data.equityTotal.endBalance"
@@ -259,7 +259,7 @@
                 </td>
                 <td class="border border-gray-300 px-4 py-2">
                   <span class="block w-full px-2 py-1 bg-yellow-50 font-bold text-blue-700">{{
-                    data.equityTotal.beginBalance || 0 }}</span>
+                    formatNumber(data.equityTotal.beginBalance) }}</span>
                 </td>
               </tr>
               <!-- 负债和所有者权益总计 -->
@@ -272,8 +272,8 @@
                     class="w-full px-2 py-1 border rounded bg-yellow-50 font-bold text-blue-700" step="0.01" readonly />
                 </td>
                 <td class="border border-gray-300 px-4 py-2">
-                  <span class="block w-full px-2 py-1 bg-yellow-50 font-bold text-blue-700">{{ data.total.beginBalance
-                    || 0 }}</span>
+                  <span class="block w-full px-2 py-1 bg-yellow-50 font-bold text-blue-700">{{
+                    formatNumber(data.total.beginBalance) }}</span>
                 </td>
               </tr>
             </tbody>
@@ -283,10 +283,6 @@
 
       <div class="mt-4 flex justify-end items-center">
         <div class="space-x-4">
-          <button class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
-            @click="() => setBeginBalanceFromPreviousMonth(period.slice(0, 7))">
-            从一月设置期初余额
-          </button>
           <button class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600" @click="save">
             保存
           </button>
@@ -667,7 +663,11 @@ const calculateCurrentAssets = () => {
       beginBalance: sum.beginBalance + (item.beginBalance || 0)
     }), { endBalance: 0, beginBalance: 0 })
 
-  data.value.assets.currentTotal = total
+  // 格式化为2位小数
+  data.value.assets.currentTotal = {
+    endBalance: parseFloat(total.endBalance.toFixed(2)),
+    beginBalance: parseFloat(total.beginBalance.toFixed(2))
+  }
 }
 
 const calculateNonCurrentAssets = () => {
@@ -679,7 +679,11 @@ const calculateNonCurrentAssets = () => {
       beginBalance: sum.beginBalance + (item.beginBalance || 0)
     }), { endBalance: 0, beginBalance: 0 })
 
-  data.value.assets.nonCurrentTotal = total
+  // 格式化为2位小数
+  data.value.assets.nonCurrentTotal = {
+    endBalance: parseFloat(total.endBalance.toFixed(2)),
+    beginBalance: parseFloat(total.beginBalance.toFixed(2))
+  }
 }
 
 const calculateCurrentLiabilities = () => {
@@ -691,7 +695,11 @@ const calculateCurrentLiabilities = () => {
       beginBalance: sum.beginBalance + (item.beginBalance || 0)
     }), { endBalance: 0, beginBalance: 0 })
 
-  data.value.liabilities.currentTotal = total
+  // 格式化为2位小数
+  data.value.liabilities.currentTotal = {
+    endBalance: parseFloat(total.endBalance.toFixed(2)),
+    beginBalance: parseFloat(total.beginBalance.toFixed(2))
+  }
 }
 
 const calculateNonCurrentLiabilities = () => {
@@ -703,51 +711,81 @@ const calculateNonCurrentLiabilities = () => {
       beginBalance: sum.beginBalance + (item.beginBalance || 0)
     }), { endBalance: 0, beginBalance: 0 })
 
-  data.value.liabilities.nonCurrentTotal = total
+  // 格式化为2位小数
+  data.value.liabilities.nonCurrentTotal = {
+    endBalance: parseFloat(total.endBalance.toFixed(2)),
+    beginBalance: parseFloat(total.beginBalance.toFixed(2))
+  }
 }
 
 const calculateEquityTotal = () => {
-  const parentCompanyEquity = data.value.equity
-    .filter(item => !item.indent && !item.special && !item.total)
+  // 根据新的计算逻辑：(生性生物资产 + 油气资产 + 使用权资产 + 无形资产) - (开发支出 + 商誉 + 长期待摊费用 + 递延所得税资产)
+
+  // 需要相加的项目
+  const addItems = ['生性生物资产', '油气资产', '使用权资产', '无形资产']
+  // 需要相减的项目
+  const subtractItems = ['开发支出', '商誉', '长期待摊费用', '递延所得税资产']
+
+  // 计算相加项目的总和
+  const addTotal = data.value.assets.nonCurrent
+    .filter(item => addItems.includes(item.name))
     .reduce((sum, item) => ({
       endBalance: sum.endBalance + (item.endBalance || 0),
       beginBalance: sum.beginBalance + (item.beginBalance || 0)
     }), { endBalance: 0, beginBalance: 0 })
 
-  const minorityInterest = data.value.equity.find(item => item.special)
-  const minorityBalance = {
-    endBalance: minorityInterest ? (minorityInterest.endBalance || 0) : 0,
-    beginBalance: minorityInterest ? (minorityInterest.beginBalance || 0) : 0
-  }
+  // 计算相减项目的总和
+  const subtractTotal = data.value.assets.nonCurrent
+    .filter(item => subtractItems.includes(item.name))
+    .reduce((sum, item) => ({
+      endBalance: sum.endBalance + (item.endBalance || 0),
+      beginBalance: sum.beginBalance + (item.beginBalance || 0)
+    }), { endBalance: 0, beginBalance: 0 })
 
+  // 最终计算结果，保留2位小数
   data.value.equityTotal = {
-    endBalance: parentCompanyEquity.endBalance + minorityBalance.endBalance,
-    beginBalance: parentCompanyEquity.beginBalance + minorityBalance.beginBalance
+    endBalance: parseFloat((addTotal.endBalance - subtractTotal.endBalance).toFixed(2)),
+    beginBalance: parseFloat((addTotal.beginBalance - subtractTotal.beginBalance).toFixed(2))
   }
 }
 
 const calculateAssetsTotal = () => {
-  // 计算资产合计
+  // 计算资产合计，格式化为2位小数
+  const endBalance = (data.value.assets.currentTotal.endBalance || 0) + (data.value.assets.nonCurrentTotal.endBalance || 0)
+  const beginBalance = (data.value.assets.currentTotal.beginBalance || 0) + (data.value.assets.nonCurrentTotal.beginBalance || 0)
+
   data.value.assets.total = {
-    endBalance: (data.value.assets.currentTotal.endBalance || 0) + (data.value.assets.nonCurrentTotal.endBalance || 0),
-    beginBalance: (data.value.assets.currentTotal.beginBalance || 0) + (data.value.assets.nonCurrentTotal.beginBalance || 0)
+    endBalance: parseFloat(endBalance.toFixed(2)),
+    beginBalance: parseFloat(beginBalance.toFixed(2))
   }
 }
 
 const calculateLiabilitiesTotal = () => {
-  // 计算负债合计
+  // 计算负债合计，格式化为2位小数
+  const endBalance = (data.value.liabilities.currentTotal.endBalance || 0) + (data.value.liabilities.nonCurrentTotal.endBalance || 0)
+  const beginBalance = (data.value.liabilities.currentTotal.beginBalance || 0) + (data.value.liabilities.nonCurrentTotal.beginBalance || 0)
+
   data.value.liabilities.total = {
-    endBalance: (data.value.liabilities.currentTotal.endBalance || 0) + (data.value.liabilities.nonCurrentTotal.endBalance || 0),
-    beginBalance: (data.value.liabilities.currentTotal.beginBalance || 0) + (data.value.liabilities.nonCurrentTotal.beginBalance || 0)
+    endBalance: parseFloat(endBalance.toFixed(2)),
+    beginBalance: parseFloat(beginBalance.toFixed(2))
   }
 }
 
 const calculateGrandTotal = () => {
-  // 计算负债和所有者权益总计
+  // 计算负债和所有者权益总计，格式化为2位小数
+  const endBalance = (data.value.liabilities.total.endBalance || 0) + (data.value.equityTotal.endBalance || 0)
+  const beginBalance = (data.value.liabilities.total.beginBalance || 0) + (data.value.equityTotal.beginBalance || 0)
+
   data.value.total = {
-    endBalance: (data.value.liabilities.total.endBalance || 0) + (data.value.equityTotal.endBalance || 0),
-    beginBalance: (data.value.liabilities.total.beginBalance || 0) + (data.value.equityTotal.beginBalance || 0)
+    endBalance: parseFloat(endBalance.toFixed(2)),
+    beginBalance: parseFloat(beginBalance.toFixed(2))
   }
+}
+
+// 格式化数值显示函数
+const formatNumber = (value) => {
+  if (value === null || value === undefined || isNaN(value)) return 0
+  return parseFloat(Number(value).toFixed(2))
 }
 
 // 统一的重新计算函数
@@ -884,33 +922,7 @@ const autoSetBeginBalanceFromJanuary = async (currentPeriod) => {
   await setBeginBalanceFromJanuary(currentPeriod)
 }
 
-const setBeginBalanceFromPreviousMonth = async (currentPeriod) => {
-  if (currentPeriod.endsWith('-01')) {
-    alert('1月份数据，期初余额需要手动输入')
-    return
-  }
 
-  const hasExistingBeginBalance = data.value.assets.current.some(item => item.beginBalance !== 0) ||
-    data.value.assets.nonCurrent.some(item => item.beginBalance !== 0) ||
-    data.value.liabilities.current.some(item => item.beginBalance !== 0) ||
-    data.value.liabilities.nonCurrent.some(item => item.beginBalance !== 0) ||
-    data.value.equity.some(item => item.beginBalance !== 0)
-
-  if (hasExistingBeginBalance) {
-    const confirmed = confirm('当前已有期初余额数据，是否要用一月份的期初余额覆盖？')
-    if (!confirmed) {
-      return
-    }
-  }
-
-  try {
-    await setBeginBalanceFromJanuary(currentPeriod)
-    alert(`成功设置期初余额（来源：${currentPeriod.slice(0, 4)}-01的期初余额）`)
-  } catch (error) {
-    console.error('设置期初余额失败:', error)
-    alert('设置期初余额失败: ' + (error instanceof Error ? error.message : '网络错误'))
-  }
-}
 
 // 定义函数（需要在watch之前定义）
 const loadData = async () => {

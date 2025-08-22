@@ -244,7 +244,7 @@ router.get('/calculate/:period', async (req, res) => {
         console.log('收入数据:', incomeData);
         console.log('成本数据:', costData);
 
-        // 3. 计算各板块的利润率
+        // 3. 计算各板块的利润率 - 改为按板块汇总计算
         const result = {
             equipment: {},
             components: {},
@@ -273,12 +273,20 @@ router.get('/calculate/:period', async (req, res) => {
             '其它': 'others'
         };
 
-        // 计算设备板块利润率
+        // 按板块汇总计算毛利率
+        const segmentTotals = {
+            equipment: { totalIncome: 0, totalCost: 0 },
+            components: { totalIncome: 0, totalCost: 0 },
+            engineering: { totalIncome: 0, totalCost: 0 }
+        };
+
+        // 计算设备板块汇总数据
         if (incomeData.equipment) {
             incomeData.equipment.forEach(item => {
                 const key = customerMapping[item.customer];
                 if (key) {
                     const accumulatedIncome = item.accumulatedIncome || 0;
+                    segmentTotals.equipment.totalIncome += accumulatedIncome;
 
                     // 查找对应的成本数据
                     const equipmentCosts = costData.equipment ? costData.equipment.filter(cost =>
@@ -293,7 +301,9 @@ router.get('/calculate/:period', async (req, res) => {
                         totalCost += materialCost + laborCost;
                     });
 
-                    // 计算利润率：(收入-成本)/收入 * 100%
+                    segmentTotals.equipment.totalCost += totalCost;
+
+                    // 计算单个客户利润率：(收入-成本)/收入 * 100%
                     let profitMargin = 0;
                     if (accumulatedIncome > 0) {
                         profitMargin = ((accumulatedIncome - totalCost) / accumulatedIncome) * 100;
@@ -308,11 +318,12 @@ router.get('/calculate/:period', async (req, res) => {
             });
         }
 
-        // 计算元件板块利润率
+        // 计算元件板块汇总数据
         if (incomeData.components) {
             incomeData.components.forEach(item => {
                 if (item.customer === '用户') {
                     const accumulatedIncome = item.accumulatedIncome || 0;
+                    segmentTotals.components.totalIncome += accumulatedIncome;
 
                     // 从成本数据中查找元件成本
                     const componentCosts = costData.component ? costData.component.filter(cost =>
@@ -326,6 +337,8 @@ router.get('/calculate/:period', async (req, res) => {
                         const laborCost = parseFloat(cost.cumulativeLaborCost || 0) || parseFloat(cost.currentLaborCost || 0);
                         totalCost += materialCost + laborCost;
                     });
+
+                    segmentTotals.components.totalCost += totalCost;
 
                     let profitMargin = 0;
                     if (accumulatedIncome > 0) {
@@ -341,12 +354,13 @@ router.get('/calculate/:period', async (req, res) => {
             });
         }
 
-        // 计算工程板块利润率
+        // 计算工程板块汇总数据
         if (incomeData.engineering) {
             incomeData.engineering.forEach(item => {
                 const key = engineeringMapping[item.customer];
                 if (key) {
                     const accumulatedIncome = item.accumulatedIncome || 0;
+                    segmentTotals.engineering.totalIncome += accumulatedIncome;
 
                     const engineeringCosts = costData.project ? costData.project.filter(cost =>
                         cost.customerType === item.customer
@@ -359,6 +373,8 @@ router.get('/calculate/:period', async (req, res) => {
                         const laborCost = parseFloat(cost.cumulativeLaborCost || 0) || parseFloat(cost.currentLaborCost || 0);
                         totalCost += materialCost + laborCost;
                     });
+
+                    segmentTotals.engineering.totalCost += totalCost;
 
                     let profitMargin = 0;
                     if (accumulatedIncome > 0) {
@@ -374,50 +390,33 @@ router.get('/calculate/:period', async (req, res) => {
             });
         }
 
+        // 计算各板块汇总毛利率
+        const segmentMargins = {};
+
+        // 设备板块汇总毛利率
+        if (segmentTotals.equipment.totalIncome > 0) {
+            segmentMargins.equipment = ((segmentTotals.equipment.totalIncome - segmentTotals.equipment.totalCost) / segmentTotals.equipment.totalIncome) * 100;
+        } else {
+            segmentMargins.equipment = 0;
+        }
+
+        // 元件板块汇总毛利率
+        if (segmentTotals.components.totalIncome > 0) {
+            segmentMargins.components = ((segmentTotals.components.totalIncome - segmentTotals.components.totalCost) / segmentTotals.components.totalIncome) * 100;
+        } else {
+            segmentMargins.components = 0;
+        }
+
+        // 工程板块汇总毛利率
+        if (segmentTotals.engineering.totalIncome > 0) {
+            segmentMargins.engineering = ((segmentTotals.engineering.totalIncome - segmentTotals.engineering.totalCost) / segmentTotals.engineering.totalIncome) * 100;
+        } else {
+            segmentMargins.engineering = 0;
+        }
+
         // 计算总体利润率
-        let totalIncome = 0;
-        let totalCost = 0;
-
-        // 汇总所有收入
-        if (incomeData.equipment) {
-            incomeData.equipment.forEach(item => {
-                totalIncome += item.accumulatedIncome || 0;
-            });
-        }
-        if (incomeData.components) {
-            incomeData.components.forEach(item => {
-                totalIncome += item.accumulatedIncome || 0;
-            });
-        }
-        if (incomeData.engineering) {
-            incomeData.engineering.forEach(item => {
-                totalIncome += item.accumulatedIncome || 0;
-            });
-        }
-
-        // 汇总所有成本
-        if (costData.equipment) {
-            costData.equipment.forEach(cost => {
-                const materialCost = parseFloat(cost.cumulativeMaterialCost || 0) || parseFloat(cost.currentMaterialCost || 0);
-                const laborCost = parseFloat(cost.cumulativeLaborCost || 0) || parseFloat(cost.currentLaborCost || 0);
-                totalCost += materialCost + laborCost;
-            });
-        }
-        if (costData.component) {
-            costData.component.forEach(cost => {
-                const materialCost = parseFloat(cost.cumulativeMaterialCost || 0) || parseFloat(cost.currentMaterialCost || 0);
-                const laborCost = parseFloat(cost.cumulativeLaborCost || 0) || parseFloat(cost.currentLaborCost || 0);
-                totalCost += materialCost + laborCost;
-            });
-        }
-        if (costData.project) {
-            costData.project.forEach(cost => {
-                const materialCost = parseFloat(cost.cumulativeMaterialCost || 0) || parseFloat(cost.currentMaterialCost || 0);
-                const laborCost = parseFloat(cost.cumulativeLaborCost || 0) || parseFloat(cost.currentLaborCost || 0);
-                totalCost += materialCost + laborCost;
-            });
-        }
-
+        const totalIncome = segmentTotals.equipment.totalIncome + segmentTotals.components.totalIncome + segmentTotals.engineering.totalIncome;
+        const totalCost = segmentTotals.equipment.totalCost + segmentTotals.components.totalCost + segmentTotals.engineering.totalCost;
         // 计算总体利润率
         let totalProfitMargin = 0;
         if (totalIncome > 0) {
@@ -427,16 +426,23 @@ router.get('/calculate/:period', async (req, res) => {
         result.total.actual = totalProfitMargin.toFixed(2) + '%';
 
         console.log('计算结果:', result);
+        console.log('板块汇总毛利率:', segmentMargins);
 
         res.json({
             success: true,
             data: result,
             period: period,
+            segmentMargins: {
+                equipment: Number(segmentMargins.equipment.toFixed(2)),
+                components: Number(segmentMargins.components.toFixed(2)),
+                engineering: Number(segmentMargins.engineering.toFixed(2))
+            },
             calculation: {
                 formula: '利润率 = (累计收入 - 累计成本) / 累计收入 * 100%',
                 description: '基于main_business_income.accumulatedIncome和main_business_cost(cumulative_material_cost + cumulative_labor_cost)计算',
                 totalIncome: totalIncome,
-                totalCost: totalCost
+                totalCost: totalCost,
+                segmentTotals: segmentTotals
             }
         });
 
