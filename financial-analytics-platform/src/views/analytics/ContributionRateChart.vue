@@ -13,8 +13,8 @@
           <h3 class="text-lg font-semibold text-gray-900">数据年份选择</h3>
           <div class="flex items-center space-x-3">
             <span class="text-sm text-gray-600">选择年份:</span>
-            <select v-model="selectedYear" @change="fetchData" 
-                    class="px-3 py-1.5 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white">
+            <select v-model="selectedYear" @change="fetchData"
+              class="px-3 py-1.5 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white">
               <option v-for="year in availableYears" :key="year" :value="year">{{ year }}年</option>
             </select>
           </div>
@@ -45,23 +45,21 @@
       <div class="bg-white rounded-lg shadow-sm p-6">
         <h3 class="text-lg font-semibold text-gray-900 mb-6">各板块贡献率分析</h3>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div v-for="segment in segmentData" :key="segment.name" 
-               class="p-4 border border-gray-200 rounded-lg">
+          <div v-for="segment in segmentData" :key="segment.name" class="p-4 border border-gray-200 rounded-lg">
             <div class="flex justify-between items-center mb-3">
               <h4 class="font-medium text-gray-900">{{ segment.name }}</h4>
               <span class="text-sm font-semibold" :class="getSegmentColor(segment.rate)">
-                {{ segment.rate }}%
+                <template v-if="segment.rate === 0">暂无数据</template>
+                <template v-else>{{ segment.rate }}%</template>
               </span>
             </div>
             <div class="w-full bg-gray-200 rounded-full h-2 mb-2">
-              <div 
-                class="h-2 rounded-full transition-all duration-300" 
-                :class="getSegmentBarColor(segment.rate)"
-                :style="`width: ${Math.min(Math.abs(segment.rate), 100)}%`"
-              ></div>
+              <div class="h-2 rounded-full transition-all duration-300" :class="getSegmentBarColor(segment.rate)"
+                :style="`width: ${Math.min(Math.abs(segment.rate), 100)}%`"></div>
             </div>
             <p class="text-xs text-gray-600">
-              计划: {{ segment.plan }}% | 实际: {{ segment.actual }}%
+              计划: {{ segment.plan }}% | 实际: <template v-if="segment.actual === 0">暂无数据</template><template v-else>{{
+                segment.actual }}%</template>
             </p>
           </div>
         </div>
@@ -143,6 +141,42 @@ const fetchData = async () => {
 
 
 
+// 过滤异常值的函数
+const filterAbnormalValues = (value) => {
+  // 如果值为null、undefined或0，返回0
+  if (value == null || value === 0) return 0
+
+  // 如果值大于等于100%，认为是异常值（通常表示缺少成本数据），返回0
+  if (value >= 100) {
+    console.log(`过滤异常值: ${value}% -> 0% (可能缺少成本数据)`)
+    return 0
+  }
+
+  // 如果值小于-100%，也认为是异常值，返回0
+  if (value <= -100) {
+    console.log(`过滤异常值: ${value}% -> 0% (数据异常)`)
+    return 0
+  }
+
+  return value
+}
+
+// 过滤数据，移除值为0的月份
+const filterValidData = (months, monthlyData) => {
+  const validMonths = []
+  const validData = []
+
+  for (let i = 0; i < months.length; i++) {
+    const filteredValue = filterAbnormalValues(monthlyData[i])
+    if (filteredValue !== 0) {
+      validMonths.push(months[i])
+      validData.push(filteredValue)
+    }
+  }
+
+  return { validMonths, validData }
+}
+
 // 获取边际贡献率数据
 const fetchContributionRateData = async () => {
   try {
@@ -162,17 +196,23 @@ const fetchContributionRateData = async () => {
             { name: '工程', plan: 22.8, actual: 0, rate: 0 }
           ]
         } else {
-          // 有数据的情况
-          months.value = result.data.months || []
-          monthlyData.value = result.data.monthlyData || []
+          // 有数据的情况，先过滤异常值和0值
+          const rawMonths = result.data.months || []
+          const rawMonthlyData = result.data.monthlyData || []
+
+          // 过滤异常值和0值
+          const { validMonths, validData } = filterValidData(rawMonths, rawMonthlyData)
+
+          months.value = validMonths
+          monthlyData.value = validData
           currentRate.value = result.data.currentRate || 0
 
           if (result.data.segmentData) {
             segmentData.value = result.data.segmentData.map(segment => ({
               name: segment.name,
               plan: segment.plan,
-              actual: segment.actual,
-              rate: segment.rate
+              actual: filterAbnormalValues(segment.actual),
+              rate: filterAbnormalValues(segment.rate)
             }))
           }
         }
@@ -251,6 +291,7 @@ const updateChart = () => {
     return
   }
 
+  // 目标线数据只在有有效数据的月份显示
   const targetData = months.value.map(() => targetRate.value)
 
   const option = {
@@ -266,7 +307,7 @@ const updateChart = () => {
     },
     tooltip: {
       trigger: 'axis',
-      formatter: function(params: any[]) {
+      formatter: function (params: any[]) {
         let result = `${params[0].name}<br/>`
         params.forEach(param => {
           result += `${param.seriesName}: ${formatNumber(param.value)}%<br/>`
@@ -299,7 +340,7 @@ const updateChart = () => {
         fontSize: 12
       },
       axisLabel: {
-        formatter: function(value: number) {
+        formatter: function (value: number) {
           return formatNumber(value) + '%'
         },
         fontSize: 12

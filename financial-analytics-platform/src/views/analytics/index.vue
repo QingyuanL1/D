@@ -21,7 +21,9 @@
               <div class="flex items-center">
                 <div class="p-2 bg-blue-500 rounded-lg">
                   <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z">
+                    </path>
                   </svg>
                 </div>
                 <div class="ml-3">
@@ -36,7 +38,8 @@
               <div class="flex items-center">
                 <div class="p-2 bg-green-500 rounded-lg">
                   <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                   </svg>
                 </div>
                 <div class="ml-3">
@@ -51,7 +54,9 @@
               <div class="flex items-center">
                 <div class="p-2 bg-purple-500 rounded-lg">
                   <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0">
+                    </path>
                   </svg>
                 </div>
                 <div class="ml-3">
@@ -66,7 +71,8 @@
               <div class="flex items-center">
                 <div class="p-2 bg-orange-500 rounded-lg">
                   <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M13 10V3L4 14h7v7l9-11h-7z"></path>
                   </svg>
                 </div>
                 <div class="ml-3">
@@ -84,13 +90,14 @@
         <div class="bg-white rounded-lg shadow-sm p-6">
           <div class="flex items-center justify-between mb-6">
             <h2 class="text-xl font-semibold text-gray-900">指标详情统计</h2>
-            <button
-              @click="refreshMetricsData"
+            <button @click="refreshMetricsData"
               class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center"
-              :disabled="isRefreshing"
-            >
-              <svg class="w-4 h-4 mr-2" :class="{ 'animate-spin': isRefreshing }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+              :disabled="isRefreshing">
+              <svg class="w-4 h-4 mr-2" :class="{ 'animate-spin': isRefreshing }" fill="none" stroke="currentColor"
+                viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
+                </path>
               </svg>
               {{ isRefreshing ? '刷新中...' : '刷新数据' }}
             </button>
@@ -117,10 +124,8 @@
                     <div class="text-sm text-gray-600 font-mono">{{ metric.api }}</div>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap">
-                    <span
-                      class="inline-flex px-2 py-1 text-xs font-semibold rounded-full"
-                      :class="metric.hasData ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
-                    >
+                    <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full"
+                      :class="metric.hasData ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'">
                       {{ metric.hasData ? '有数据' : '无数据' }}
                     </span>
                   </td>
@@ -140,187 +145,12 @@
         </div>
       </div>
 
-      <!-- 分析模块卡片 -->
-      <div class="mb-8">
-        <h2 class="text-xl font-semibold text-gray-900 mb-6">分析模块</h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <!-- 营业收入分析卡片 -->
-          <div class="bg-white p-6 rounded-lg border border-gray-200 hover:border-blue-400 hover:shadow-sm transition-all relative">
-            <div class="flex items-center justify-between mb-4">
-              <div class="p-2 bg-blue-100 rounded-md">
-                <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"></path>
-                </svg>
-              </div>
-              <div class="text-right">
-                <div class="text-sm font-semibold text-blue-600">{{ analysisModuleCompletionRates.businessIncome }}%</div>
-                <div class="text-xs text-gray-500">完成度</div>
-              </div>
-            </div>
-            <h4 class="text-lg font-medium text-gray-900 mb-2">营业收入分析</h4>
-            <p class="text-sm text-gray-600 mb-3 h-12">分析营业收入结构与变化趋势</p>
-            <div class="mb-4">
-              <div style="width: 100%; height: 8px; background-color: #e5e7eb; border-radius: 4px;">
-                <div
-                  style="height: 8px; border-radius: 4px; background-color: #2563eb; transition: width 0.3s ease;"
-                  :style="`width: ${analysisModuleCompletionRates.businessIncome}%;`"
-                ></div>
-              </div>
-            </div>
-            <router-link to="/analytics/business-income-chart" class="block w-full text-center py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
-              质量情况
-            </router-link>
-          </div>
-
-          <!-- 净利润分析卡片 -->
-          <div class="bg-white p-6 rounded-lg border border-gray-200 hover:border-blue-400 hover:shadow-sm transition-all relative">
-            <div class="flex items-center justify-between mb-4">
-              <div class="p-2 bg-blue-100 rounded-md">
-                <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                </svg>
-              </div>
-              <div class="text-right">
-                <div class="text-sm font-semibold text-blue-600">{{ analysisModuleCompletionRates.netProfit }}%</div>
-                <div class="text-xs text-gray-500">完成度</div>
-              </div>
-            </div>
-            <h4 class="text-lg font-medium text-gray-900 mb-2">净利润数据分析</h4>
-            <p class="text-sm text-gray-600 mb-3 h-12">分析净利润结构与完成情况</p>
-            <div class="mb-4">
-              <div style="width: 100%; height: 8px; background-color: #e5e7eb; border-radius: 4px;">
-                <div
-                  style="height: 8px; border-radius: 4px; background-color: #2563eb; transition: width 0.3s ease;"
-                  :style="`width: ${analysisModuleCompletionRates.netProfit}%;`"
-                ></div>
-              </div>
-            </div>
-            <router-link to="/analytics/net-profit-chart" class="block w-full text-center py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
-              质量情况
-            </router-link>
-          </div>
-
-          <!-- ROE分析卡片 -->
-          <div class="bg-white p-6 rounded-lg border border-gray-200 hover:border-blue-400 hover:shadow-sm transition-all relative">
-            <div class="flex items-center justify-between mb-4">
-              <div class="p-2 bg-blue-100 rounded-md">
-                <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
-                </svg>
-              </div>
-              <div class="text-right">
-                <div class="text-sm font-semibold text-blue-600">
-                  {{ roeData.roe > 0 ? roeData.roe + '%' : '暂无' }}
-                </div>
-                <div class="text-xs text-gray-500">ROE</div>
-              </div>
-            </div>
-            <h4 class="text-lg font-medium text-gray-900 mb-2">净资产收益率</h4>
-            <p class="text-sm text-gray-600 mb-3 h-12">分析净利润与股东权益的比率</p>
-            <div class="mb-4">
-              <div style="width: 100%; height: 8px; background-color: #e5e7eb; border-radius: 4px;">
-                <div
-                  style="height: 8px; border-radius: 4px; background-color: #2563eb; transition: width 0.3s ease;"
-                  :style="`width: ${roeData.roe > 0 ? Math.min(roeData.roe, 100) : 0}%;`"
-                ></div>
-              </div>
-            </div>
-            <router-link to="/analytics/roe-chart" class="block w-full text-center py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
-              质量情况
-            </router-link>
-          </div>
-
-          <!-- 边际贡献率卡片 -->
-          <ContributionRateCard />
-
-          <!-- 毛利率卡片 -->
-          <ProfitMarginCard />
-
-          <!-- 净利率分析卡片 -->
-          <div class="bg-white p-6 rounded-lg border border-gray-200 hover:border-blue-400 hover:shadow-sm transition-all relative">
-            <div class="flex items-center justify-between mb-4">
-              <div class="p-2 bg-blue-100 rounded-md">
-                <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 01 2-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                </svg>
-              </div>
-              <div class="text-right">
-                <div class="text-sm font-semibold text-blue-600">{{ netProfitMarginRate }}%</div>
-                <div class="text-xs text-gray-500">净利率</div>
-              </div>
-            </div>
-            <h4 class="text-lg font-medium text-gray-900 mb-2">净利率分析</h4>
-            <p class="text-sm text-gray-600 mb-3 h-12">分析净利润率趋势与变化情况</p>
-            <div class="mb-4">
-              <div style="width: 100%; height: 8px; background-color: #e5e7eb; border-radius: 4px;">
-                <div
-                  style="height: 8px; border-radius: 4px; background-color: #2563eb; transition: width 0.3s ease;"
-                  :style="`width: ${Math.min(Math.max(netProfitMarginRate / 6.85 * 100, 3), 100)}%;`"
-                ></div>
-              </div>
-            </div>
-            <router-link to="/analytics/net-profit-margin-chart" class="block w-full text-center py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
-              质量情况
-            </router-link>
-          </div>
-
-          <!-- 资产负债率分析卡片 -->
-          <div class="bg-white p-6 rounded-lg border border-gray-200 hover:border-blue-400 hover:shadow-sm transition-all relative">
-            <div class="flex items-center justify-between mb-4">
-              <div class="p-2 bg-blue-100 rounded-md">
-                <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h3m0 0v-3m0 3h3m-6 0h6m-6-3v3"></path>
-                </svg>
-              </div>
-              <div class="text-right">
-                <div class="text-sm font-semibold text-blue-600">{{ assetLiabilityRatio }}%</div>
-                <div class="text-xs text-gray-500">资产负债率</div>
-              </div>
-            </div>
-            <h4 class="text-lg font-medium text-gray-900 mb-2">资产负债率分析</h4>
-            <p class="text-sm text-gray-600 mb-3 h-12">分析资产负债率趋势与风险控制</p>
-            <div class="mb-4">
-              <div style="width: 100%; height: 8px; background-color: #e5e7eb; border-radius: 4px;">
-                <div
-                  style="height: 8px; border-radius: 4px; background-color: #2563eb; transition: width 0.3s ease;"
-                  :style="`width: ${Math.min(Math.max(assetLiabilityRatio / 74 * 100, 3), 100)}%;`"
-                ></div>
-              </div>
-            </div>
-            <router-link to="/analytics/asset-liability-ratio-chart" class="block w-full text-center py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
-              质量情况
-            </router-link>
-          </div>
-
-          <!-- 存量指标分析卡片 -->
-          <div class="bg-white p-6 rounded-lg border border-gray-200 hover:border-blue-400 hover:shadow-sm transition-all relative">
-            <div class="flex items-center justify-between mb-4">
-              <div class="p-2 bg-blue-100 rounded-md">
-                <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
-                </svg>
-              </div>
-              <div class="text-right">
-                <div class="text-sm font-semibold text-blue-600">{{ inventoryMetricsTotal }}万</div>
-                <div class="text-xs text-gray-500">存量总计</div>
-              </div>
-            </div>
-            <h4 class="text-lg font-medium text-gray-900 mb-2">存量指标分析</h4>
-            <p class="text-sm text-gray-600 mb-3 h-12">分析预中标+在产+库存综合情况</p>
-            <div class="mb-4">
-              <div style="width: 100%; height: 8px; background-color: #e5e7eb; border-radius: 4px;">
-                <div
-                  style="height: 8px; border-radius: 4px; background-color: #2563eb; transition: width 0.3s ease;"
-                  :style="`width: ${Math.min(Math.max(inventoryMetricsTotal / 100000 * 100, 3), 100)}%;`"
-                ></div>
-              </div>
-            </div>
-            <router-link to="/analytics/inventory-metrics-chart" class="block w-full text-center py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
-              质量情况
-            </router-link>
-          </div>
-        </div>
-      </div>
+      <!-- 数据分析中心 -->
+      <DataAnalysisCenter :analysisModuleCompletionRates="analysisModuleCompletionRates"
+        :costCenterData="costCenterData" :businessIncomeData="businessIncomeData" :roeData="roeData"
+        :contributionRateData="contributionRateData" :profitMarginData="profitMarginData"
+        :netProfitMarginRate="netProfitMarginRate" :assetLiabilityRatio="assetLiabilityRatio"
+        @navigation="handleNavigation" />
 
       <!-- 月度分析图表 -->
       <div class="mb-8">
@@ -461,7 +291,8 @@
                 <div class="w-4 h-4 bg-red-500 rounded mr-2"></div>
                 <span class="text-sm text-gray-600">目标线</span>
               </div>
-              <router-link to="/analytics/asset-liability-ratio-chart" class="text-blue-600 hover:text-blue-800 text-sm">
+              <router-link to="/analytics/asset-liability-ratio-chart"
+                class="text-blue-600 hover:text-blue-800 text-sm">
                 查看详情 →
               </router-link>
             </div>
@@ -493,8 +324,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
 import * as echarts from 'echarts'
-import ContributionRateCard from '@/views/analytics/ContributionRateCard.vue'
-import ProfitMarginCard from '@/views/analytics/ProfitMarginCard.vue'
+import DataAnalysisCenter from '@/components/DataAnalysisCenter.vue'
 
 // 图表引用
 const revenueChartRef = ref<HTMLElement | null>(null)
@@ -654,19 +484,47 @@ const overview = ref({
 
 // 分析模块完成率数据
 const analysisModuleCompletionRates = ref({
+  newOrders: 85,
+  costCenter: 75,
   businessIncome: 85,
-  netProfit: 92,
-  contributionRate: 78,
-  profitMargin: 88,
-  netProfitMargin: 76,
-  assetLiabilityRatio: 90,
-  roe: 82,
-  inventoryMetrics: 75
+  netProfit: 92
+})
+
+// 成本中心数据
+const costCenterData = ref({
+  yearlyPlan: 60000,
+  totalCumulativeIncome: 45000,
+  completionRate: 75
+})
+
+// 营业收入数据
+const businessIncomeData = ref({
+  totalYearlyPlan: 60000,
+  totalCurrentTotal: 51000,
+  completionRate: 85
 })
 
 // ROE数据
 const roeData = ref({
-  roe: 12.5
+  netProfit: 8950000,
+  shareholderEquity: 71600000,
+  roe: 12.5,
+  year: new Date().getFullYear(),
+  lastUpdated: new Date().toISOString()
+})
+
+// 边际贡献率数据
+const contributionRateData = ref({
+  targetRate: 21.98,
+  currentRate: 18.5,
+  completionRate: 78
+})
+
+// 毛利率数据
+const profitMarginData = ref({
+  targetRate: 24.00,
+  currentRate: 21.12,
+  completionRate: 88
 })
 
 // 净利率数据
@@ -680,6 +538,11 @@ const inventoryMetricsTotal = ref(85000)
 
 // 刷新状态
 const isRefreshing = ref(false)
+
+// 处理导航事件
+const handleNavigation = (event: Event) => {
+  console.log('Navigation triggered from DataAnalysisCenter', event)
+}
 
 // 工具函数
 const formatNumber = (num: number) => {
@@ -792,12 +655,12 @@ const fetchROEData = async () => {
         roeMonthlyData.value = result.data.monthlyData || { roe: [] }
 
         const latestROE = result.data.monthlyData?.roe && result.data.monthlyData.roe.length > 0 ?
-          result.data.monthlyData.roe[result.data.monthlyData.roe.length - 1] / 1000 : 0
+          result.data.monthlyData.roe[result.data.monthlyData.roe.length - 1] : 0
 
         roeSummary.value = {
           currentROE: latestROE,
-          completion_rate: latestROE / 20 * 100,
-          targetROE: 20
+          completion_rate: result.data.summary?.completion_rate || (latestROE / 21.18 * 100),
+          targetROE: result.data.summary?.targetROE || 21.18
         }
       } else {
         resetROEData()
@@ -827,6 +690,18 @@ const fetchContributionRateData = async () => {
         contributionRateMonths.value = result.data.months || []
         contributionRateMonthlyData.value = result.data.monthlyData || []
         contributionRateCurrentRate.value = result.data.currentRate || 0
+
+        // 更新卡片数据 - 取最后一个月的当期值
+        const monthlyData = result.data.monthlyData || []
+        const lastMonthValue = monthlyData.length > 0 ? monthlyData[monthlyData.length - 1] : 0
+
+        contributionRateData.value = {
+          targetRate: 21.98, // 保持计划目标值
+          currentRate: lastMonthValue, // 使用最后一个月的实际值
+          completionRate: lastMonthValue // 显示当期值而不是完成度
+        }
+
+        console.log(`边际贡献率卡片数据更新 - 最后一个月当期值: ${lastMonthValue}%`)
       } else {
         resetContributionRateData()
       }
@@ -843,6 +718,13 @@ const resetContributionRateData = () => {
   contributionRateMonths.value = []
   contributionRateMonthlyData.value = []
   contributionRateCurrentRate.value = 0
+
+  // 重置卡片数据
+  contributionRateData.value = {
+    targetRate: 21.98,
+    currentRate: 0,
+    completionRate: 0
+  }
 }
 
 // 获取毛利率数据
@@ -1148,7 +1030,7 @@ const updateRevenueChart = () => {
     },
     tooltip: {
       trigger: 'axis',
-      formatter: function(params: any[]) {
+      formatter: function (params: any[]) {
         if (!hasData) return '暂无数据'
         let result = `${params[0].name}<br/>`
         params.forEach(param => {
@@ -1182,7 +1064,7 @@ const updateRevenueChart = () => {
         fontSize: 12
       },
       axisLabel: {
-        formatter: function(value: number) {
+        formatter: function (value: number) {
           return formatNumber(value)
         },
         fontSize: 12
@@ -1243,11 +1125,11 @@ const updateNetProfitChart = () => {
 
   const option = {
     title: { text: `${currentYear.value}年净利润月度趋势`, textStyle: { fontSize: 16, fontWeight: 'bold', color: '#374151' }, left: 'center', top: 10 },
-    tooltip: { trigger: 'axis', formatter: function(params: any[]) { if (!hasData) return '暂无数据'; let result = `${params[0].name}<br/>`; params.forEach(param => { result += `${param.seriesName}: ${formatNumber(param.value)} 万元<br/>` }); return result } },
+    tooltip: { trigger: 'axis', formatter: function (params: any[]) { if (!hasData) return '暂无数据'; let result = `${params[0].name}<br/>`; params.forEach(param => { result += `${param.seriesName}: ${formatNumber(param.value)} 万元<br/>` }); return result } },
     legend: { top: 40, type: 'scroll' },
     grid: { left: '8%', right: '5%', bottom: '15%', top: '20%', containLabel: true },
     xAxis: { type: 'category', data: hasData ? netProfitMonths.value : [], axisLabel: { fontSize: 12 } },
-    yAxis: { type: 'value', name: '万元', nameTextStyle: { fontSize: 12 }, axisLabel: { formatter: function(value: number) { return formatNumber(value) }, fontSize: 12 } },
+    yAxis: { type: 'value', name: '万元', nameTextStyle: { fontSize: 12 }, axisLabel: { formatter: function (value: number) { return formatNumber(value) }, fontSize: 12 } },
     series: hasData ? series : [],
     graphic: hasData ? [] : [{ type: 'text', left: 'center', top: 'middle', style: { text: '暂无数据', fontSize: 16, fontWeight: 'bold', fill: '#999' } }]
   }
@@ -1263,8 +1145,8 @@ const updateROEChart = () => {
   const series: any[] = []
 
   if (hasData) {
-    const roeData = roeMonthlyData.value.roe.map((value: number) => value / 1000)
-    const targetData = roeMonths.value.map(() => 20)
+    const roeData = roeMonthlyData.value.roe.map((value: number) => value)
+    const targetData = roeMonths.value.map(() => roeSummary.value.targetROE || 21.18)
 
     series.push({
       name: '实际ROE',
@@ -1293,11 +1175,11 @@ const updateROEChart = () => {
 
   const option = {
     title: { text: `${currentYear.value}年ROE月度趋势`, textStyle: { fontSize: 16, fontWeight: 'bold', color: '#374151' }, left: 'center', top: 10 },
-    tooltip: { trigger: 'axis', formatter: function(params: any[]) { if (!hasData) return '暂无数据'; let result = `${params[0].name}<br/>`; params.forEach(param => { result += `${param.seriesName}: ${formatNumber(param.value)}%<br/>` }); return result } },
+    tooltip: { trigger: 'axis', formatter: function (params: any[]) { if (!hasData) return '暂无数据'; let result = `${params[0].name}<br/>`; params.forEach(param => { result += `${param.seriesName}: ${formatNumber(param.value)}%<br/>` }); return result } },
     legend: { top: 40, type: 'scroll' },
     grid: { left: '8%', right: '5%', bottom: '15%', top: '20%', containLabel: true },
     xAxis: { type: 'category', data: hasData ? roeMonths.value : [], axisLabel: { fontSize: 12 } },
-    yAxis: { type: 'value', name: '百分比(%)', nameTextStyle: { fontSize: 12 }, axisLabel: { formatter: function(value: number) { return formatNumber(value) + '%' }, fontSize: 12 } },
+    yAxis: { type: 'value', name: '百分比(%)', nameTextStyle: { fontSize: 12 }, axisLabel: { formatter: function (value: number) { return formatNumber(value) + '%' }, fontSize: 12 } },
     series: hasData ? series : [],
     graphic: hasData ? [] : [{ type: 'text', left: 'center', top: 'middle', style: { text: '暂无数据', fontSize: 16, fontWeight: 'bold', fill: '#999' } }]
   }
@@ -1342,11 +1224,11 @@ const updateContributionRateChart = () => {
 
   const option = {
     title: { text: `${currentYear.value}年边际贡献率月度趋势`, textStyle: { fontSize: 16, fontWeight: 'bold', color: '#374151' }, left: 'center', top: 10 },
-    tooltip: { trigger: 'axis', formatter: function(params: any[]) { if (!hasData) return '暂无数据'; let result = `${params[0].name}<br/>`; params.forEach(param => { result += `${param.seriesName}: ${formatNumber(param.value)}%<br/>` }); return result } },
+    tooltip: { trigger: 'axis', formatter: function (params: any[]) { if (!hasData) return '暂无数据'; let result = `${params[0].name}<br/>`; params.forEach(param => { result += `${param.seriesName}: ${formatNumber(param.value)}%<br/>` }); return result } },
     legend: { top: 40, type: 'scroll' },
     grid: { left: '8%', right: '5%', bottom: '15%', top: '20%', containLabel: true },
     xAxis: { type: 'category', data: hasData ? contributionRateMonths.value : [], axisLabel: { fontSize: 12 } },
-    yAxis: { type: 'value', name: '百分比(%)', nameTextStyle: { fontSize: 12 }, axisLabel: { formatter: function(value: number) { return formatNumber(value) + '%' }, fontSize: 12 } },
+    yAxis: { type: 'value', name: '百分比(%)', nameTextStyle: { fontSize: 12 }, axisLabel: { formatter: function (value: number) { return formatNumber(value) + '%' }, fontSize: 12 } },
     series: hasData ? series : [],
     graphic: hasData ? [] : [{ type: 'text', left: 'center', top: 'middle', style: { text: '暂无数据', fontSize: 16, fontWeight: 'bold', fill: '#999' } }]
   }
@@ -1391,11 +1273,11 @@ const updateProfitMarginChart = () => {
 
   const option = {
     title: { text: `${currentYear.value}年毛利率月度趋势`, textStyle: { fontSize: 16, fontWeight: 'bold', color: '#374151' }, left: 'center', top: 10 },
-    tooltip: { trigger: 'axis', formatter: function(params: any[]) { if (!hasData) return '暂无数据'; let result = `${params[0].name}<br/>`; params.forEach(param => { result += `${param.seriesName}: ${formatNumber(param.value)}%<br/>` }); return result } },
+    tooltip: { trigger: 'axis', formatter: function (params: any[]) { if (!hasData) return '暂无数据'; let result = `${params[0].name}<br/>`; params.forEach(param => { result += `${param.seriesName}: ${formatNumber(param.value)}%<br/>` }); return result } },
     legend: { top: 40, type: 'scroll' },
     grid: { left: '8%', right: '5%', bottom: '15%', top: '20%', containLabel: true },
     xAxis: { type: 'category', data: hasData ? profitMarginMonths.value : [], axisLabel: { fontSize: 12 } },
-    yAxis: { type: 'value', name: '百分比(%)', nameTextStyle: { fontSize: 12 }, axisLabel: { formatter: function(value: number) { return formatNumber(value) + '%' }, fontSize: 12 } },
+    yAxis: { type: 'value', name: '百分比(%)', nameTextStyle: { fontSize: 12 }, axisLabel: { formatter: function (value: number) { return formatNumber(value) + '%' }, fontSize: 12 } },
     series: hasData ? series : [],
     graphic: hasData ? [] : [{ type: 'text', left: 'center', top: 'middle', style: { text: '暂无数据', fontSize: 16, fontWeight: 'bold', fill: '#999' } }]
   }
@@ -1440,11 +1322,11 @@ const updateNetProfitMarginChart = () => {
 
   const option = {
     title: { text: `${currentYear.value}年净利率月度趋势`, textStyle: { fontSize: 16, fontWeight: 'bold', color: '#374151' }, left: 'center', top: 10 },
-    tooltip: { trigger: 'axis', formatter: function(params: any[]) { if (!hasData) return '暂无数据'; let result = `${params[0].name}<br/>`; params.forEach(param => { result += `${param.seriesName}: ${formatNumber(param.value)}%<br/>` }); return result } },
+    tooltip: { trigger: 'axis', formatter: function (params: any[]) { if (!hasData) return '暂无数据'; let result = `${params[0].name}<br/>`; params.forEach(param => { result += `${param.seriesName}: ${formatNumber(param.value)}%<br/>` }); return result } },
     legend: { top: 40, type: 'scroll' },
     grid: { left: '8%', right: '5%', bottom: '15%', top: '20%', containLabel: true },
     xAxis: { type: 'category', data: hasData ? netProfitMarginMonths.value : [], axisLabel: { fontSize: 12 } },
-    yAxis: { type: 'value', name: '百分比(%)', nameTextStyle: { fontSize: 12 }, axisLabel: { formatter: function(value: number) { return formatNumber(value) + '%' }, fontSize: 12 } },
+    yAxis: { type: 'value', name: '百分比(%)', nameTextStyle: { fontSize: 12 }, axisLabel: { formatter: function (value: number) { return formatNumber(value) + '%' }, fontSize: 12 } },
     series: hasData ? series : [],
     graphic: hasData ? [] : [{ type: 'text', left: 'center', top: 'middle', style: { text: '暂无数据', fontSize: 16, fontWeight: 'bold', fill: '#999' } }]
   }
@@ -1489,11 +1371,11 @@ const updateAssetLiabilityChart = () => {
 
   const option = {
     title: { text: `${currentYear.value}年资产负债率月度趋势`, textStyle: { fontSize: 16, fontWeight: 'bold', color: '#374151' }, left: 'center', top: 10 },
-    tooltip: { trigger: 'axis', formatter: function(params: any[]) { if (!hasData) return '暂无数据'; let result = `${params[0].name}<br/>`; params.forEach(param => { result += `${param.seriesName}: ${formatNumber(param.value)}%<br/>` }); return result } },
+    tooltip: { trigger: 'axis', formatter: function (params: any[]) { if (!hasData) return '暂无数据'; let result = `${params[0].name}<br/>`; params.forEach(param => { result += `${param.seriesName}: ${formatNumber(param.value)}%<br/>` }); return result } },
     legend: { top: 40, type: 'scroll' },
     grid: { left: '8%', right: '5%', bottom: '15%', top: '20%', containLabel: true },
     xAxis: { type: 'category', data: hasData ? assetLiabilityMonths.value : [], axisLabel: { fontSize: 12 } },
-    yAxis: { type: 'value', name: '百分比(%)', nameTextStyle: { fontSize: 12 }, axisLabel: { formatter: function(value: number) { return formatNumber(value) + '%' }, fontSize: 12 } },
+    yAxis: { type: 'value', name: '百分比(%)', nameTextStyle: { fontSize: 12 }, axisLabel: { formatter: function (value: number) { return formatNumber(value) + '%' }, fontSize: 12 } },
     series: hasData ? series : [],
     graphic: hasData ? [] : [{ type: 'text', left: 'center', top: 'middle', style: { text: '暂无数据', fontSize: 16, fontWeight: 'bold', fill: '#999' } }]
   }
@@ -1540,11 +1422,11 @@ const updateInventoryChart = () => {
 
   const option = {
     title: { text: `${currentYear.value}年存量指标月度趋势`, textStyle: { fontSize: 16, fontWeight: 'bold', color: '#374151' }, left: 'center', top: 10 },
-    tooltip: { trigger: 'axis', formatter: function(params: any[]) { if (!hasData) return '暂无数据'; let result = `${params[0].name}<br/>`; params.forEach(param => { result += `${param.seriesName}: ${formatNumber(param.value)} 万元<br/>` }); return result } },
+    tooltip: { trigger: 'axis', formatter: function (params: any[]) { if (!hasData) return '暂无数据'; let result = `${params[0].name}<br/>`; params.forEach(param => { result += `${param.seriesName}: ${formatNumber(param.value)} 万元<br/>` }); return result } },
     legend: { top: 40, type: 'scroll' },
     grid: { left: '8%', right: '5%', bottom: '15%', top: '20%', containLabel: true },
     xAxis: { type: 'category', data: hasData ? inventoryMonths.value : [], axisLabel: { fontSize: 12 } },
-    yAxis: { type: 'value', name: '万元', nameTextStyle: { fontSize: 12 }, axisLabel: { formatter: function(value: number) { return formatNumber(value) }, fontSize: 12 } },
+    yAxis: { type: 'value', name: '万元', nameTextStyle: { fontSize: 12 }, axisLabel: { formatter: function (value: number) { return formatNumber(value) }, fontSize: 12 } },
     series: hasData ? series : [],
     graphic: hasData ? [] : [{ type: 'text', left: 'center', top: 'middle', style: { text: '暂无数据', fontSize: 16, fontWeight: 'bold', fill: '#999' } }]
   }

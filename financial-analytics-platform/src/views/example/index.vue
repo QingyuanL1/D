@@ -719,33 +719,27 @@ const calculateNonCurrentLiabilities = () => {
 }
 
 const calculateEquityTotal = () => {
-  // 根据新的计算逻辑：(生性生物资产 + 油气资产 + 使用权资产 + 无形资产) - (开发支出 + 商誉 + 长期待摊费用 + 递延所得税资产)
+  // 所有者权益合计 = 归属于母公司所有者权益(或股东权益)合计 + 少数股东权益
 
-  // 需要相加的项目
-  const addItems = ['生性生物资产', '油气资产', '使用权资产', '无形资产']
-  // 需要相减的项目
-  const subtractItems = ['开发支出', '商誉', '长期待摊费用', '递延所得税资产']
+  // 找到归属于母公司所有者权益合计项
+  const parentEquityItem = data.value.equity.find(item =>
+    item.name === '归属于母公司所有者权益（或股东权益）合计'
+  )
 
-  // 计算相加项目的总和
-  const addTotal = data.value.assets.nonCurrent
-    .filter(item => addItems.includes(item.name))
-    .reduce((sum, item) => ({
-      endBalance: sum.endBalance + (item.endBalance || 0),
-      beginBalance: sum.beginBalance + (item.beginBalance || 0)
-    }), { endBalance: 0, beginBalance: 0 })
+  // 找到少数股东权益项
+  const minorityEquityItem = data.value.equity.find(item =>
+    item.name === '*少数股东权益'
+  )
 
-  // 计算相减项目的总和
-  const subtractTotal = data.value.assets.nonCurrent
-    .filter(item => subtractItems.includes(item.name))
-    .reduce((sum, item) => ({
-      endBalance: sum.endBalance + (item.endBalance || 0),
-      beginBalance: sum.beginBalance + (item.beginBalance || 0)
-    }), { endBalance: 0, beginBalance: 0 })
+  // 计算所有者权益合计，保留2位小数
+  const parentEquityEnd = parentEquityItem ? (parentEquityItem.endBalance || 0) : 0
+  const parentEquityBegin = parentEquityItem ? (parentEquityItem.beginBalance || 0) : 0
+  const minorityEquityEnd = minorityEquityItem ? (minorityEquityItem.endBalance || 0) : 0
+  const minorityEquityBegin = minorityEquityItem ? (minorityEquityItem.beginBalance || 0) : 0
 
-  // 最终计算结果，保留2位小数
   data.value.equityTotal = {
-    endBalance: parseFloat((addTotal.endBalance - subtractTotal.endBalance).toFixed(2)),
-    beginBalance: parseFloat((addTotal.beginBalance - subtractTotal.beginBalance).toFixed(2))
+    endBalance: parseFloat((parentEquityEnd + minorityEquityEnd).toFixed(2)),
+    beginBalance: parseFloat((parentEquityBegin + minorityEquityBegin).toFixed(2))
   }
 }
 

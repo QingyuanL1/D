@@ -12,13 +12,12 @@
         <div class="flex items-center justify-between mb-4">
           <h3 class="text-lg font-semibold text-gray-900">系统公告</h3>
           <div class="flex items-center space-x-2">
-            <button 
-              @click="refreshAnnouncements"
-              class="p-1 text-gray-400 hover:text-gray-600 transition-colors"
-              title="刷新公告"
-            >
+            <button @click="refreshAnnouncements" class="p-1 text-gray-400 hover:text-gray-600 transition-colors"
+              title="刷新公告">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
+                </path>
               </svg>
             </button>
             <span v-if="announcements.length > 0" class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
@@ -26,24 +25,25 @@
             </span>
           </div>
         </div>
-        
+
         <div v-if="loadingAnnouncements" class="text-center py-8 text-gray-500">
-          <div class="animate-spin w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full mx-auto mb-2"></div>
+          <div class="animate-spin w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full mx-auto mb-2">
+          </div>
           <p class="text-sm">加载公告中...</p>
         </div>
-        
+
         <div v-else-if="announcements.length === 0" class="text-center py-8 text-gray-500">
           <svg class="w-12 h-12 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-1l-4 4z"></path>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-1l-4 4z"></path>
           </svg>
           <p class="text-sm">暂无新公告</p>
         </div>
-        
+
         <div v-else class="space-y-3">
-          <div v-for="announcement in announcements" :key="announcement.id" 
-               class="p-4 border-l-4 rounded-lg cursor-pointer transition-all hover:shadow-sm"
-               :class="getAnnouncementClasses(announcement.type)"
-               @click="viewAnnouncementDetail(announcement)">
+          <div v-for="announcement in announcements" :key="announcement.id"
+            class="p-4 border-l-4 rounded-lg cursor-pointer transition-all hover:shadow-sm"
+            :class="getAnnouncementClasses(announcement.type)" @click="viewAnnouncementDetail(announcement)">
             <div class="flex items-start justify-between">
               <div class="flex-1">
                 <div class="flex items-center space-x-2 mb-1">
@@ -55,10 +55,8 @@
                 <p class="text-gray-600 text-sm mb-2 line-clamp-3">{{ announcement.content }}</p>
                 <div class="flex items-center justify-between">
                   <p class="text-xs text-gray-500">{{ formatDate(announcement.created_at) }}</p>
-                  <button 
-                    @click.stop="markAsRead(announcement.id)"
-                    class="text-xs text-blue-600 hover:text-blue-700 transition-colors"
-                  >
+                  <button @click.stop="markAsRead(announcement.id)"
+                    class="text-xs text-blue-600 hover:text-blue-700 transition-colors">
                     标记已读
                   </button>
                 </div>
@@ -66,14 +64,12 @@
             </div>
           </div>
         </div>
-        
+
         <!-- 查看更多按钮 -->
         <div v-if="announcements.length > 0" class="mt-4 text-center">
-          <router-link 
-            to="/admin/notifications" 
+          <router-link to="/admin/notifications"
             class="inline-flex items-center px-4 py-2 text-sm text-blue-600 hover:text-blue-700 transition-colors"
-            v-if="userStore.userInfo?.role_name === 'super_admin' || userStore.userInfo?.role_name === 'admin'"
-          >
+            v-if="userStore.userInfo?.role_name === 'super_admin' || userStore.userInfo?.role_name === 'admin'">
             管理所有通知
             <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
@@ -88,7 +84,9 @@
           <div class="flex items-center">
             <div class="p-3 rounded-full bg-blue-100">
               <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                </path>
               </svg>
             </div>
             <div class="ml-4">
@@ -102,7 +100,9 @@
           <div class="flex items-center">
             <div class="p-3 rounded-full bg-green-100">
               <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z">
+                </path>
               </svg>
             </div>
             <div class="ml-4">
@@ -116,12 +116,14 @@
           <div class="flex items-center">
             <div class="p-3 rounded-full bg-yellow-100">
               <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
               </svg>
             </div>
             <div class="ml-4">
               <p class="text-sm text-gray-600">本月已提交</p>
-              <p class="text-2xl font-bold text-gray-900">{{ dashboardData?.overview?.current_month_submitted || 0 }}</p>
+              <p class="text-2xl font-bold text-gray-900">{{ dashboardData?.overview?.current_month_submitted || 0 }}
+              </p>
             </div>
           </div>
         </div>
@@ -130,7 +132,9 @@
           <div class="flex items-center">
             <div class="p-3 rounded-full bg-red-100">
               <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.864-.833-2.634 0L4.18 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.864-.833-2.634 0L4.18 16.5c-.77.833.192 2.5 1.732 2.5z">
+                </path>
               </svg>
             </div>
             <div class="ml-4">
@@ -140,23 +144,26 @@
           </div>
         </div>
       </div>
-      
+
       <!-- 数据分析入口 -->
       <div class="bg-white p-6 rounded-lg shadow-sm mb-8">
         <h3 class="text-lg font-semibold text-gray-900 mb-6">南华兰陵实业数据分析中心</h3>
-        
+
         <!-- 第一行：基础财务分析指标 -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
           <!-- ROE分析卡片 -->
-          <div class="bg-white p-6 rounded-lg border border-gray-200 hover:border-blue-400 hover:shadow-sm transition-all relative">
+          <div
+            class="bg-white p-6 rounded-lg border border-gray-200 hover:border-blue-400 hover:shadow-sm transition-all relative">
             <div class="flex items-center justify-between mb-4">
               <div class="p-2 bg-blue-100 rounded-md">
                 <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
                 </svg>
               </div>
               <div class="text-right">
-                <div class="text-sm font-semibold text-blue-600">{{ Math.min(Math.max(roeData.roe / 21.18 * 100, 3), 100).toFixed(1) }}%</div>
+                <div class="text-sm font-semibold text-blue-600">{{ Math.min(Math.max(roeData.roe / 21.18 * 100, 3),
+                  100).toFixed(1) }}%</div>
                 <div class="text-xs text-gray-500">完成度</div>
               </div>
             </div>
@@ -164,23 +171,25 @@
             <p class="text-sm text-gray-600 mb-3 h-12">分析净资产收益率变化趋势</p>
             <div class="mb-4">
               <div style="width: 100%; height: 8px; background-color: #e5e7eb; border-radius: 4px;">
-                <div
-                  style="height: 8px; border-radius: 4px; background-color: #2563eb; transition: width 0.3s ease;"
-                  :style="`width: ${Math.min(Math.max(roeData.roe / 21.18 * 100, 3), 100)}%;`"
-                ></div>
+                <div style="height: 8px; border-radius: 4px; background-color: #2563eb; transition: width 0.3s ease;"
+                  :style="`width: ${Math.min(Math.max(roeData.roe / 21.18 * 100, 3), 100)}%;`"></div>
               </div>
             </div>
-            <router-link to="/analytics/roe-chart?company=nanhua" class="block w-full text-center py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors" @click="handleNavigation">
+            <router-link to="/analytics/roe-chart?company=nanhua"
+              class="block w-full text-center py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+              @click="handleNavigation">
               查看详情
             </router-link>
           </div>
 
           <!-- 净利润分析卡片 -->
-          <div class="bg-white p-6 rounded-lg border border-gray-200 hover:border-blue-400 hover:shadow-sm transition-all relative">
+          <div
+            class="bg-white p-6 rounded-lg border border-gray-200 hover:border-blue-400 hover:shadow-sm transition-all relative">
             <div class="flex items-center justify-between mb-4">
               <div class="p-2 bg-blue-100 rounded-md">
                 <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
                 </svg>
               </div>
               <div class="text-right">
@@ -192,27 +201,31 @@
             <p class="text-sm text-gray-600 mb-3 h-12">分析净利润结构与完成情况</p>
             <div class="mb-4">
               <div style="width: 100%; height: 8px; background-color: #e5e7eb; border-radius: 4px;">
-                <div
-                  style="height: 8px; border-radius: 4px; background-color: #2563eb; transition: width 0.3s ease;"
-                  :style="`width: ${analysisModuleCompletionRates.netProfit}%;`"
-                ></div>
+                <div style="height: 8px; border-radius: 4px; background-color: #2563eb; transition: width 0.3s ease;"
+                  :style="`width: ${analysisModuleCompletionRates.netProfit}%;`"></div>
               </div>
             </div>
-            <router-link to="/analytics/net-profit-chart?company=nanhua" class="block w-full text-center py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors" @click="handleNavigation">
+            <router-link to="/analytics/net-profit-chart?company=nanhua"
+              class="block w-full text-center py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+              @click="handleNavigation">
               查看详情
             </router-link>
           </div>
 
           <!-- 资产负债率分析卡片 -->
-          <div class="bg-white p-6 rounded-lg border border-gray-200 hover:border-blue-400 hover:shadow-sm transition-all relative">
+          <div
+            class="bg-white p-6 rounded-lg border border-gray-200 hover:border-blue-400 hover:shadow-sm transition-all relative">
             <div class="flex items-center justify-between mb-4">
               <div class="p-2 bg-blue-100 rounded-md">
                 <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z">
+                  </path>
                 </svg>
               </div>
               <div class="text-right">
-                <div class="text-sm font-semibold text-blue-600">{{ Math.min(Math.max(assetLiabilityRatio / 74 * 100, 3), 100).toFixed(1) }}%</div>
+                <div class="text-sm font-semibold text-blue-600">{{ Math.min(Math.max(assetLiabilityRatio / 74 * 100,
+                  3), 100).toFixed(1) }}%</div>
                 <div class="text-xs text-gray-500">完成度</div>
               </div>
             </div>
@@ -220,27 +233,30 @@
             <p class="text-sm text-gray-600 mb-3 h-12">分析资产负债率变化与风险控制</p>
             <div class="mb-4">
               <div style="width: 100%; height: 8px; background-color: #e5e7eb; border-radius: 4px;">
-                <div
-                  style="height: 8px; border-radius: 4px; background-color: #2563eb; transition: width 0.3s ease;"
-                  :style="`width: ${Math.min(Math.max(assetLiabilityRatio / 74 * 100, 3), 100)}%;`"
-                ></div>
+                <div style="height: 8px; border-radius: 4px; background-color: #2563eb; transition: width 0.3s ease;"
+                  :style="`width: ${Math.min(Math.max(assetLiabilityRatio / 74 * 100, 3), 100)}%;`"></div>
               </div>
             </div>
-            <router-link to="/analytics/asset-liability-ratio-chart?company=nanhua" class="block w-full text-center py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors" @click="handleNavigation">
+            <router-link to="/analytics/asset-liability-ratio-chart?company=nanhua"
+              class="block w-full text-center py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+              @click="handleNavigation">
               查看详情
             </router-link>
           </div>
 
           <!-- 南华毛利率分析卡片 -->
-          <div class="bg-white p-6 rounded-lg border border-gray-200 hover:border-blue-400 hover:shadow-sm transition-all relative">
+          <div
+            class="bg-white p-6 rounded-lg border border-gray-200 hover:border-blue-400 hover:shadow-sm transition-all relative">
             <div class="flex items-center justify-between mb-4">
               <div class="p-2 bg-blue-100 rounded-md">
                 <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
                 </svg>
               </div>
               <div class="text-right">
-                <div class="text-sm font-semibold text-blue-600">{{ Math.min(Math.max(nanhuaProfitMarginRate / 24 * 100, 3), 100).toFixed(1) }}%</div>
+                <div class="text-sm font-semibold text-blue-600">{{ Math.min(Math.max(nanhuaProfitMarginRate / 24 * 100,
+                  3), 100).toFixed(1) }}%</div>
                 <div class="text-xs text-gray-500">完成度</div>
               </div>
             </div>
@@ -248,30 +264,34 @@
             <p class="text-sm text-gray-600 mb-3 h-12">分析南华各客户类型毛利率结构与趋势</p>
             <div class="mb-4">
               <div style="width: 100%; height: 8px; background-color: #e5e7eb; border-radius: 4px;">
-                <div
-                  style="height: 8px; border-radius: 4px; background-color: #2563eb; transition: width 0.3s ease;"
-                  :style="`width: ${Math.min(Math.max(nanhuaProfitMarginRate / 24 * 100, 3), 100)}%;`"
-                ></div>
+                <div style="height: 8px; border-radius: 4px; background-color: #2563eb; transition: width 0.3s ease;"
+                  :style="`width: ${Math.min(Math.max(nanhuaProfitMarginRate / 24 * 100, 3), 100)}%;`"></div>
               </div>
             </div>
-            <router-link to="/analytics/nanhua-profit-margin-chart" class="block w-full text-center py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors" @click="handleNavigation">
+            <router-link to="/analytics/nanhua-profit-margin-chart"
+              class="block w-full text-center py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+              @click="handleNavigation">
               查看详情
             </router-link>
           </div>
         </div>
-        
+
         <!-- 第二行：业务分析指标 -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <!-- 南华营业收入分析卡片 -->
-          <div class="bg-white p-6 rounded-lg border border-gray-200 hover:border-blue-400 hover:shadow-sm transition-all relative">
+          <div
+            class="bg-white p-6 rounded-lg border border-gray-200 hover:border-blue-400 hover:shadow-sm transition-all relative">
             <div class="flex items-center justify-between mb-4">
               <div class="p-2 bg-blue-100 rounded-md">
                 <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1">
+                  </path>
                 </svg>
               </div>
               <div class="text-right">
-                <div class="text-sm font-semibold text-blue-600">{{ Math.min(Math.max(nanhuaBusinessIncomeRate / 20833.54 * 100, 3), 100).toFixed(1) }}%</div>
+                <div class="text-sm font-semibold text-blue-600">{{ Math.min(Math.max(nanhuaBusinessIncomeRate /
+                  20833.54 * 100, 3), 100).toFixed(1) }}%</div>
                 <div class="text-xs text-gray-500">完成度</div>
               </div>
             </div>
@@ -279,23 +299,26 @@
             <p class="text-sm text-gray-600 mb-3 h-12">分析南华各客户累计收入与年度计划完成情况</p>
             <div class="mb-4">
               <div style="width: 100%; height: 8px; background-color: #e5e7eb; border-radius: 4px;">
-                <div
-                  style="height: 8px; border-radius: 4px; background-color: #2563eb; transition: width 0.3s ease;"
-                  :style="`width: ${Math.min(Math.max(nanhuaBusinessIncomeRate / 20833.54 * 100, 3), 100)}%;`"
-                ></div>
+                <div style="height: 8px; border-radius: 4px; background-color: #2563eb; transition: width 0.3s ease;"
+                  :style="`width: ${Math.min(Math.max(nanhuaBusinessIncomeRate / 20833.54 * 100, 3), 100)}%;`"></div>
               </div>
             </div>
-            <router-link to="/analytics/nanhua-business-income-chart" class="block w-full text-center py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors" @click="handleNavigation">
+            <router-link to="/analytics/nanhua-business-income-chart"
+              class="block w-full text-center py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+              @click="handleNavigation">
               查看详情
             </router-link>
           </div>
 
           <!-- 南华边际贡献率分析卡片 -->
-          <div class="bg-white p-6 rounded-lg border border-gray-200 hover:border-blue-400 hover:shadow-sm transition-all relative">
+          <div
+            class="bg-white p-6 rounded-lg border border-gray-200 hover:border-blue-400 hover:shadow-sm transition-all relative">
             <div class="flex items-center justify-between mb-4">
               <div class="p-2 bg-blue-100 rounded-md">
                 <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z">
+                  </path>
                 </svg>
               </div>
               <div class="text-right">
@@ -307,23 +330,26 @@
             <p class="text-sm text-gray-600 mb-3 h-12">分析南华公司边际贡献率月度趋势</p>
             <div class="mb-4">
               <div style="width: 100%; height: 8px; background-color: #e5e7eb; border-radius: 4px;">
-                <div 
-                  style="height: 8px; border-radius: 4px; background-color: #2563eb; transition: width 0.3s ease;"
-                  :style="`width: ${nanhuaContributionRateData.currentRate > 0 ? Math.min(nanhuaContributionRateData.currentRate / nanhuaContributionRateData.targetRate * 100, 100) : 3}%;`"
-                ></div>
+                <div style="height: 8px; border-radius: 4px; background-color: #2563eb; transition: width 0.3s ease;"
+                  :style="`width: ${nanhuaContributionRateData.currentRate > 0 ? Math.min(nanhuaContributionRateData.currentRate / nanhuaContributionRateData.targetRate * 100, 100) : 3}%;`">
+                </div>
               </div>
             </div>
-            <router-link to="/analytics/nanhua-contribution-rate-chart" class="block w-full text-center py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
+            <router-link to="/analytics/nanhua-contribution-rate-chart"
+              class="block w-full text-center py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
               查看趋势
             </router-link>
           </div>
 
           <!-- 南华成本中心分析卡片 -->
-          <div class="bg-white p-6 rounded-lg border border-gray-200 hover:border-blue-400 hover:shadow-sm transition-all relative">
+          <div
+            class="bg-white p-6 rounded-lg border border-gray-200 hover:border-blue-400 hover:shadow-sm transition-all relative">
             <div class="flex items-center justify-between mb-4">
               <div class="p-2 bg-blue-100 rounded-md">
                 <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 9a2 2 0 00-2 2m0 0V7a2 2 0 012-2h14a2 2 0 012 2v2M7 7V3a2 2 0 012-2h6a2 2 0 012 2v4M9 11v6"></path>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 9a2 2 0 00-2 2m0 0V7a2 2 0 012-2h14a2 2 0 012 2v2M7 7V3a2 2 0 012-2h6a2 2 0 012 2v4M9 11v6">
+                  </path>
                 </svg>
               </div>
               <div class="text-right">
@@ -335,23 +361,26 @@
             <p class="text-sm text-gray-600 mb-3 h-12">分析南华成本中心月度趋势与计入损益完成情况</p>
             <div class="mb-4">
               <div style="width: 100%; height: 8px; background-color: #e5e7eb; border-radius: 4px;">
-                <div 
-                  style="height: 8px; border-radius: 4px; background-color: #2563eb; transition: width 0.3s ease;"
-                  :style="`width: ${nanhuaCostCenterCompletionRate > 0 ? Math.min(nanhuaCostCenterCompletionRate, 100) : 3}%;`"
-                ></div>
+                <div style="height: 8px; border-radius: 4px; background-color: #2563eb; transition: width 0.3s ease;"
+                  :style="`width: ${nanhuaCostCenterCompletionRate > 0 ? Math.min(nanhuaCostCenterCompletionRate, 100) : 3}%;`">
+                </div>
               </div>
             </div>
-            <router-link to="/analytics/nanhua-cost-center-chart" class="block w-full text-center py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
+            <router-link to="/analytics/nanhua-cost-center-chart"
+              class="block w-full text-center py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
               查看详情
             </router-link>
           </div>
-          
+
           <!-- 南华新签订单分析卡片 -->
-          <div class="bg-white p-6 rounded-lg border border-gray-200 hover:border-blue-400 hover:shadow-sm transition-all relative">
+          <div
+            class="bg-white p-6 rounded-lg border border-gray-200 hover:border-blue-400 hover:shadow-sm transition-all relative">
             <div class="flex items-center justify-between mb-4">
               <div class="p-2 bg-blue-100 rounded-md">
                 <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                  </path>
                 </svg>
               </div>
               <div class="text-right">
@@ -363,13 +392,13 @@
             <p class="text-sm text-gray-600 mb-3 h-12">分析南华新签订单月度趋势与年度计划完成情况</p>
             <div class="mb-4">
               <div style="width: 100%; height: 8px; background-color: #e5e7eb; border-radius: 4px;">
-                <div 
-                  style="height: 8px; border-radius: 4px; background-color: #2563eb; transition: width 0.3s ease;"
-                  :style="`width: ${nanhuaNewOrdersCompletionRate > 0 ? Math.min(nanhuaNewOrdersCompletionRate, 100) : 3}%;`"
-                ></div>
+                <div style="height: 8px; border-radius: 4px; background-color: #2563eb; transition: width 0.3s ease;"
+                  :style="`width: ${nanhuaNewOrdersCompletionRate > 0 ? Math.min(nanhuaNewOrdersCompletionRate, 100) : 3}%;`">
+                </div>
               </div>
             </div>
-            <router-link to="/analytics/nanhua-new-orders-chart" class="block w-full text-center py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
+            <router-link to="/analytics/nanhua-new-orders-chart"
+              class="block w-full text-center py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
               查看详情
             </router-link>
           </div>
@@ -386,10 +415,10 @@
             <div class="relative w-32 h-32">
               <svg class="w-32 h-32 transform -rotate-90" viewBox="0 0 36 36">
                 <path class="text-gray-300" stroke="currentColor" stroke-width="2" fill="none"
-                  d="m18,2.0845 a 15.9155,15.9155 0 0,1 0,31.831 a 15.9155,15.9155 0 0,1 0,-31.831"/>
+                  d="m18,2.0845 a 15.9155,15.9155 0 0,1 0,31.831 a 15.9155,15.9155 0 0,1 0,-31.831" />
                 <path class="text-blue-600" stroke="currentColor" stroke-width="2" fill="none"
                   :stroke-dasharray="`${completionRate}, 100`"
-                  d="m18,2.0845 a 15.9155,15.9155 0 0,1 0,31.831 a 15.9155,15.9155 0 0,1 0,-31.831"/>
+                  d="m18,2.0845 a 15.9155,15.9155 0 0,1 0,31.831 a 15.9155,15.9155 0 0,1 0,-31.831" />
               </svg>
               <div class="absolute inset-0 flex items-center justify-center">
                 <span class="text-2xl font-bold text-gray-900">{{ completionRate }}%</span>
@@ -408,21 +437,22 @@
         <div class="bg-white p-6 rounded-lg shadow-sm">
           <h3 class="text-lg font-semibold text-gray-900 mb-4">待填写表单 (本月)</h3>
           <div class="space-y-3 max-h-64 overflow-y-auto" v-if="dashboardData?.pending_forms?.length">
-            <div v-for="form in dashboardData.pending_forms" :key="form.id" 
-                 class="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+            <div v-for="form in dashboardData.pending_forms" :key="form.id"
+              class="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
               <div>
                 <p class="font-medium text-gray-900">{{ form.module_name }}</p>
                 <p class="text-sm text-gray-600">{{ form.module_category }}</p>
               </div>
-              <router-link :to="form.route_path" 
-                          class="px-3 py-1 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors">
+              <router-link :to="form.route_path"
+                class="px-3 py-1 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors">
                 填写
               </router-link>
             </div>
           </div>
           <div v-else class="text-center py-8 text-gray-500">
             <svg class="w-12 h-12 mx-auto mb-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
             </svg>
             <p>恭喜！本月所有表单都已完成</p>
           </div>
@@ -435,14 +465,13 @@
         <h3 class="text-lg font-semibold text-gray-900 mb-4">各分类完成情况</h3>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <div v-for="category in dashboardData?.category_statistics" :key="category.module_category"
-               class="p-4 border rounded-lg">
+            class="p-4 border rounded-lg">
             <div class="flex items-center justify-between mb-2">
               <h4 class="font-medium text-gray-900">{{ category.module_category }}</h4>
               <span class="text-sm font-bold text-blue-600">{{ category.completion_rate }}%</span>
             </div>
             <div class="w-full bg-gray-200 rounded-full h-2 mb-2">
-              <div class="bg-blue-600 h-2 rounded-full"
-                   :style="`width: ${category.completion_rate}%`"></div>
+              <div class="bg-blue-600 h-2 rounded-full" :style="`width: ${category.completion_rate}%`"></div>
             </div>
             <p class="text-sm text-gray-600">
               {{ category.submitted_count }} / {{ category.total_writable }} 已完成
@@ -454,9 +483,11 @@
 
 
     </div>
-    
+
     <!-- 公告详情模态框 -->
-    <div v-if="showAnnouncementDetail" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click="closeAnnouncementDetail">
+    <div v-if="showAnnouncementDetail"
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+      @click="closeAnnouncementDetail">
       <div class="bg-white rounded-lg p-6 w-full max-w-2xl max-h-screen overflow-y-auto mx-4" @click.stop>
         <div class="flex items-center justify-between mb-4">
           <h3 class="text-xl font-semibold text-gray-900">公告详情</h3>
@@ -466,7 +497,7 @@
             </svg>
           </button>
         </div>
-        
+
         <div v-if="selectedAnnouncement" class="space-y-4">
           <div class="flex items-center space-x-2">
             <h4 class="text-lg font-medium text-gray-900">{{ selectedAnnouncement.title }}</h4>
@@ -474,26 +505,22 @@
               {{ getTypeText(selectedAnnouncement.type) }}
             </span>
           </div>
-          
+
           <div class="text-sm text-gray-500">
             发布时间: {{ formatDate(selectedAnnouncement.created_at) }}
           </div>
-          
+
           <div class="bg-gray-50 p-4 rounded-lg">
             <p class="text-gray-700 whitespace-pre-wrap leading-relaxed">{{ selectedAnnouncement.content }}</p>
           </div>
-          
+
           <div class="flex justify-end space-x-3 pt-4 border-t">
-            <button 
-              @click="closeAnnouncementDetail"
-              class="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
-            >
+            <button @click="closeAnnouncementDetail"
+              class="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors">
               关闭
             </button>
-            <button 
-              @click="markAsReadAndClose(selectedAnnouncement.id)"
-              class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-            >
+            <button @click="markAsReadAndClose(selectedAnnouncement.id)"
+              class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
               标记已读
             </button>
           </div>
@@ -658,7 +685,7 @@ const safeCompletionRates = computed(() => {
     // 如果数值大于0但小于3，设置最小宽度为3%，以便可见
     return safeValue > 0 && safeValue < 3 ? 3 : safeValue
   }
-  
+
   return {
     newOrders: getProgressWidth(analysisModuleCompletionRates.value.newOrders),
     costCenter: getProgressWidth(analysisModuleCompletionRates.value.costCenter),
@@ -865,11 +892,11 @@ const fetchAnalysisCompletionRates = async () => {
   try {
     const currentYear = new Date().getFullYear()
     const response = await fetch(`http://47.111.95.19:3000/analytics/completion-rates/${currentYear}`)
-    
+
     if (!response.ok) {
       throw new Error('获取分析模块完成率失败')
     }
-    
+
     const result = await response.json()
     if (result.success) {
       analysisModuleCompletionRates.value = {
@@ -965,11 +992,11 @@ const fetchNetProfitMarginData = async () => {
   try {
     const currentYear = new Date().getFullYear()
     const response = await fetch(`http://47.111.95.19:3000/analytics/net-profit-margin/${currentYear}`)
-    
+
     if (!response.ok) {
       throw new Error('获取净利率数据失败')
     }
-    
+
     const result = await response.json()
     if (result.success && result.data) {
       netProfitMarginRate.value = result.data.currentRate || 0
@@ -988,11 +1015,11 @@ const fetchAssetLiabilityRatioData = async () => {
   try {
     const currentYear = new Date().getFullYear()
     const response = await fetch(`http://47.111.95.19:3000/analytics/asset-liability-ratio/${currentYear}`)
-    
+
     if (!response.ok) {
       throw new Error('获取资产负债率数据失败')
     }
-    
+
     const result = await response.json()
     if (result.success && result.data) {
       assetLiabilityRatio.value = result.data.currentRate || 0
@@ -1011,11 +1038,11 @@ const fetchNanhuaProfitMarginData = async () => {
   try {
     const currentYear = new Date().getFullYear()
     const response = await fetch(`http://47.111.95.19:3000/analytics/nanhua-profit-margin/${currentYear}`)
-    
+
     if (!response.ok) {
       throw new Error('获取南华毛利率数据失败')
     }
-    
+
     const result = await response.json()
     if (result.success && result.data) {
       nanhuaProfitMarginRate.value = result.data.currentRate || 0
@@ -1035,13 +1062,13 @@ const fetchNanhuaBusinessIncomeData = async () => {
     const currentYear = new Date().getFullYear()
     const currentMonth = new Date().getMonth() + 1
     const period = `${currentYear}-${currentMonth.toString().padStart(2, '0')}`
-    
+
     const response = await fetch(`http://47.111.95.19:3000/nanhua-business-income/${period}`)
-    
+
     if (!response.ok) {
       throw new Error('获取南华营业收入数据失败')
     }
-    
+
     const result = await response.json()
     if (result.success && result.data && result.data.customers) {
       // 计算总累计收入（年初到当前月份的累计收入）
@@ -1065,13 +1092,13 @@ const fetchNanhuaContributionRateData = async () => {
     const currentYear = new Date().getFullYear()
     const currentMonth = new Date().getMonth() + 1
     const period = `${currentYear}-${currentMonth.toString().padStart(2, '0')}`
-    
+
     const response = await fetch(`http://47.111.95.19:3000/nanhua-business-contribution-with-self-built/${period}`)
-    
+
     if (!response.ok) {
       throw new Error('获取南华边际贡献率数据失败')
     }
-    
+
     const result = await response.json()
     if (result.success && result.data && result.data.customers) {
       // 计算加权平均边际贡献率，过滤异常数据
@@ -1082,7 +1109,7 @@ const fetchNanhuaContributionRateData = async () => {
           return rate > 0 && rate < 100 && rate !== 100
         })
         .map((customer: any) => customer.current)
-      
+
       if (validRates.length > 0) {
         const avgRate = validRates.reduce((sum: number, rate: number) => sum + rate, 0) / validRates.length
         // 确保边际贡献率在合理范围内(0-100%)
@@ -1098,7 +1125,7 @@ const fetchNanhuaContributionRateData = async () => {
           nanhuaContributionRateData.value.currentRate = 0
         }
       }
-      
+
       console.log(`南华边际贡献率${period}:`, nanhuaContributionRateData.value.currentRate)
     } else {
       console.warn('南华边际贡献率数据获取失败:', result.message)
@@ -1115,22 +1142,22 @@ const fetchNanhuaCostCenterData = async () => {
   try {
     const currentYear = new Date().getFullYear()
     const response = await fetch(`http://47.111.95.19:3000/analytics/nanhua-cost-center/${currentYear}`)
-    
+
     if (!response.ok) {
       throw new Error('获取南华成本中心数据失败')
     }
-    
+
     const result = await response.json()
     if (result.success && result.data) {
-      const totalCumulativeIncome = (result.data.summary?.engineering?.cumulativeIncome || 0) + 
-                                   (result.data.summary?.nonMainBusiness?.cumulativeIncome || 0)
+      const totalCumulativeIncome = (result.data.summary?.engineering?.cumulativeIncome || 0) +
+        (result.data.summary?.nonMainBusiness?.cumulativeIncome || 0)
       const yearlyPlan = result.data.yearlyPlan || 735.03
-      
-      const completionRate = yearlyPlan > 0 ? 
+
+      const completionRate = yearlyPlan > 0 ?
         Number(((totalCumulativeIncome / yearlyPlan) * 100).toFixed(1)) : 0
-        
+
       nanhuaCostCenterCompletionRate.value = completionRate
-      
+
       console.log(`南华成本中心完成率${currentYear}:`, nanhuaCostCenterCompletionRate.value)
     } else {
       console.warn('南华成本中心数据获取失败:', result.message)
@@ -1147,11 +1174,11 @@ const fetchNanhuaNewOrdersData = async () => {
   try {
     const currentYear = new Date().getFullYear()
     const response = await fetch(`http://47.111.95.19:3000/analytics/nanhua-new-orders/${currentYear}`)
-    
+
     if (!response.ok) {
       throw new Error('获取南华新签订单数据失败')
     }
-    
+
     const result = await response.json()
     if (result.success && result.data && result.data.summary) {
       const engineeringData = result.data.summary['工程']
@@ -1160,7 +1187,7 @@ const fetchNanhuaNewOrdersData = async () => {
       } else {
         nanhuaNewOrdersCompletionRate.value = 0
       }
-      
+
       console.log(`南华新签订单完成率${currentYear}:`, nanhuaNewOrdersCompletionRate.value)
     } else {
       console.warn('南华新签订单数据获取失败:', result.message)
@@ -1207,13 +1234,13 @@ const initCharts = () => {
 
 const initRevenueChart = () => {
   if (!revenueChartRef.value) return
-  
+
   revenueChartInstance.value = echarts.init(revenueChartRef.value)
-  
+
   // 确保数据不为空，如果为空则使用默认值
   const periods = chartData.value.periods.length > 0 ? chartData.value.periods : ['1月', '2月', '3月']
   const mainBusinessRevenue = chartData.value.mainBusinessRevenue.length > 0 ? chartData.value.mainBusinessRevenue : [0, 0, 0]
-  
+
   const option = {
     title: {
       text: '主营收入趋势',
@@ -1235,7 +1262,7 @@ const initRevenueChart = () => {
       axisPointer: {
         type: 'shadow'
       },
-      formatter: function(params: any[]) {
+      formatter: function (params: any[]) {
         const value = params[0].value;
         return `${params[0].name}<br/>${params[0].seriesName}: ${value.toLocaleString('zh-CN', { maximumFractionDigits: 2 })} 元`;
       }
@@ -1280,19 +1307,19 @@ const initRevenueChart = () => {
       }
     ]
   }
-  
+
   revenueChartInstance.value.setOption(option)
 }
 
 const initProfitChart = () => {
   if (!profitChartRef.value) return
-  
+
   profitChartInstance.value = echarts.init(profitChartRef.value)
-  
+
   // 确保数据不为空，如果为空则使用默认值
   const periods = chartData.value.periods.length > 0 ? chartData.value.periods : ['1月', '2月', '3月']
   const netProfit = chartData.value.netProfit.length > 0 ? chartData.value.netProfit : [0, 0, 0]
-  
+
   const option = {
     title: {
       text: '净利润趋势',
@@ -1314,7 +1341,7 @@ const initProfitChart = () => {
       axisPointer: {
         type: 'shadow'
       },
-      formatter: function(params: any[]) {
+      formatter: function (params: any[]) {
         const value = params[0].value;
         return `${params[0].name}<br/>${params[0].seriesName}: ${value.toLocaleString('zh-CN', { maximumFractionDigits: 2 })} 元`;
       }
@@ -1359,7 +1386,7 @@ const initProfitChart = () => {
       }
     ]
   }
-  
+
   profitChartInstance.value.setOption(option)
 }
 
@@ -1368,7 +1395,7 @@ const updateCharts = () => {
   const periods = chartData.value.periods.length > 0 ? chartData.value.periods : ['1月', '2月', '3月']
   const mainBusinessRevenue = chartData.value.mainBusinessRevenue.length > 0 ? chartData.value.mainBusinessRevenue : [0, 0, 0]
   const netProfit = chartData.value.netProfit.length > 0 ? chartData.value.netProfit : [0, 0, 0]
-  
+
   if (revenueChartInstance.value) {
     revenueChartInstance.value.setOption({
       xAxis: {
@@ -1381,7 +1408,7 @@ const updateCharts = () => {
       ]
     })
   }
-  
+
   if (profitChartInstance.value) {
     profitChartInstance.value.setOption({
       xAxis: {
@@ -1403,32 +1430,32 @@ const fetchChartData = async () => {
       console.warn('获取图表数据失败')
       return
     }
-    
+
     const result = await response.json()
-    
+
     const periods: string[] = []
     const mainBusinessRevenue: number[] = []
     const netProfit: number[] = []
-    
+
     if (result.data && Array.isArray(result.data)) {
       result.data.forEach((item: IncomeStatementItem) => {
         // 从period中提取月份
         const month = item.period.split('-')[1]
         periods.push(`${month}月`)
-        
+
         // 解析JSON字符串中的数据
         const itemData = typeof item.data === 'string' ? JSON.parse(item.data) : item.data
-        
+
         // 提取主营收入和净利润数据
         mainBusinessRevenue.push(itemData.main_business_revenue?.current_amount || 0)
         netProfit.push(itemData.net_profit?.current_amount || 0)
       })
     }
-    
+
     chartData.value.periods = periods
     chartData.value.mainBusinessRevenue = mainBusinessRevenue
     chartData.value.netProfit = netProfit
-    
+
     updateCharts()
   } catch (error) {
     console.error('获取图表数据失败:', error)
@@ -1439,12 +1466,12 @@ const fetchAvailableYears = async () => {
   try {
     const currentYear = new Date().getFullYear()
     const years: string[] = []
-    
+
     // 默认提供近5年选项
     for (let i = 0; i < 5; i++) {
       years.push((currentYear - i).toString())
     }
-    
+
     availableYears.value = years
   } catch (error) {
     console.error('获取年份列表失败:', error)
@@ -1455,7 +1482,7 @@ const handleResize = () => {
   if (revenueChartInstance.value) {
     revenueChartInstance.value.resize()
   }
-  
+
   if (profitChartInstance.value) {
     profitChartInstance.value.resize()
   }
@@ -1476,14 +1503,14 @@ onMounted(async () => {
     fetchNanhuaCostCenterData(),
     fetchNanhuaNewOrdersData()
   ])
-  
+
   // 先获取图表数据，再初始化图表
   await fetchChartData()
-  
+
   // 等待DOM更新后再初始化图表
   await nextTick()
   initCharts()
-  
+
   window.addEventListener('resize', handleResize)
   loading.value = false
 })
@@ -1492,11 +1519,11 @@ onUnmounted(() => {
   if (revenueChartInstance.value) {
     revenueChartInstance.value.dispose()
   }
-  
+
   if (profitChartInstance.value) {
     profitChartInstance.value.dispose()
   }
-  
+
   window.removeEventListener('resize', handleResize)
 })
 </script>
@@ -1531,7 +1558,12 @@ onUnmounted(() => {
 }
 
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }
 </style>

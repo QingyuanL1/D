@@ -100,7 +100,7 @@ async function recalculateWithComputedFields(period, data) {
       }
       
       // 营业总成本 = 营业成本 + 税金及附加 + 销售费用 + 管理费用 + 研发费用 + 财务费用
-      const costComponents = ['operating_cost', 'taxes_and_surcharges', 'selling_expenses', 'administrative_expenses', 'rd_expenses', 'financial_expenses'];
+      const costComponents = ['operating_cost', 'taxes_and_surcharges', 'selling_expenses', 'management_expenses', 'research_expenses', 'financial_expenses'];
       let totalCost = 0;
       costComponents.forEach(field => {
         if (data[field]) {

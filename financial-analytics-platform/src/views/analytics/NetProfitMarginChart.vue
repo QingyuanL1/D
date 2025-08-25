@@ -3,7 +3,7 @@
     <div class="max-w-7xl mx-auto">
       <!-- 页面标题 -->
       <div class="mb-8">
-        <h1 class="text-3xl font-bold text-gray-900">净利率分析</h1>
+        <h1 class="text-3xl font-bold text-gray-900">主营业务净利率分析</h1>
         <p class="text-gray-600 mt-2">净利润率分析与趋势监控</p>
       </div>
 
@@ -13,8 +13,8 @@
           <h3 class="text-lg font-semibold text-gray-900">数据年份选择</h3>
           <div class="flex items-center space-x-3">
             <span class="text-sm text-gray-600">选择年份:</span>
-            <select v-model="selectedYear" @change="fetchData" 
-                    class="px-3 py-1.5 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white">
+            <select v-model="selectedYear" @change="fetchData"
+              class="px-3 py-1.5 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white">
               <option v-for="year in availableYears" :key="year" :value="year">{{ year }}年</option>
             </select>
           </div>
@@ -51,11 +51,8 @@
               </span>
             </div>
             <div class="w-full bg-gray-200 rounded-full h-3 mb-2">
-              <div 
-                class="h-3 rounded-full transition-all duration-300" 
-                :class="getRateBarColor(currentRate)"
-                :style="`width: ${Math.min(Math.abs(currentRate / targetRate * 100), 100)}%`"
-              ></div>
+              <div class="h-3 rounded-full transition-all duration-300" :class="getRateBarColor(currentRate)"
+                :style="`width: ${Math.min(Math.abs(currentRate / targetRate * 100), 100)}%`"></div>
             </div>
             <p class="text-xs text-gray-600">
               目标: {{ targetRate }}%
@@ -229,7 +226,7 @@ const updateChart = () => {
     },
     tooltip: {
       trigger: 'axis',
-      formatter: function(params: any[]) {
+      formatter: function (params: any[]) {
         let result = `${params[0].name}<br/>`
         params.forEach(param => {
           result += `${param.seriesName}: ${formatNumber(param.value)}%<br/>`
@@ -262,7 +259,7 @@ const updateChart = () => {
         fontSize: 12
       },
       axisLabel: {
-        formatter: function(value: number) {
+        formatter: function (value: number) {
           return formatNumber(value) + '%'
         },
         fontSize: 12
