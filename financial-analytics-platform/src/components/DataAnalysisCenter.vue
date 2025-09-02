@@ -288,6 +288,8 @@
 </template>
 
 <script setup lang="ts">
+import { ref, onMounted } from 'vue'
+
 // 定义接口类型
 interface AnalysisModuleCompletionRates {
   newOrders: number
@@ -328,25 +330,315 @@ interface ProfitMarginData {
   completionRate: number
 }
 
-// 定义props
-const props = defineProps<{
-  analysisModuleCompletionRates: AnalysisModuleCompletionRates
-  costCenterData: CostCenterData
-  businessIncomeData: BusinessIncomeData
-  roeData: ROEData
-  contributionRateData: ContributionRateData
-  profitMarginData: ProfitMarginData
-  netProfitMarginRate: number
-  assetLiabilityRatio: number
-}>()
+// 内部数据状态
+const analysisModuleCompletionRates = ref<AnalysisModuleCompletionRates>({
+  newOrders: 0,
+  costCenter: 0,
+  businessIncome: 0,
+  netProfit: 0
+})
 
-// 定义emits
-const emit = defineEmits<{
-  navigation: [event: Event]
-}>()
+const costCenterData = ref<CostCenterData>({
+  yearlyPlan: 0,
+  totalCumulativeIncome: 0,
+  completionRate: 0
+})
+
+const businessIncomeData = ref<BusinessIncomeData>({
+  totalYearlyPlan: 0,
+  totalCurrentTotal: 0,
+  completionRate: 0
+})
+
+const roeData = ref<ROEData>({
+  netProfit: 0,
+  shareholderEquity: 0,
+  roe: 0,
+  year: new Date().getFullYear(),
+  lastUpdated: ''
+})
+
+const contributionRateData = ref<ContributionRateData>({
+  targetRate: 21.98,
+  currentRate: 0,
+  completionRate: 0
+})
+
+const profitMarginData = ref<ProfitMarginData>({
+  targetRate: 24.00,
+  currentRate: 0,
+  completionRate: 0
+})
+
+const netProfitMarginRate = ref(0)
+const assetLiabilityRatio = ref(0)
+
+// 数据获取函数
+const fetchAnalysisCompletionRates = async () => {
+  try {
+    const currentYear = new Date().getFullYear()
+    const response = await fetch(`http://47.111.95.19:3000/analytics/completion-rates/${currentYear}`)
+
+    if (!response.ok) {
+      throw new Error('获取分析模块完成率失败')
+    }
+
+    const result = await response.json()
+    if (result.success) {
+      analysisModuleCompletionRates.value = {
+        newOrders: result.data.newOrders || 0,
+        costCenter: result.data.costCenter || 0,
+        businessIncome: result.data.businessIncome || 0,
+        netProfit: result.data.netProfit || 0
+      }
+    }
+  } catch (error) {
+    console.error('获取分析模块完成率失败:', error)
+  }
+}
+
+const fetchROEData = async () => {
+  try {
+    const currentYear = new Date().getFullYear()
+    const response = await fetch(`http://47.111.95.19:3000/analytics/roe/${currentYear}`)
+
+    if (!response.ok) {
+      throw new Error('获取净资产收益率数据失败')
+    }
+
+    const result = await response.json()
+    if (result.success) {
+      const apiData = result.data
+      roeData.value = {
+        netProfit: apiData.summary?.netProfit || 0,
+        shareholderEquity: apiData.summary?.shareholderEquity || 0,
+        roe: apiData.summary?.currentROE || 0,
+        year: apiData.year || currentYear,
+        lastUpdated: apiData.lastUpdated || new Date().toISOString()
+      }
+    } else {
+      console.warn('ROE数据获取失败:', result.message)
+    }
+  } catch (error) {
+    console.error('获取净资产收益率数据失败:', error)
+  }
+}
+
+const fetchNetProfitMarginData = async () => {
+  try {
+    const currentYear = new Date().getFullYear()
+    const response = await fetch(`http://47.111.95.19:3000/analytics/net-profit-margin/${currentYear}`)
+
+    if (!response.ok) {
+      throw new Error('获取净利率数据失败')
+    }
+
+    const result = await response.json()
+    if (result.success && result.data) {
+      netProfitMarginRate.value = result.data.currentRate || 0
+    } else {
+      console.warn('净利率数据获取失败:', result.message)
+    }
+  } catch (error) {
+    console.error('获取净利率数据失败:', error)
+  }
+}
+
+const fetchAssetLiabilityRatioData = async () => {
+  try {
+    const currentYear = new Date().getFullYear()
+    const response = await fetch(`http://47.111.95.19:3000/analytics/asset-liability-ratio/${currentYear}`)
+
+    if (!response.ok) {
+      throw new Error('获取资产负债率数据失败')
+    }
+
+    const result = await response.json()
+    if (result.success && result.data) {
+      assetLiabilityRatio.value = result.data.currentRate || 0
+    } else {
+      console.warn('资产负债率数据获取失败:', result.message)
+    }
+  } catch (error) {
+    console.error('获取资产负债率数据失败:', error)
+  }
+}
+
+const fetchCostCenterCompletionData = async () => {
+  try {
+    const currentYear = new Date().getFullYear()
+    const response = await fetch(`http://47.111.95.19:3000/analytics/cost-center/${currentYear}`)
+
+    if (!response.ok) {
+      throw new Error('获取成本中心数据失败')
+    }
+
+    const result = await response.json()
+    if (result.success && result.data) {
+      const summary = result.data.summary || {}
+      const yearlyPlan = result.data.yearlyPlan || 0
+
+      const categories = ['equipment', 'component', 'engineering', 'nonMainBusiness']
+      const totalCumulativeIncome = categories.reduce((sum, key) => {
+        return sum + (summary[key]?.cumulativeIncome || 0)
+      }, 0)
+
+      const completionRate = yearlyPlan > 0 ?
+        Number(((totalCumulativeIncome / yearlyPlan) * 100).toFixed(2)) : 0
+
+      costCenterData.value = {
+        yearlyPlan,
+        totalCumulativeIncome,
+        completionRate
+      }
+    } else {
+      console.warn('成本中心数据获取失败:', result.message)
+    }
+  } catch (error) {
+    console.error('获取成本中心数据失败:', error)
+  }
+}
+
+const fetchBusinessIncomeCompletionData = async () => {
+  try {
+    const currentYear = new Date().getFullYear()
+    const response = await fetch(`http://47.111.95.19:3000/analytics/business-income/${currentYear}`)
+
+    if (!response.ok) {
+      throw new Error('获取营业收入数据失败')
+    }
+
+    const result = await response.json()
+    if (result.success && result.data) {
+      const hardcodedPlans = {
+        main: 59400,
+        nonMain: 600
+      }
+
+      const totalYearlyPlan = hardcodedPlans.main + hardcodedPlans.nonMain
+      const mainCurrentTotal = result.data.summary?.main?.currentTotal || 0
+      const nonMainCurrentTotal = result.data.summary?.nonMain?.currentTotal || 0
+      const totalCurrentTotal = mainCurrentTotal + nonMainCurrentTotal
+
+      const completionRate = totalYearlyPlan > 0 ?
+        Number(((totalCurrentTotal / totalYearlyPlan) * 100).toFixed(2)) : 0
+
+      businessIncomeData.value = {
+        totalYearlyPlan,
+        totalCurrentTotal,
+        completionRate
+      }
+    } else {
+      console.warn('营业收入数据获取失败:', result.message)
+    }
+  } catch (error) {
+    console.error('获取营业收入数据失败:', error)
+  }
+}
+
+const fetchContributionRateCompletionData = async () => {
+  try {
+    const currentYear = new Date().getFullYear()
+    const response = await fetch(`http://47.111.95.19:3000/analytics/contribution-rate/${currentYear}`)
+
+    if (!response.ok) {
+      throw new Error('获取边际贡献率数据失败')
+    }
+
+    const result = await response.json()
+    if (result.success && result.data) {
+      if (result.data.hasData === false) {
+        contributionRateData.value = {
+          targetRate: 21.98,
+          currentRate: 0,
+          completionRate: 0
+        }
+      } else {
+        const monthlyData = result.data.monthlyData || []
+        const lastMonthValue = monthlyData.length > 0 ? monthlyData[monthlyData.length - 1] : 0
+
+        contributionRateData.value = {
+          targetRate: 21.98,
+          currentRate: lastMonthValue,
+          completionRate: lastMonthValue
+        }
+      }
+    } else {
+      console.warn('边际贡献率数据获取失败:', result.message)
+    }
+  } catch (error) {
+    console.error('获取边际贡献率数据失败:', error)
+  }
+}
+
+const fetchProfitMarginCompletionData = async () => {
+  try {
+    const currentYear = new Date().getFullYear()
+    const response = await fetch(`http://47.111.95.19:3000/analytics/profit-margin/${currentYear}`)
+
+    if (!response.ok) {
+      throw new Error('获取毛利率数据失败')
+    }
+
+    const result = await response.json()
+    if (result.success && result.data) {
+      if (result.data.hasData === false) {
+        profitMarginData.value = {
+          targetRate: 24.00,
+          currentRate: 0,
+          completionRate: 0
+        }
+      } else {
+        const segmentData = result.data.segmentData || []
+        let weightedSum = 0
+        let totalWeight = 0
+
+        segmentData.forEach(segment => {
+          if (segment.actual > 0 && segment.plan > 0) {
+            weightedSum += segment.actual * segment.plan
+            totalWeight += segment.plan
+          }
+        })
+
+        let currentRate = 0
+        if (totalWeight > 0) {
+          currentRate = Number((weightedSum / totalWeight).toFixed(2))
+        } else {
+          currentRate = result.data.currentRate || 0
+        }
+
+        const completionRate = Math.min(100, Math.round((currentRate / 24.00) * 100))
+
+        profitMarginData.value = {
+          targetRate: 24.00,
+          currentRate,
+          completionRate
+        }
+      }
+    } else {
+      console.warn('毛利率数据获取失败:', result.message)
+    }
+  } catch (error) {
+    console.error('获取毛利率数据失败:', error)
+  }
+}
 
 // 处理导航事件
 const handleNavigation = (event: Event) => {
-  emit('navigation', event)
+  console.log('Navigation triggered')
 }
+
+// 组件挂载时获取所有数据
+onMounted(async () => {
+  await Promise.all([
+    fetchAnalysisCompletionRates(),
+    fetchROEData(),
+    fetchNetProfitMarginData(),
+    fetchAssetLiabilityRatioData(),
+    fetchCostCenterCompletionData(),
+    fetchBusinessIncomeCompletionData(),
+    fetchContributionRateCompletionData(),
+    fetchProfitMarginCompletionData()
+  ])
+})
 </script>

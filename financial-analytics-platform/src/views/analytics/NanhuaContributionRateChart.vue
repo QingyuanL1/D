@@ -13,8 +13,8 @@
           <h3 class="text-lg font-semibold text-gray-900">数据年份选择</h3>
           <div class="flex items-center space-x-3">
             <span class="text-sm text-gray-600">选择年份:</span>
-            <select v-model="selectedYear" @change="fetchData" 
-                    class="px-3 py-1.5 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white">
+            <select v-model="selectedYear" @change="fetchData"
+              class="px-3 py-1.5 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white">
               <option v-for="year in availableYears" :key="year" :value="year">{{ year }}年</option>
             </select>
           </div>
@@ -95,14 +95,14 @@ const fetchContributionRateData = async () => {
   try {
     const monthsArray: string[] = []
     const monthlyDataArray: number[] = []
-    
+
     // 获取一整年的数据
     for (let month = 1; month <= 12; month++) {
       const period = `${selectedYear.value}-${month.toString().padStart(2, '0')}`
-      
+
       try {
         const response = await fetch(`http://47.111.95.19:3000/nanhua-business-contribution-with-self-built/${period}`)
-        
+
         if (response.ok) {
           const result = await response.json()
           if (result.success && result.data && result.data.customers) {
@@ -113,24 +113,24 @@ const fetchContributionRateData = async () => {
               // 边际贡献率可以是负值，这是正常的业务情况
               return typeof rate === 'number' && rate >= -1000 && rate <= 1000
             })
-            
+
             if (validCustomers.length > 0) {
               // 计算加权平均（如果有年度计划数据作为权重）
               let totalWeightedRate = 0
               let totalWeight = 0
-              
+
               validCustomers.forEach((customer: any) => {
                 const rate = customer.current || 0
                 const weight = customer.yearlyPlan || 1 // 使用年度计划作为权重，默认权重为1
                 totalWeightedRate += rate * weight
                 totalWeight += weight
               })
-              
-              const avgRate = totalWeight > 0 ? totalWeightedRate / totalWeight : 
-                            validCustomers.reduce((sum: number, customer: any) => sum + customer.current, 0) / validCustomers.length
-              
+
+              const avgRate = totalWeight > 0 ? totalWeightedRate / totalWeight :
+                validCustomers.reduce((sum: number, customer: any) => sum + customer.current, 0) / validCustomers.length
+
               monthlyDataArray.push(Math.round(avgRate * 100) / 100)
-              
+
               console.log(`${period}月南华边际贡献率: ${avgRate.toFixed(2)}% (有效客户数: ${validCustomers.length})`)
             } else {
               monthlyDataArray.push(0)
@@ -145,21 +145,21 @@ const fetchContributionRateData = async () => {
         console.error(`获取${period}数据失败:`, error)
         monthlyDataArray.push(0)
       }
-      
+
       monthsArray.push(`${month}月`)
     }
-    
+
     months.value = monthsArray
     monthlyData.value = monthlyDataArray
-    
+
     // 计算当前月份的数据作为当前值
     const currentMonth = new Date().getMonth()
     if (monthlyDataArray[currentMonth] > 0) {
       currentRate.value = monthlyDataArray[currentMonth]
     }
-    
+
     console.log('南华边际贡献率月度数据:', monthlyDataArray)
-    
+
   } catch (error) {
     console.error('获取南华边际贡献率数据失败:', error)
     setDefaultData()
@@ -226,8 +226,8 @@ const updateChart = () => {
       top: 10
     },
     tooltip: {
-      trigger: 'axis',
-      formatter: function(params: any[]) {
+      trigger: 'item',
+      formatter: function (params: any[]) {
         let result = `${params[0].name}<br/>`
         params.forEach(param => {
           result += `${param.seriesName}: ${formatNumber(param.value)}%<br/>`
@@ -260,7 +260,7 @@ const updateChart = () => {
         fontSize: 12
       },
       axisLabel: {
-        formatter: function(value: number) {
+        formatter: function (value: number) {
           return formatNumber(value) + '%'
         },
         fontSize: 12
@@ -326,4 +326,4 @@ onUnmounted(() => {
 
 <style scoped>
 /* 组件样式 */
-</style> 
+</style>

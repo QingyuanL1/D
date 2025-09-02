@@ -11,8 +11,8 @@
           <h3 class="text-lg font-semibold text-gray-900">数据年份选择</h3>
           <div class="flex items-center space-x-3">
             <span class="text-sm text-gray-600">选择年份:</span>
-            <select v-model="selectedYear" @change="fetchData" 
-                    class="px-3 py-1.5 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white">
+            <select v-model="selectedYear" @change="fetchData"
+              class="px-3 py-1.5 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white">
               <option v-for="year in availableYears" :key="year" :value="year">{{ year }}年</option>
             </select>
           </div>
@@ -84,24 +84,24 @@ const fetchContributionRateData = async () => {
   try {
     const monthlyContributionRates = []
     const monthLabels = []
-    
+
     for (let month = 1; month <= 12; month++) {
       const period = `${selectedYear.value}-${month.toString().padStart(2, '0')}`
       const response = await fetch(`http://47.111.95.19:3000/tuoyuan-main-business-contribution-rate/${period}`)
-      
+
       if (response.ok) {
         const result = await response.json()
         if (result.success && result.data && result.data.items) {
           let totalActual = 0
           let count = 0
-          
+
           result.data.items.forEach((item: any) => {
             if (item.currentActual > 0) {
               totalActual += item.currentActual
               count++
             }
           })
-          
+
           const averageRate = count > 0 ? totalActual / count : 0
           monthlyContributionRates.push(averageRate)
         } else {
@@ -115,20 +115,20 @@ const fetchContributionRateData = async () => {
               'Content-Type': 'application/json'
             }
           })
-          
+
           if (calculateResponse.ok) {
             const calculateResult = await calculateResponse.json()
             if (calculateResult.success && calculateResult.data && calculateResult.data.items) {
               let totalActual = 0
               let count = 0
-              
+
               calculateResult.data.items.forEach((item: any) => {
                 if (item.currentActual > 0) {
                   totalActual += item.currentActual
                   count++
                 }
               })
-              
+
               const averageRate = count > 0 ? totalActual / count : 0
               monthlyContributionRates.push(averageRate)
             } else {
@@ -141,10 +141,10 @@ const fetchContributionRateData = async () => {
           monthlyContributionRates.push(0)
         }
       }
-      
+
       monthLabels.push(`${month}月`)
     }
-    
+
     months.value = monthLabels
     monthlyData.value = monthlyContributionRates
   } catch (error) {
@@ -208,8 +208,8 @@ const updateChart = () => {
       top: 10
     },
     tooltip: {
-      trigger: 'axis',
-      formatter: function(params: any[]) {
+      trigger: 'item',
+      formatter: function (params: any[]) {
         let result = `${params[0].name}<br/>`
         params.forEach(param => {
           result += `${param.seriesName}: ${formatNumber(param.value)}%<br/>`
@@ -242,7 +242,7 @@ const updateChart = () => {
         fontSize: 12
       },
       axisLabel: {
-        formatter: function(value: number) {
+        formatter: function (value: number) {
           return formatNumber(value) + '%'
         },
         fontSize: 12
@@ -305,5 +305,4 @@ onUnmounted(() => {
 })
 </script>
 
-<style scoped>
-</style> 
+<style scoped></style>

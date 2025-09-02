@@ -4,7 +4,9 @@
       <h1 class="text-xl font-bold text-gray-800">财务数据可视化</h1>
       <div class="flex items-center space-x-3">
         <span class="text-sm text-gray-600">选择年份:</span>
-        <select v-model="selectedYear" class="px-3 py-1.5 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white" @change="fetchData">
+        <select v-model="selectedYear"
+          class="px-3 py-1.5 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
+          @change="fetchData">
           <option v-for="year in availableYears" :key="year" :value="year">{{ year }}年</option>
         </select>
       </div>
@@ -19,7 +21,7 @@
         没事
       </div>
     </div>
-    
+
     <div class="text-xs text-gray-500 text-center mt-2">
       <p>数据来源: 利润表 | 最后更新时间: {{ new Date().toLocaleDateString() }}</p>
     </div>
@@ -69,9 +71,9 @@ const initCharts = () => {
 
 const initRevenueChart = () => {
   if (!revenueChartRef.value) return
-  
+
   revenueChartInstance.value = echarts.init(revenueChartRef.value)
-  
+
   const option = {
     title: {
       text: '主营收入趋势',
@@ -90,7 +92,7 @@ const initRevenueChart = () => {
       }
     },
     tooltip: {
-      trigger: 'axis',
+      trigger: 'item',
       axisPointer: {
         type: 'shadow',
         shadowStyle: {
@@ -104,7 +106,7 @@ const initRevenueChart = () => {
         color: '#333',
         fontSize: 12
       },
-      formatter: function(params: any[]) {
+      formatter: function (params: any[]) {
         const value = params[0].value;
         return `<div class="font-semibold text-xs">${params[0].name}</div>
                 <div class="flex items-center mt-1">
@@ -200,7 +202,7 @@ const initRevenueChart = () => {
           label: {
             show: true,
             position: 'top',
-            formatter: function(params: { value: number }) {
+            formatter: function (params: { value: number }) {
               return params.value.toLocaleString('zh-CN', { maximumFractionDigits: 0 });
             },
             fontSize: 10
@@ -209,7 +211,7 @@ const initRevenueChart = () => {
         label: {
           show: false,
           position: 'top',
-          formatter: function(params: { value: number }) {
+          formatter: function (params: { value: number }) {
             return params.value.toLocaleString('zh-CN', { maximumFractionDigits: 0 });
           },
           fontSize: 10,
@@ -224,15 +226,15 @@ const initRevenueChart = () => {
     ],
     animation: true
   }
-  
+
   revenueChartInstance.value.setOption(option)
 }
 
 const initProfitChart = () => {
   if (!profitChartRef.value) return
-  
+
   profitChartInstance.value = echarts.init(profitChartRef.value)
-  
+
   const option = {
     title: {
       text: '净利润趋势',
@@ -251,7 +253,7 @@ const initProfitChart = () => {
       }
     },
     tooltip: {
-      trigger: 'axis',
+      trigger: 'item',
       axisPointer: {
         type: 'shadow',
         shadowStyle: {
@@ -265,7 +267,7 @@ const initProfitChart = () => {
         color: '#333',
         fontSize: 12
       },
-      formatter: function(params: any[]) {
+      formatter: function (params: any[]) {
         const value = params[0].value;
         return `<div class="font-semibold text-xs">${params[0].name}</div>
                 <div class="flex items-center mt-1">
@@ -361,7 +363,7 @@ const initProfitChart = () => {
           label: {
             show: true,
             position: 'top',
-            formatter: function(params: { value: number }) {
+            formatter: function (params: { value: number }) {
               return params.value.toLocaleString('zh-CN', { maximumFractionDigits: 0 });
             },
             fontSize: 10
@@ -370,7 +372,7 @@ const initProfitChart = () => {
         label: {
           show: false,
           position: 'top',
-          formatter: function(params: { value: number }) {
+          formatter: function (params: { value: number }) {
             return params.value.toLocaleString('zh-CN', { maximumFractionDigits: 0 });
           },
           fontSize: 10,
@@ -385,7 +387,7 @@ const initProfitChart = () => {
     ],
     animation: true
   }
-  
+
   profitChartInstance.value.setOption(option)
 }
 
@@ -402,7 +404,7 @@ const updateCharts = () => {
       ]
     })
   }
-  
+
   if (profitChartInstance.value) {
     profitChartInstance.value.setOption({
       xAxis: {
@@ -423,34 +425,34 @@ const fetchData = async () => {
     if (!response.ok) {
       throw new Error('获取数据失败')
     }
-    
+
     const result = await response.json()
-    
+
     const periods: string[] = []
     const mainBusinessRevenue: number[] = []
     const netProfit: number[] = []
-    
+
     if (result.data && Array.isArray(result.data)) {
       result.data.forEach((item: IncomeStatementItem) => {
         // 从period中提取月份
         const month = item.period.split('-')[1]
         periods.push(`${month}月`)
-        
+
         // 解析JSON字符串中的数据
         const itemData = typeof item.data === 'string' ? JSON.parse(item.data) : item.data
-        
+
         // 提取主营收入和净利润数据
         mainBusinessRevenue.push(itemData.main_business_revenue?.current_amount || 0)
         netProfit.push(itemData.net_profit?.current_amount || 0)
       })
     }
-    
+
     chartData.value.periods = periods
     chartData.value.mainBusinessRevenue = mainBusinessRevenue
     chartData.value.netProfit = netProfit
-    
+
     updateCharts()
-    
+
     // 更新可选年份列表
     if (result.year && !availableYears.value.includes(result.year)) {
       availableYears.value.push(result.year)
@@ -465,12 +467,12 @@ const fetchAvailableYears = async () => {
   try {
     const currentYear = new Date().getFullYear()
     const years: string[] = []
-    
+
     // 默认提供近5年选项
     for (let i = 0; i < 5; i++) {
       years.push((currentYear - i).toString())
     }
-    
+
     availableYears.value = years
   } catch (error) {
     console.error('获取年份列表失败:', error)
@@ -481,7 +483,7 @@ onMounted(async () => {
   await fetchAvailableYears()
   await fetchData()
   initCharts()
-  
+
   window.addEventListener('resize', handleResize)
 })
 
@@ -489,11 +491,11 @@ onUnmounted(() => {
   if (revenueChartInstance.value) {
     revenueChartInstance.value.dispose()
   }
-  
+
   if (profitChartInstance.value) {
     profitChartInstance.value.dispose()
   }
-  
+
   window.removeEventListener('resize', handleResize)
 })
 
@@ -501,9 +503,9 @@ const handleResize = () => {
   if (revenueChartInstance.value) {
     revenueChartInstance.value.resize()
   }
-  
+
   if (profitChartInstance.value) {
     profitChartInstance.value.resize()
   }
 }
-</script> 
+</script>

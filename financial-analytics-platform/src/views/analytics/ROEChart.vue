@@ -14,7 +14,9 @@
             <h3 class="text-lg font-semibold text-gray-900">数据筛选</h3>
             <div class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
               <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10V9a1 1 0 011-1h4a1 1 0 011 1v12M9 7h1m-1 4h1"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10V9a1 1 0 011-1h4a1 1 0 011 1v12M9 7h1m-1 4h1">
+                </path>
               </svg>
               当前公司：{{ getSelectedCompanyName() }}
             </div>
@@ -24,7 +26,7 @@
             <div class="flex items-center space-x-3">
               <span class="text-sm text-gray-600">选择年份:</span>
               <select v-model="selectedYear" @change="fetchData"
-                      class="px-3 py-1.5 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white">
+                class="px-3 py-1.5 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white">
                 <option v-for="year in availableYears" :key="year" :value="year">{{ year }}年</option>
               </select>
             </div>
@@ -33,11 +35,12 @@
       </div>
 
       <!-- 表一：ROE指标进度条 -->
-      
+
       <!-- 表二：月度趋势图表 -->
       <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
         <div class="flex justify-between items-center mb-6">
-          <h3 class="text-lg font-semibold text-gray-900">{{ getSelectedCompanyName() }}{{ selectedYear }}年ROE月度趋势变化</h3>
+          <h3 class="text-lg font-semibold text-gray-900">{{ getSelectedCompanyName() }}{{ selectedYear }}年ROE月度趋势变化
+          </h3>
           <div class="flex items-center space-x-4">
             <div class="flex items-center">
               <div class="w-4 h-4 bg-blue-500 rounded mr-2"></div>
@@ -66,7 +69,7 @@ const selectedCompany = ref('main')
 const availableYears = ref<string[]>([])
 const availableCompanies = ref([
   { key: 'main', name: '电气公司', incomeTable: 'income_statement', balanceTable: 'balance_sheet' },
-  { key:'nanhua', name: '南华公司', incomeTable: 'nanhua_income_statement', balanceTable: 'nanhua_balance_sheet' },
+  { key: 'nanhua', name: '南华公司', incomeTable: 'nanhua_income_statement', balanceTable: 'nanhua_balance_sheet' },
   { key: 'tuoyuan', name: '拓源公司', incomeTable: 'tuoyuan_income_statement', balanceTable: 'tuoyuan_balance_sheet' }
 ])
 const loading = ref(true)
@@ -74,14 +77,14 @@ const loading = ref(true)
 // 根据登录公司初始化选择的公司
 const initializeCompany = () => {
   const selectedCompanyName = localStorage.getItem('selectedCompany') || ''
-  
+
   // 公司名称映射
   const companyMapping: { [key: string]: string } = {
     '常州拓源电气集团有限公司': 'tuoyuan',
     '上海南华兰陵电气有限公司': 'main',
     '上海南华兰陵实业有限公司': 'nanhua'
   }
-  
+
   selectedCompany.value = companyMapping[selectedCompanyName] || 'main'
 }
 
@@ -163,15 +166,15 @@ const fetchROEData = async () => {
     if (response.ok) {
       const result = await response.json();
       console.log('ROE data response:', result);
-      
+
       if (result.success && result.data) {
         months.value = result.data.months || [];
         monthlyData.value = result.data.monthlyData || { roe: [] };
-        
+
         // 计算汇总数据
-        const latestROE = result.data.monthlyData?.roe && result.data.monthlyData.roe.length > 0 ? 
+        const latestROE = result.data.monthlyData?.roe && result.data.monthlyData.roe.length > 0 ?
           result.data.monthlyData.roe[result.data.monthlyData.roe.length - 1] : 0;
-        
+
         summary.value = {
           currentROE: latestROE,
           completion_rate: result.data.summary?.completion_rate || 0,
@@ -207,15 +210,15 @@ const updateTrendChart = () => {
     // 准备数据 - 只显示真实数据
     const monthsData = months.value || [];
     const roeData = (monthlyData.value && monthlyData.value.roe) ? monthlyData.value.roe : [];
-    
+
     // 检查是否有数据
     const hasData = monthsData.length > 0 && roeData.length > 0
-    
+
     // 目标线数据
     const targetData = hasData ? monthsData.map(() => summary.value.targetROE) : [];
-    
+
     console.log('Chart data:', { monthsData, roeData, targetData, hasData });
-  
+
     // 基本配置
     const option = {
       title: {
@@ -229,14 +232,19 @@ const updateTrendChart = () => {
         top: 10
       },
       tooltip: {
-        trigger: 'axis',
-        formatter: function(params: any[]) {
+        trigger: 'item',
+        formatter: function (params: any) {
           if (!hasData) return '暂无数据'
-          let result = `${params[0].name}<br/>`
-          params.forEach(param => {
-            result += `${param.seriesName}: ${formatNumber(param.value)}%<br/>`
-          })
-          return result
+
+          const monthName = params.name
+          const seriesName = params.seriesName
+          const value = params.value
+
+          if (value === null || value === undefined) {
+            return `${monthName}<br/>${seriesName}: 暂无数据`
+          }
+
+          return `${monthName}<br/>${seriesName}: ${formatNumber(value)}%`
         }
       },
       legend: {
@@ -264,7 +272,7 @@ const updateTrendChart = () => {
           fontSize: 12
         },
         axisLabel: {
-          formatter: function(value: number) {
+          formatter: function (value: number) {
             return formatNumber(value) + '%'
           },
           fontSize: 12
@@ -317,7 +325,7 @@ const updateTrendChart = () => {
         }
       }]
     };
-    
+
     chartInstance.value.setOption(option, true);
   } catch (error) {
     console.error('更新趋势图表失败:', error);

@@ -6,7 +6,7 @@ const dbConfig = {
   host: '47.111.95.19',
   port: 3306,
   user: 'root',
-  password: '12345678'
+  password: 'NewSecurePassword2025!@#'
 };
 
 async function createAdmin() {

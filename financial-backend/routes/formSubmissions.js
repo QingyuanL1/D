@@ -7,7 +7,7 @@ const pool = mysql.createPool({
   host: '47.111.95.19',
   port: 3306,
   user: 'root',
-  password: '12345678',
+  password: 'NewSecurePassword2025!@#',
   database: 'finance',
   waitForConnections: true,
   connectionLimit: 10,
@@ -295,5 +295,194 @@ router.get('/status/:period', async (req, res) => {
     });
   }
 });
+
+// 获取带权限控制的管理分析和建议信息（支持多人填写）
+router.get('/management-analysis/:moduleId/:period', async (req, res) => {
+  try {
+    const { moduleId, period } = req.params;
+    const { userId } = req.query;
+
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        error: '用户ID是必填项'
+      });
+    }
+
+    // 获取当前用户的角色信息
+    const [currentUserRole] = await pool.execute(`
+      SELECT u.id, u.username, ur.id as role_id, ur.role_name
+      FROM users u
+      JOIN user_roles ur ON u.role_id = ur.id
+      WHERE u.id = ?
+    `, [userId]);
+
+    if (currentUserRole.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: '用户不存在'
+      });
+    }
+
+    const currentUser = currentUserRole[0];
+
+    // 获取所有该模块该期间的管理分析和建议记录，包括提交者信息
+    const [submissions] = await pool.execute(`
+      SELECT mas.remarks, mas.suggestions, mas.user_id, mas.created_at, mas.updated_at,
+             u.username as submitted_by_name, ur.role_name as submitted_by_role
+      FROM management_analysis_suggestions mas
+      LEFT JOIN users u ON mas.user_id = u.id
+      LEFT JOIN user_roles ur ON u.role_id = ur.id
+      WHERE mas.module_id = ? AND mas.period = ?
+      ORDER BY mas.updated_at DESC
+    `, [moduleId, period]);
+
+    const analysisItems = [];
+    const suggestionItems = [];
+
+    // 遍历所有提交记录，根据权限控制显示
+    for (const submission of submissions) {
+      // 检查是否是当前用户自己提交的内容
+      const isOwnSubmission = submission.user_id === parseInt(userId);
+
+      const canViewAnalysis = isOwnSubmission || canViewManagementAnalysis(currentUser.role_name, submission.submitted_by_role);
+      const canViewSuggestions = isOwnSubmission || canViewSuggestionInfo(currentUser.role_name, submission.submitted_by_role);
+
+      // 如果有权限查看管理分析且内容不为空
+      if (canViewAnalysis && submission.remarks) {
+        analysisItems.push({
+          content: submission.remarks,
+          submitted_by: submission.submitted_by_name,
+          submitted_by_role: submission.submitted_by_role,
+          updated_at: submission.updated_at
+        });
+      }
+
+      // 如果有权限查看建议信息且内容不为空
+      if (canViewSuggestions && submission.suggestions) {
+        suggestionItems.push({
+          content: submission.suggestions,
+          submitted_by: submission.submitted_by_name,
+          submitted_by_role: submission.submitted_by_role,
+          updated_at: submission.updated_at
+        });
+      }
+    }
+
+    res.json({
+      success: true,
+      data: {
+        analysis_items: analysisItems,
+        suggestion_items: suggestionItems
+      }
+    });
+
+  } catch (error) {
+    console.error('获取管理分析和建议失败:', error);
+    res.status(500).json({
+      success: false,
+      error: '获取管理分析和建议失败'
+    });
+  }
+});
+
+// 保存管理分析和建议信息（支持多人填写）
+router.post('/management-analysis/:moduleId/:period', async (req, res) => {
+  try {
+    const { moduleId, period } = req.params;
+    const { userId, remarks, suggestions } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        error: '用户ID是必填项'
+      });
+    }
+
+    // 验证用户是否存在
+    const [userCheck] = await pool.execute(`
+      SELECT id FROM users WHERE id = ?
+    `, [userId]);
+
+    if (userCheck.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: '用户不存在'
+      });
+    }
+
+    // 使用 INSERT ... ON DUPLICATE KEY UPDATE 来处理新增或更新
+    await pool.execute(`
+      INSERT INTO management_analysis_suggestions (module_id, period, user_id, remarks, suggestions)
+      VALUES (?, ?, ?, ?, ?)
+      ON DUPLICATE KEY UPDATE
+        remarks = VALUES(remarks),
+        suggestions = VALUES(suggestions),
+        updated_at = CURRENT_TIMESTAMP
+    `, [moduleId, period, userId, remarks || null, suggestions || null]);
+
+    res.json({
+      success: true,
+      message: '管理分析和建议保存成功'
+    });
+
+  } catch (error) {
+    console.error('保存管理分析和建议失败:', error);
+    res.status(500).json({
+      success: false,
+      error: '保存管理分析和建议失败'
+    });
+  }
+});
+
+// 权限控制函数：管理分析查看权限
+function canViewManagementAnalysis(viewerRole, submitterRole) {
+  // 超级管理员可以查看所有内容
+  if (viewerRole === 'super_admin' || viewerRole === 'daya_office') {
+    return true;
+  }
+
+  // 部门经理填写的管理分析 → 副总和总经理可查看
+  if (submitterRole && submitterRole.startsWith('dept_manager_')) {
+    return viewerRole && (viewerRole.startsWith('vice_ceo_') || viewerRole.startsWith('ceo_'));
+  }
+
+  // 副总填写的管理分析 → 总经理可查看
+  if (submitterRole && submitterRole.startsWith('vice_ceo_')) {
+    return viewerRole && viewerRole.startsWith('ceo_');
+  }
+
+  // 总经理填写的管理分析 → 副总可查看
+  if (submitterRole && submitterRole.startsWith('ceo_')) {
+    return viewerRole && viewerRole.startsWith('vice_ceo_');
+  }
+
+  return false;
+}
+
+// 权限控制函数：建议信息查看权限
+function canViewSuggestionInfo(viewerRole, submitterRole) {
+  // 超级管理员可以查看所有内容
+  if (viewerRole === 'super_admin' || viewerRole === 'daya_office') {
+    return true;
+  }
+
+  // 部门经理填写的建议 → 副总和总经理可查看
+  if (submitterRole && submitterRole.startsWith('dept_manager_')) {
+    return viewerRole && (viewerRole.startsWith('vice_ceo_') || viewerRole.startsWith('ceo_'));
+  }
+
+  // 副总填写的建议 → 总经理和部门经理可查看
+  if (submitterRole && submitterRole.startsWith('vice_ceo_')) {
+    return viewerRole && (viewerRole.startsWith('ceo_') || viewerRole.startsWith('dept_manager_'));
+  }
+
+  // 总经理填写的建议 → 副总可查看
+  if (submitterRole && submitterRole.startsWith('ceo_')) {
+    return viewerRole && viewerRole.startsWith('vice_ceo_');
+  }
+
+  return false;
+}
 
 module.exports = router;

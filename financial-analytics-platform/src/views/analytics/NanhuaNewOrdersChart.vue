@@ -12,8 +12,8 @@
           <h3 class="text-lg font-semibold text-gray-900">数据年份选择</h3>
           <div class="flex items-center space-x-3">
             <span class="text-sm text-gray-600">选择年份:</span>
-            <select v-model="selectedYear" @change="fetchData" 
-                    class="px-3 py-1.5 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white">
+            <select v-model="selectedYear" @change="fetchData"
+              class="px-3 py-1.5 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white">
               <option v-for="year in availableYears" :key="year" :value="year">{{ year }}年</option>
             </select>
           </div>
@@ -39,8 +39,8 @@
         </div>
         <div class="mt-4">
           <div class="w-full bg-gray-200 rounded-full h-3">
-            <div class="bg-blue-600 h-3 rounded-full transition-all duration-500" 
-                 :style="`width: ${Math.min(completionRate, 100)}%`"></div>
+            <div class="bg-blue-600 h-3 rounded-full transition-all duration-500"
+              :style="`width: ${Math.min(completionRate, 100)}%`"></div>
           </div>
         </div>
       </div>
@@ -65,8 +65,8 @@
               </span>
             </div>
             <div class="w-full bg-gray-200 rounded-full h-2">
-              <div class="bg-blue-600 h-2 rounded-full transition-all duration-500" 
-                   :style="`width: ${Math.min(summary['工程']?.completion_rate || 0, 100)}%`"></div>
+              <div class="bg-blue-600 h-2 rounded-full transition-all duration-500"
+                :style="`width: ${Math.min(summary['工程']?.completion_rate || 0, 100)}%`"></div>
             </div>
           </div>
         </div>
@@ -98,8 +98,8 @@
           <div class="space-y-4">
             <h4 class="text-md font-medium text-gray-800">占比详情</h4>
             <div class="space-y-2">
-              <div v-for="(item, index) in pieData" :key="index" 
-                   class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+              <div v-for="(item, index) in pieData" :key="index"
+                class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                 <div class="flex items-center">
                   <div class="w-3 h-3 rounded-full mr-3" :style="`background-color: ${getColor(index)}`"></div>
                   <span class="text-sm font-medium text-gray-900">{{ item.name }}</span>
@@ -254,10 +254,10 @@ const updateTrendChart = () => {
 
   const hasData = months.value.length > 0 && Object.keys(monthlyData.value).length > 0
   const series: any[] = []
-  
+
   if (hasData && monthlyData.value['工程']) {
     const engineeringData = monthlyData.value['工程']
-    
+
     series.push({
       name: '累计新签订单',
       type: 'line',
@@ -304,11 +304,11 @@ const updateTrendChart = () => {
       top: 10
     },
     tooltip: {
-      trigger: 'axis',
+      trigger: 'item',
       axisPointer: {
         type: 'shadow'
       },
-      formatter: function(params: any[]) {
+      formatter: function (params: any[]) {
         if (!hasData) return '暂无数据'
         let result = `${params[0].name}<br/>`
         params.forEach(param => {
@@ -342,7 +342,7 @@ const updateTrendChart = () => {
         fontSize: 12
       },
       axisLabel: {
-        formatter: function(value: number) {
+        formatter: function (value: number) {
           return formatNumber(value)
         },
         fontSize: 12
@@ -383,7 +383,7 @@ const updatePieChart = () => {
     },
     tooltip: {
       trigger: 'item',
-      formatter: function(params: any) {
+      formatter: function (params: any) {
         if (!hasData) return '暂无数据'
         return `${params.name}<br/>数值: ${formatNumber(params.value)} 万元<br/>占比: ${params.percent}%`
       }
@@ -467,5 +467,4 @@ onUnmounted(() => {
 })
 </script>
 
-<style scoped>
-</style> 
+<style scoped></style>

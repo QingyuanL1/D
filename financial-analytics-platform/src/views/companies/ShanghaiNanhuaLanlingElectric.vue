@@ -145,12 +145,8 @@
         </div>
       </div>
 
-      <!-- 数据分析入口 -->
-      <DataAnalysisCenter :analysisModuleCompletionRates="analysisModuleCompletionRates"
-        :costCenterData="costCenterData" :businessIncomeData="businessIncomeData" :roeData="roeData"
-        :contributionRateData="contributionRateData" :profitMarginData="profitMarginData"
-        :netProfitMarginRate="netProfitMarginRate" :assetLiabilityRatio="assetLiabilityRatio"
-        @navigation="handleNavigation" />
+      <!-- 数据分析中心 -->
+      <!-- <AnalyticsIndex /> -->
 
       <!-- 完成率和未完成表单 -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
@@ -278,10 +274,9 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
-import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import * as echarts from 'echarts'
-import DataAnalysisCenter from '@/components/DataAnalysisCenter.vue'
+import AnalyticsIndex from '@/views/analytics/index.vue'
 
 interface DashboardData {
   user: {
@@ -341,61 +336,12 @@ interface ChartDataType {
   netProfit: number[];
 }
 
-interface ROEData {
-  netProfit: number;
-  shareholderEquity: number;
-  roe: number;
-  year: number;
-  lastUpdated: string;
-}
 
-const router = useRouter()
 const userStore = useUserStore()
 const dashboardData = ref<DashboardData | null>(null)
 const announcements = ref<Announcement[]>([])
 
-// ROE数据
-const roeData = ref<ROEData>({
-  netProfit: 0,
-  shareholderEquity: 0,
-  roe: 0,
-  year: new Date().getFullYear(),
-  lastUpdated: ''
-})
 
-// 净利率数据
-const netProfitMarginRate = ref(0)
-
-// 资产负债率数据
-const assetLiabilityRatio = ref(0)
-
-// 成本中心年度完成情况数据
-const costCenterData = ref({
-  yearlyPlan: 0,
-  totalCumulativeIncome: 0,
-  completionRate: 0
-})
-
-// 营业收入年度完成情况数据
-const businessIncomeData = ref({
-  totalYearlyPlan: 0,
-  totalCurrentTotal: 0,
-  completionRate: 0
-})
-
-// 边际贡献率年度完成情况数据
-const contributionRateData = ref({
-  targetRate: 21.98,
-  currentRate: 0,
-  completionRate: 0
-})
-
-// 毛利率年度完成情况数据
-const profitMarginData = ref({
-  targetRate: 24.00,
-  currentRate: 0,
-  completionRate: 0
-})
 
 // 公告详情相关
 const showAnnouncementDetail = ref(false)
@@ -420,29 +366,7 @@ const completionRate = computed(() => {
   return dashboardData.value?.overview?.completion_rate || 0
 })
 
-// 各分析模块的完成率（从API获取真实数据）
-const analysisModuleCompletionRates = ref({
-  newOrders: 0,
-  costCenter: 0,
-  businessIncome: 0,
-  netProfit: 0
-})
 
-// 计算属性：确保进度条数值的有效性
-const safeCompletionRates = computed(() => {
-  const getProgressWidth = (value: number) => {
-    const safeValue = Math.max(0, Math.min(100, value || 0))
-    // 如果数值大于0但小于3，设置最小宽度为3%，以便可见
-    return safeValue > 0 && safeValue < 3 ? 3 : safeValue
-  }
-
-  return {
-    newOrders: getProgressWidth(analysisModuleCompletionRates.value.newOrders),
-    costCenter: getProgressWidth(analysisModuleCompletionRates.value.costCenter),
-    businessIncome: getProgressWidth(analysisModuleCompletionRates.value.businessIncome),
-    netProfit: getProgressWidth(analysisModuleCompletionRates.value.netProfit)
-  }
-})
 
 const fetchDashboardData = async () => {
   try {
@@ -579,36 +503,7 @@ const getTypeText = (type: string) => {
   return texts[type as keyof typeof texts] || '信息'
 }
 
-// 获取分析模块完成率
-const fetchAnalysisCompletionRates = async () => {
-  try {
-    const currentYear = new Date().getFullYear()
-    const response = await fetch(`http://47.111.95.19:3000/analytics/completion-rates/${currentYear}`)
 
-    if (!response.ok) {
-      throw new Error('获取分析模块完成率失败')
-    }
-
-    const result = await response.json()
-    if (result.success) {
-      analysisModuleCompletionRates.value = {
-        newOrders: result.data.newOrders || 0,
-        costCenter: result.data.costCenter || 0,
-        businessIncome: result.data.businessIncome || 0,
-        netProfit: result.data.netProfit || 0
-      }
-    }
-  } catch (error) {
-    console.error('获取分析模块完成率失败:', error)
-    // 如果API失败，使用默认值
-    analysisModuleCompletionRates.value = {
-      newOrders: 0,
-      costCenter: 0,
-      businessIncome: 0,
-      netProfit: 0
-    }
-  }
-}
 
 const formatDate = (dateString: string) => {
   return new Date(dateString).toLocaleDateString('zh-CN', {
@@ -620,339 +515,23 @@ const formatDate = (dateString: string) => {
   })
 }
 
-// 格式化数字显示（万元）
-const formatNumber = (num: number) => {
-  if (num >= 10000) {
-    return (num / 10000).toFixed(1) + '万'
-  }
-  return num.toFixed(1)
-}
 
-// 获取净资产收益率数据
-const fetchROEData = async () => {
-  try {
-    const currentYear = new Date().getFullYear()
-    const response = await fetch(`http://47.111.95.19:3000/analytics/roe/${currentYear}`)
 
-    if (!response.ok) {
-      throw new Error('获取净资产收益率数据失败')
-    }
 
-    const result = await response.json()
-    if (result.success) {
-      // 适配新的API响应格式
-      const apiData = result.data
-      roeData.value = {
-        netProfit: apiData.summary?.netProfit || 0,
-        shareholderEquity: apiData.summary?.shareholderEquity || 0,
-        roe: apiData.summary?.currentROE || 0,
-        year: apiData.year || currentYear,
-        lastUpdated: apiData.lastUpdated || new Date().toISOString()
-      }
-    } else {
-      // API返回失败，显示无数据状态
-      console.warn('ROE数据获取失败:', result.message)
-      roeData.value = {
-        netProfit: 0,
-        shareholderEquity: 0,
-        roe: 0,
-        year: currentYear,
-        lastUpdated: new Date().toISOString()
-      }
-    }
-  } catch (error) {
-    console.error('获取净资产收益率数据失败:', error)
-    // 网络错误或其他错误，显示无数据状态
-    roeData.value = {
-      netProfit: 0,
-      shareholderEquity: 0,
-      roe: 0,
-      year: new Date().getFullYear(),
-      lastUpdated: new Date().toISOString()
-    }
-  }
-}
 
-// 获取净利率数据
-const fetchNetProfitMarginData = async () => {
-  try {
-    const currentYear = new Date().getFullYear()
-    const response = await fetch(`http://47.111.95.19:3000/analytics/net-profit-margin/${currentYear}`)
 
-    if (!response.ok) {
-      throw new Error('获取净利率数据失败')
-    }
 
-    const result = await response.json()
-    if (result.success && result.data) {
-      netProfitMarginRate.value = result.data.currentRate || 0
-    } else {
-      console.warn('净利率数据获取失败:', result.message)
-      netProfitMarginRate.value = 0
-    }
-  } catch (error) {
-    console.error('获取净利率数据失败:', error)
-    netProfitMarginRate.value = 0
-  }
-}
 
-// 获取资产负债率数据
-const fetchAssetLiabilityRatioData = async () => {
-  try {
-    const currentYear = new Date().getFullYear()
-    const response = await fetch(`http://47.111.95.19:3000/analytics/asset-liability-ratio/${currentYear}`)
 
-    if (!response.ok) {
-      throw new Error('获取资产负债率数据失败')
-    }
 
-    const result = await response.json()
-    if (result.success && result.data) {
-      assetLiabilityRatio.value = result.data.currentRate || 0
-    } else {
-      console.warn('资产负债率数据获取失败:', result.message)
-      assetLiabilityRatio.value = 0
-    }
-  } catch (error) {
-    console.error('获取资产负债率数据失败:', error)
-    assetLiabilityRatio.value = 0
-  }
-}
 
-// 获取成本中心年度完成情况数据
-const fetchCostCenterCompletionData = async () => {
-  try {
-    const currentYear = new Date().getFullYear()
-    const response = await fetch(`http://47.111.95.19:3000/analytics/cost-center/${currentYear}`)
 
-    if (!response.ok) {
-      throw new Error('获取成本中心数据失败')
-    }
 
-    const result = await response.json()
-    if (result.success && result.data) {
-      const summary = result.data.summary || {}
-      const yearlyPlan = result.data.yearlyPlan || 0
 
-      // 计算总累计收入
-      const categories = ['equipment', 'component', 'engineering', 'nonMainBusiness']
-      const totalCumulativeIncome = categories.reduce((sum, key) => {
-        return sum + (summary[key]?.cumulativeIncome || 0)
-      }, 0)
 
-      // 计算完成率
-      const completionRate = yearlyPlan > 0 ?
-        Number(((totalCumulativeIncome / yearlyPlan) * 100).toFixed(2)) : 0
 
-      costCenterData.value = {
-        yearlyPlan,
-        totalCumulativeIncome,
-        completionRate
-      }
-    } else {
-      console.warn('成本中心数据获取失败:', result.message)
-      costCenterData.value = {
-        yearlyPlan: 0,
-        totalCumulativeIncome: 0,
-        completionRate: 0
-      }
-    }
-  } catch (error) {
-    console.error('获取成本中心数据失败:', error)
-    costCenterData.value = {
-      yearlyPlan: 0,
-      totalCumulativeIncome: 0,
-      completionRate: 0
-    }
-  }
-}
 
-// 获取营业收入年度完成情况数据
-const fetchBusinessIncomeCompletionData = async () => {
-  try {
-    const currentYear = new Date().getFullYear()
-    const response = await fetch(`http://47.111.95.19:3000/analytics/business-income/${currentYear}`)
 
-    if (!response.ok) {
-      throw new Error('获取营业收入数据失败')
-    }
-
-    const result = await response.json()
-    if (result.success && result.data) {
-      // 使用与BusinessIncomeChart.vue相同的固定年度计划值
-      const hardcodedPlans = {
-        main: 59400,
-        nonMain: 600
-      }
-
-      // 计算总年度计划和当期累计
-      const totalYearlyPlan = hardcodedPlans.main + hardcodedPlans.nonMain
-      const mainCurrentTotal = result.data.summary?.main?.currentTotal || 0
-      const nonMainCurrentTotal = result.data.summary?.nonMain?.currentTotal || 0
-      const totalCurrentTotal = mainCurrentTotal + nonMainCurrentTotal
-
-      // 计算完成率
-      const completionRate = totalYearlyPlan > 0 ?
-        Number(((totalCurrentTotal / totalYearlyPlan) * 100).toFixed(2)) : 0
-
-      businessIncomeData.value = {
-        totalYearlyPlan,
-        totalCurrentTotal,
-        completionRate
-      }
-    } else {
-      console.warn('营业收入数据获取失败:', result.message)
-      businessIncomeData.value = {
-        totalYearlyPlan: 0,
-        totalCurrentTotal: 0,
-        completionRate: 0
-      }
-    }
-  } catch (error) {
-    console.error('获取营业收入数据失败:', error)
-    businessIncomeData.value = {
-      totalYearlyPlan: 0,
-      totalCurrentTotal: 0,
-      completionRate: 0
-    }
-  }
-}
-
-// 获取边际贡献率年度完成情况数据
-const fetchContributionRateCompletionData = async () => {
-  try {
-    const currentYear = new Date().getFullYear()
-    const response = await fetch(`http://47.111.95.19:3000/analytics/contribution-rate/${currentYear}`)
-
-    if (!response.ok) {
-      throw new Error('获取边际贡献率数据失败')
-    }
-
-    const result = await response.json()
-    if (result.success && result.data) {
-      if (result.data.hasData === false) {
-        // 没有数据的情况
-        contributionRateData.value = {
-          targetRate: 21.98,
-          currentRate: 0,
-          completionRate: 0
-        }
-      } else {
-        // 有数据的情况 - 取最后一个月的边际贡献率（与analytics/index.vue保持一致）
-        const monthlyData = result.data.monthlyData || []
-        const lastMonthValue = monthlyData.length > 0 ? monthlyData[monthlyData.length - 1] : 0
-
-        console.log(`边际贡献率数据更新 - 最后一个月当期值: ${lastMonthValue}%`)
-
-        contributionRateData.value = {
-          targetRate: 21.98,
-          currentRate: lastMonthValue, // 使用最后一个月的实际值
-          completionRate: lastMonthValue // 显示当期值而不是完成度
-        }
-      }
-    } else {
-      console.warn('边际贡献率数据获取失败:', result.message)
-      contributionRateData.value = {
-        targetRate: 21.98,
-        currentRate: 0,
-        completionRate: 0
-      }
-    }
-  } catch (error) {
-    console.error('获取边际贡献率数据失败:', error)
-    contributionRateData.value = {
-      targetRate: 21.98,
-      currentRate: 0,
-      completionRate: 0
-    }
-  }
-}
-
-// 获取毛利率年度完成情况数据
-const fetchProfitMarginCompletionData = async () => {
-  try {
-    const currentYear = new Date().getFullYear()
-    const response = await fetch(`http://47.111.95.19:3000/analytics/profit-margin/${currentYear}`)
-
-    if (!response.ok) {
-      throw new Error('获取毛利率数据失败')
-    }
-
-    const result = await response.json()
-    if (result.success && result.data) {
-      if (result.data.hasData === false) {
-        // 没有数据的情况
-        profitMarginData.value = {
-          targetRate: 24.00,
-          currentRate: 0,
-          completionRate: 0
-        }
-      } else {
-        // 有数据的情况 - 使用各板块数据计算加权平均
-        const segmentData = result.data.segmentData || []
-        let weightedSum = 0
-        let totalWeight = 0
-
-        // 根据各板块的计划值作为权重计算加权平均
-        segmentData.forEach(segment => {
-          if (segment.actual > 0 && segment.plan > 0) {
-            weightedSum += segment.actual * segment.plan
-            totalWeight += segment.plan
-          }
-        })
-
-        // 如果没有有效的板块数据，尝试使用API返回的currentRate
-        let currentRate = 0
-        if (totalWeight > 0) {
-          currentRate = Number((weightedSum / totalWeight).toFixed(2))
-        } else {
-          currentRate = result.data.currentRate || 0
-        }
-
-        const completionRate = Math.min(100, Math.round((currentRate / 24.00) * 100))
-
-        profitMarginData.value = {
-          targetRate: 24.00,
-          currentRate,
-          completionRate
-        }
-      }
-    } else {
-      console.warn('毛利率数据获取失败:', result.message)
-      profitMarginData.value = {
-        targetRate: 24.00,
-        currentRate: 0,
-        completionRate: 0
-      }
-    }
-  } catch (error) {
-    console.error('获取毛利率数据失败:', error)
-    profitMarginData.value = {
-      targetRate: 24.00,
-      currentRate: 0,
-      completionRate: 0
-    }
-  }
-}
-
-// 显示ROE详情
-const showROEDetail = () => {
-  alert(`净资产收益率详情：
-净利润：${formatNumber(roeData.value.netProfit)} 元
-股东权益：${formatNumber(roeData.value.shareholderEquity)} 元
-净资产收益率：${roeData.value.roe}%
-计算公式：ROE = 净利润 / 股东权益 × 100%
-
-数据来源：
-- 净利润：来自利润表
-- 股东权益：来自资产负债表`)
-}
-
-// 处理导航，确保路由正常跳转
-const handleNavigation = (event: Event) => {
-  // 让router-link正常工作，这里可以添加额外的逻辑
-  console.log('Navigation triggered')
-}
 
 // 获取公司标题
 const getCompanyTitle = () => {
@@ -992,7 +571,7 @@ const initRevenueChart = () => {
       }
     },
     tooltip: {
-      trigger: 'axis',
+      trigger: 'item',
       axisPointer: {
         type: 'shadow'
       },
@@ -1071,7 +650,7 @@ const initProfitChart = () => {
       }
     },
     tooltip: {
-      trigger: 'axis',
+      trigger: 'item',
       axisPointer: {
         type: 'shadow'
       },
@@ -1226,15 +805,7 @@ onMounted(async () => {
   await Promise.all([
     fetchDashboardData(),
     fetchAnnouncements(),
-    fetchAvailableYears(),
-    fetchAnalysisCompletionRates(),
-    fetchROEData(),
-    fetchNetProfitMarginData(),
-    fetchAssetLiabilityRatioData(),
-    fetchCostCenterCompletionData(),
-    fetchBusinessIncomeCompletionData(),
-    fetchContributionRateCompletionData(),
-    fetchProfitMarginCompletionData()
+    fetchAvailableYears()
   ])
 
   // 先获取图表数据，再初始化图表

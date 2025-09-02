@@ -306,13 +306,17 @@ const updateChart = () => {
       top: 10
     },
     tooltip: {
-      trigger: 'axis',
-      formatter: function (params: any[]) {
-        let result = `${params[0].name}<br/>`
-        params.forEach(param => {
-          result += `${param.seriesName}: ${formatNumber(param.value)}%<br/>`
-        })
-        return result
+      trigger: 'item',
+      formatter: function (params: any) {
+        const monthName = params.name
+        const seriesName = params.seriesName
+        const value = params.value
+
+        if (value === null || value === undefined) {
+          return `${monthName}<br/>${seriesName}: 暂无数据`
+        }
+
+        return `${monthName}<br/>${seriesName}: ${formatNumber(value)}%`
       }
     },
     legend: {

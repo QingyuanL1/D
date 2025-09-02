@@ -13,8 +13,8 @@
           <h3 class="text-lg font-semibold text-gray-900">数据年份选择</h3>
           <div class="flex items-center space-x-3">
             <span class="text-sm text-gray-600">选择年份:</span>
-            <select v-model="selectedYear" @change="fetchData" 
-                    class="px-3 py-1.5 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white">
+            <select v-model="selectedYear" @change="fetchData"
+              class="px-3 py-1.5 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white">
               <option v-for="year in availableYears" :key="year" :value="year">{{ year }}年</option>
             </select>
           </div>
@@ -63,13 +63,13 @@
         <h3 class="text-lg font-semibold text-gray-900 mb-6">当前存量构成分布</h3>
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div class="h-[300px]" ref="pieChartRef"></div>
-          
+
           <!-- 构成详情 -->
           <div class="space-y-4">
             <h4 class="font-medium text-gray-900">构成详情</h4>
             <div v-if="compositionData.length > 0" class="space-y-3">
-              <div v-for="item in compositionData" :key="item.name" 
-                   class="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
+              <div v-for="item in compositionData" :key="item.name"
+                class="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
                 <div class="flex items-center">
                   <div class="w-4 h-4 rounded mr-3" :class="getColorClass(item.name)"></div>
                   <span class="font-medium text-gray-900">{{ item.name }}</span>
@@ -119,7 +119,7 @@ const formatNumber = (num: number) => {
 const getColorClass = (name: string) => {
   switch (name) {
     case '预中标': return 'bg-green-500'
-    case '在产': return 'bg-blue-500' 
+    case '在产': return 'bg-blue-500'
     case '库存': return 'bg-purple-500'
     default: return 'bg-gray-500'
   }
@@ -236,8 +236,8 @@ const updateTrendChart = () => {
       top: 10
     },
     tooltip: {
-      trigger: 'axis',
-      formatter: function(params: any[]) {
+      trigger: 'item',
+      formatter: function (params: any[]) {
         let result = `${params[0].name}<br/>`
         params.forEach(param => {
           result += `${param.seriesName}: ${formatNumber(param.value)}万元<br/>`
@@ -270,7 +270,7 @@ const updateTrendChart = () => {
         fontSize: 12
       },
       axisLabel: {
-        formatter: function(value: number) {
+        formatter: function (value: number) {
           return formatNumber(value)
         },
         fontSize: 12
@@ -374,7 +374,7 @@ const updatePieChart = () => {
     },
     tooltip: {
       trigger: 'item',
-      formatter: function(params: any) {
+      formatter: function (params: any) {
         return `${params.name}<br/>金额: ${formatNumber(params.value)}万元<br/>占比: ${params.percent}%`
       }
     },

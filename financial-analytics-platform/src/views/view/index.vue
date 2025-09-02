@@ -92,19 +92,50 @@
             </div>
           </div>
 
-          <!-- 备注和建议 -->
-          <div v-if="submissionDetails.remarks || submissionDetails.suggestions"
+          <!-- 管理分析与建议 -->
+          <div v-if="managementAnalysis.analysis_items.length > 0 || managementAnalysis.suggestion_items.length > 0"
             class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            <div v-if="submissionDetails.remarks">
-              <h4 class="text-sm font-medium text-gray-700 mb-3">备注信息</h4>
-              <div class="bg-gray-50 p-4 rounded-lg">
-                <p class="text-sm text-gray-900 whitespace-pre-wrap">{{ submissionDetails.remarks }}</p>
+            <!-- 管理分析 -->
+            <div v-if="managementAnalysis.analysis_items.length > 0">
+              <h4 class="text-sm font-medium text-gray-700 mb-3">管理分析</h4>
+              <div class="space-y-3">
+                <div v-for="(item, index) in managementAnalysis.analysis_items" :key="'analysis-' + index"
+                  class="bg-gray-50 p-4 rounded-lg border-l-4 border-blue-500">
+                  <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs text-blue-600 font-medium">
+                      填写人：{{ item.submitted_by }} ({{ item.submitted_by_role }})
+                    </span>
+                  </div>
+                  <div class="text-sm text-gray-900 whitespace-pre-wrap" :class="{ 'line-clamp-3': !item.expanded }"
+                    v-html="formatContent(item.content)">
+                  </div>
+                  <button v-if="item.content && item.content.length > 100" @click="toggleExpanded('analysis', index)"
+                    class="mt-2 text-xs text-blue-600 hover:text-blue-800 underline">
+                    {{ item.expanded ? '收起' : '展开全部' }}
+                  </button>
+                </div>
               </div>
             </div>
-            <div v-if="submissionDetails.suggestions">
+
+            <!-- 建议信息 -->
+            <div v-if="managementAnalysis.suggestion_items.length > 0">
               <h4 class="text-sm font-medium text-gray-700 mb-3">建议信息</h4>
-              <div class="bg-gray-50 p-4 rounded-lg">
-                <p class="text-sm text-gray-900 whitespace-pre-wrap">{{ submissionDetails.suggestions }}</p>
+              <div class="space-y-3">
+                <div v-for="(item, index) in managementAnalysis.suggestion_items" :key="'suggestion-' + index"
+                  class="bg-gray-50 p-4 rounded-lg border-l-4 border-green-500">
+                  <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs text-green-600 font-medium">
+                      填写人：{{ item.submitted_by }} ({{ item.submitted_by_role }})
+                    </span>
+                  </div>
+                  <div class="text-sm text-gray-900 whitespace-pre-wrap" :class="{ 'line-clamp-3': !item.expanded }"
+                    v-html="formatContent(item.content)">
+                  </div>
+                  <button v-if="item.content && item.content.length > 100" @click="toggleExpanded('suggestion', index)"
+                    class="mt-2 text-xs text-green-600 hover:text-green-800 underline">
+                    {{ item.expanded ? '收起' : '展开全部' }}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -234,6 +265,23 @@ const selectedModule = ref<Module | null>(null)
 const selectedPeriod = ref(new Date().toISOString().slice(0, 7))
 const submissionDetails = ref<any>(null)
 const attachments = ref<any[]>([])
+const managementAnalysis = ref<{
+  analysis_items: Array<{
+    content: string
+    submitted_by: string
+    submitted_by_role: string
+    expanded?: boolean
+  }>
+  suggestion_items: Array<{
+    content: string
+    submitted_by: string
+    submitted_by_role: string
+    expanded?: boolean
+  }>
+}>({
+  analysis_items: [],
+  suggestion_items: []
+})
 
 // 计算当前选择的公司
 const currentCompany = computed(() => {
@@ -365,6 +413,7 @@ const onModuleChange = () => {
   // 清空之前的提交详情
   submissionDetails.value = null
   attachments.value = []
+  managementAnalysis.value = { analysis_items: [], suggestion_items: [] }
 }
 
 // 期间变化处理
@@ -372,6 +421,7 @@ const onPeriodChange = () => {
   // 清空之前的提交详情
   submissionDetails.value = null
   attachments.value = []
+  managementAnalysis.value = { analysis_items: [], suggestion_items: [] }
 }
 
 // 加载提交详情
@@ -405,10 +455,57 @@ const loadSubmissionDetails = async () => {
       }
     }
 
+    // 获取管理分析和建议信息
+    await loadManagementAnalysis()
+
   } catch (error) {
     console.error('加载提交详情失败:', error)
     alert('加载提交详情失败，请重试')
   }
+}
+
+// 加载管理分析和建议信息
+const loadManagementAnalysis = async () => {
+  if (!selectedModule.value || !selectedPeriod.value) return
+
+  try {
+    const userId = userStore.userInfo?.id
+    if (!userId) return
+
+    const response = await fetch(`http://47.111.95.19:3000/forms/management-analysis/${selectedModule.value.id}/${selectedPeriod.value}?userId=${userId}`)
+
+    if (response.ok) {
+      const result = await response.json()
+      if (result.success) {
+        managementAnalysis.value = result.data
+        // 为每个项目添加展开状态
+        managementAnalysis.value.analysis_items.forEach(item => {
+          item.expanded = false
+        })
+        managementAnalysis.value.suggestion_items.forEach(item => {
+          item.expanded = false
+        })
+      }
+    }
+  } catch (error) {
+    console.error('加载管理分析和建议失败:', error)
+  }
+}
+
+// 切换展开/收起状态
+const toggleExpanded = (type: 'analysis' | 'suggestion', index: number) => {
+  if (type === 'analysis') {
+    managementAnalysis.value.analysis_items[index].expanded = !managementAnalysis.value.analysis_items[index].expanded
+  } else {
+    managementAnalysis.value.suggestion_items[index].expanded = !managementAnalysis.value.suggestion_items[index].expanded
+  }
+}
+
+// 格式化内容显示
+const formatContent = (content: string) => {
+  if (!content) return ''
+  // 将换行符转换为HTML换行
+  return content.replace(/\n/g, '<br>')
 }
 
 // 工具函数
@@ -588,5 +685,12 @@ onMounted(() => {
   to {
     transform: rotate(360deg);
   }
+}
+
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 </style>

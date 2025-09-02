@@ -13,8 +13,8 @@
           <h3 class="text-lg font-semibold text-gray-900">数据年份选择</h3>
           <div class="flex items-center space-x-3">
             <span class="text-sm text-gray-600">选择年份:</span>
-            <select v-model="selectedYear" @change="fetchData" 
-                    class="px-3 py-1.5 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white">
+            <select v-model="selectedYear" @change="fetchData"
+              class="px-3 py-1.5 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white">
               <option v-for="year in availableYears" :key="year" :value="year">{{ year }}年</option>
             </select>
           </div>
@@ -34,14 +34,15 @@
             <div class="text-sm text-gray-600">计入损益</div>
           </div>
           <div class="text-center">
-            <div class="text-2xl font-bold" :class="getCompletionRateColor(totalStats.completionRate)">{{ totalStats.completionRate }}%</div>
+            <div class="text-2xl font-bold" :class="getCompletionRateColor(totalStats.completionRate)">{{
+              totalStats.completionRate }}%</div>
             <div class="text-sm text-gray-600">执行率</div>
           </div>
         </div>
         <div class="mt-4">
           <div class="w-full bg-gray-200 rounded-full h-3">
-            <div class="bg-blue-600 h-3 rounded-full transition-all duration-500" 
-                 :style="`width: ${Math.min(totalStats.completionRate, 100)}%`"></div>
+            <div class="bg-blue-600 h-3 rounded-full transition-all duration-500"
+              :style="`width: ${Math.min(totalStats.completionRate, 100)}%`"></div>
           </div>
         </div>
       </div>
@@ -99,8 +100,8 @@
           <div class="space-y-4">
             <h4 class="text-md font-medium text-gray-800">占比详情</h4>
             <div class="space-y-2">
-              <div v-for="(item, index) in pieData" :key="index" 
-                   class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+              <div v-for="(item, index) in pieData" :key="index"
+                class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                 <div class="flex items-center">
                   <div class="w-3 h-3 rounded-full mr-3" :style="`background-color: ${getColor(index)}`"></div>
                   <span class="text-sm font-medium text-gray-900">{{ item.name }}</span>
@@ -164,10 +165,10 @@ const totalStats = computed(() => {
   const totalCumulativeIncome = Object.keys(categories).reduce((sum, key) => {
     return sum + (summary.value[key]?.cumulativeIncome || 0)
   }, 0)
-  
-  const completionRate = yearlyPlan.value > 0 ? 
+
+  const completionRate = yearlyPlan.value > 0 ?
     Number(((totalCumulativeIncome / yearlyPlan.value) * 100).toFixed(2)) : 0
-    
+
   return {
     totalCumulativeIncome,
     yearlyPlan: yearlyPlan.value,
@@ -298,9 +299,9 @@ const updateTrendChart = () => {
   if (!chartInstance.value) return
 
   const series: any[] = []
-  
+
   const hasData = months.value.length > 0 && Object.keys(monthlyData.value).length > 0
-  
+
   if (hasData) {
     Object.keys(categories).forEach((key, index) => {
       const categoryData = monthlyData.value[key]
@@ -359,31 +360,31 @@ const updateTrendChart = () => {
       top: 10
     },
     tooltip: {
-      trigger: 'axis',
+      trigger: 'item',
       axisPointer: {
         type: 'shadow'
       },
-      formatter: function(params: any[]) {
+      formatter: function (params: any[]) {
         if (!hasData) return '暂无数据'
         let result = `<strong>${params[0].name}</strong><br/>`
-        
+
         const cumulativeData = params.filter(p => p.seriesName.includes('累计'))
         const currentData = params.filter(p => p.seriesName.includes('当月'))
-        
+
         if (cumulativeData.length > 0) {
           result += '<br/><span style="color: #666;">累计计入损益:</span><br/>'
           cumulativeData.forEach(param => {
             result += `• ${param.seriesName}: ${formatNumber(param.value)} 万元<br/>`
           })
         }
-        
+
         if (currentData.length > 0 && selectedYear.value !== '2025') {
           result += '<br/><span style="color: #666;">当月计入损益:</span><br/>'
           currentData.forEach(param => {
             result += `• ${param.seriesName}: ${formatNumber(param.value)} 万元<br/>`
           })
         }
-        
+
         return result
       }
     },
@@ -412,7 +413,7 @@ const updateTrendChart = () => {
         fontSize: 12
       },
       axisLabel: {
-        formatter: function(value: number) {
+        formatter: function (value: number) {
           return formatNumber(value)
         },
         fontSize: 12
@@ -479,11 +480,11 @@ const updateBarChart = () => {
       top: 10
     },
     tooltip: {
-      trigger: 'axis',
+      trigger: 'item',
       axisPointer: {
         type: 'shadow'
       },
-      formatter: function(params: any[]) {
+      formatter: function (params: any[]) {
         if (!hasData) return '暂无数据'
         let result = `${params[0].name}<br/>`
         params.forEach(param => {
@@ -517,7 +518,7 @@ const updateBarChart = () => {
         fontSize: 12
       },
       axisLabel: {
-        formatter: function(value: number) {
+        formatter: function (value: number) {
           return formatNumber(value)
         },
         fontSize: 12
@@ -558,7 +559,7 @@ const updatePieChart = () => {
     },
     tooltip: {
       trigger: 'item',
-      formatter: function(params: any) {
+      formatter: function (params: any) {
         if (!hasData) return '暂无数据'
         return `${params.name}<br/>数值: ${formatNumber(params.value)} 万元<br/>占比: ${params.percent}%`
       }
@@ -644,5 +645,4 @@ onUnmounted(() => {
 })
 </script>
 
-<style scoped>
-</style> 
+<style scoped></style>

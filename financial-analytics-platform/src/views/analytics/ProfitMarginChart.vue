@@ -11,10 +11,8 @@
       <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
         <div class="flex items-center justify-between">
           <h3 class="text-lg font-semibold text-gray-900">分析年份</h3>
-          <select 
-            v-model="selectedYear" 
-            class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          >
+          <select v-model="selectedYear"
+            class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
             <option value="2024">2024年</option>
             <option value="2025">2025年</option>
             <option value="2023">2023年</option>
@@ -37,11 +35,7 @@
       <div class="bg-white rounded-lg shadow-sm p-6">
         <h3 class="text-lg font-semibold text-gray-900 mb-6">各板块毛利率分析</h3>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div 
-            v-for="segment in segmentData" 
-            :key="segment.name"
-            class="bg-gray-50 rounded-lg p-4"
-          >
+          <div v-for="segment in segmentData" :key="segment.name" class="bg-gray-50 rounded-lg p-4">
             <div class="flex items-center justify-between mb-3">
               <h4 class="font-medium text-gray-900">{{ segment.name }}板块</h4>
               <span class="text-lg font-bold text-blue-600">{{ segment.rate }}%</span>
@@ -56,10 +50,9 @@
                 <span class="font-medium">{{ segment.actual }}%</span>
               </div>
               <div class="w-full bg-gray-200 rounded-full h-2">
-                <div 
-                  class="bg-blue-600 h-2 rounded-full transition-all duration-500" 
-                  :style="`width: ${Math.min((segment.actual / Math.max(segment.plan, segment.actual)) * 100, 100)}%`"
-                ></div>
+                <div class="bg-blue-600 h-2 rounded-full transition-all duration-500"
+                  :style="`width: ${Math.min((segment.actual / Math.max(segment.plan, segment.actual)) * 100, 100)}%`">
+                </div>
               </div>
             </div>
           </div>
@@ -217,13 +210,17 @@ const initChart = () => {
       top: 10
     },
     tooltip: {
-      trigger: 'axis',
-      formatter: function(params: any[]) {
-        let result = `${params[0].name}<br/>`
-        params.forEach(param => {
-          result += `${param.seriesName}: ${formatNumber(param.value)}%<br/>`
-        })
-        return result
+      trigger: 'item',
+      formatter: function (params: any) {
+        const monthName = params.name
+        const seriesName = params.seriesName
+        const value = params.value
+
+        if (value === null || value === undefined) {
+          return `${monthName}<br/>${seriesName}: 暂无数据`
+        }
+
+        return `${monthName}<br/>${seriesName}: ${formatNumber(value)}%`
       }
     },
     legend: {
@@ -300,7 +297,7 @@ const initChart = () => {
       }
     ]
   }
-  
+
   chartInstance.setOption(option)
 }
 
@@ -321,7 +318,7 @@ onMounted(async () => {
   await fetchProfitMarginData()
   await nextTick()
   initChart()
-  
+
   // 监听窗口大小变化
   window.addEventListener('resize', () => {
     if (chartInstance) {

@@ -60,19 +60,8 @@
         </div>
       </div>
 
-      <!-- 表二：月度趋势图表 -->
-      <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
-        <div class="flex justify-between items-center mb-6">
-          <h3 class="text-lg font-semibold text-gray-900">{{ getSelectedCompanyName() }}{{ selectedYear }}年月度趋势对比</h3>
-          <div class="flex items-center space-x-4">
-            <div class="flex items-center">
-              <div class="w-4 h-4 bg-blue-500 rounded mr-2"></div>
-              <span class="text-sm text-gray-600">月度变化趋势</span>
-            </div>
-          </div>
-        </div>
-        <div class="h-[500px]" ref="chartRef"></div>
-      </div>
+      <!-- 表二：月度趋势图表组件 -->
+      <NetProfitTrendChart class="mb-8" />
 
       <!-- 表三：标准利润表净利润曲线 -->
       <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
@@ -98,6 +87,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
 import * as echarts from 'echarts'
+import NetProfitTrendChart from '@/components/NetProfitTrendChart.vue'
 
 // 响应式数据
 const selectedYear = ref(new Date().getFullYear().toString())
@@ -125,11 +115,9 @@ const initializeCompany = () => {
 }
 
 // 图表引用
-const chartRef = ref<HTMLElement | null>(null)
 const curveChartRef = ref<HTMLElement | null>(null)
 
 // 图表实例
-const chartInstance = ref<echarts.ECharts | null>(null)
 const curveChartInstance = ref<echarts.ECharts | null>(null)
 
 // 数据
@@ -189,7 +177,6 @@ const fetchData = async () => {
       fetchNetProfitData(),
       fetchNetProfitCurveData()
     ])
-    updateTrendChart()
     updateCurveChart()
   } catch (error) {
     console.error('获取数据失败:', error)
@@ -302,122 +289,12 @@ const fetchNetProfitCurveData = async () => {
 
 // 初始化图表
 const initCharts = () => {
-  if (chartRef.value) {
-    chartInstance.value = echarts.init(chartRef.value)
-  }
   if (curveChartRef.value) {
     curveChartInstance.value = echarts.init(curveChartRef.value)
   }
 }
 
-// 更新趋势图
-const updateTrendChart = () => {
-  if (!chartInstance.value) return
 
-  try {
-    // 检查是否有数据
-    const hasData = months.value.length > 0 && monthlyData.value && Object.keys(monthlyData.value).length > 0
-
-    // 准备安全的数据
-    const monthsData = hasData ? months.value : []
-    const currentTotal = hasData && monthlyData.value.currentTotal ? monthlyData.value.currentTotal : []
-
-    console.log('Chart data:', { monthsData, currentTotal, hasData });
-
-    // 基本配置
-    const option = {
-      title: {
-        text: `${selectedYear.value}年净利润趋势分析`,
-        textStyle: {
-          fontSize: 18,
-          fontWeight: 'bold',
-          color: '#374151'
-        },
-        left: 'center',
-        top: 10
-      },
-      tooltip: {
-        trigger: 'axis',
-        formatter: function (params: any[]) {
-          if (!hasData) return '暂无数据'
-          let result = `${params[0].name}<br/>`
-          params.forEach(param => {
-            result += `${param.seriesName}: ${formatNumber(param.value)} 万元<br/>`
-          })
-          return result
-        }
-      },
-      legend: {
-        top: 50,
-        type: 'scroll'
-      },
-      grid: {
-        left: '8%',
-        right: '5%',
-        bottom: '15%',
-        top: '25%',
-        containLabel: true
-      },
-      xAxis: {
-        type: 'category',
-        data: monthsData,
-        axisLabel: {
-          fontSize: 12
-        }
-      },
-      yAxis: {
-        type: 'value',
-        name: '万元',
-        nameTextStyle: {
-          fontSize: 12
-        },
-        axisLabel: {
-          formatter: function (value: number) {
-            return formatNumber(value)
-          },
-          fontSize: 12
-        }
-      },
-      series: hasData ? [
-        {
-          name: '净利润',
-          type: 'bar',
-          data: currentTotal,
-          itemStyle: {
-            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-              { offset: 0, color: '#3B82F6' },
-              { offset: 1, color: '#1E40AF' }
-            ]),
-            borderRadius: [4, 4, 0, 0]
-          },
-          emphasis: {
-            itemStyle: {
-              color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-                { offset: 0, color: '#2563EB' },
-                { offset: 1, color: '#1D4ED8' }
-              ])
-            }
-          }
-        }
-      ] : [],
-      graphic: hasData ? [] : [{
-        type: 'text',
-        left: 'center',
-        top: 'middle',
-        style: {
-          text: '暂无数据',
-          fontSize: 16,
-          fontWeight: 'bold',
-          fill: '#999'
-        }
-      }]
-    };
-
-    chartInstance.value.setOption(option, true);
-  } catch (error) {
-    console.error('更新趋势图表失败:', error);
-  }
-}
 
 // 更新净利润曲线图
 const updateCurveChart = () => {
@@ -442,14 +319,19 @@ const updateCurveChart = () => {
         top: 10
       },
       tooltip: {
-        trigger: 'axis',
-        formatter: function (params: any[]) {
+        trigger: 'item',
+        formatter: function (params: any) {
           if (!hasData) return '暂无数据'
-          let result = `${params[0].name}<br/>`
-          params.forEach(param => {
-            result += `${param.seriesName}: ${formatNumber(param.value)} 万元<br/>`
-          })
-          return result
+
+          const monthName = params.name
+          const seriesName = params.seriesName
+          const value = params.value
+
+          if (value === null || value === undefined) {
+            return `${monthName}<br/>${seriesName}: 暂无数据`
+          }
+
+          return `${monthName}<br/>${seriesName}: ${formatNumber(value)} 万元`
         }
       },
       legend: {
@@ -526,7 +408,6 @@ const updateCurveChart = () => {
 
 // 处理窗口大小变化
 const handleResize = () => {
-  chartInstance.value?.resize()
   curveChartInstance.value?.resize()
 }
 
@@ -539,7 +420,6 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
-  chartInstance.value?.dispose()
   curveChartInstance.value?.dispose()
   window.removeEventListener('resize', handleResize)
 })

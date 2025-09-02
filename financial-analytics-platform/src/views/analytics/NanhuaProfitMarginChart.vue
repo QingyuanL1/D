@@ -9,10 +9,8 @@
       <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
         <div class="flex items-center justify-between">
           <h3 class="text-lg font-semibold text-gray-900">分析年份</h3>
-          <select 
-            v-model="selectedYear" 
-            class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          >
+          <select v-model="selectedYear"
+            class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
             <option value="2024">2024年</option>
             <option value="2025">2025年</option>
             <option value="2023">2023年</option>
@@ -199,8 +197,8 @@ const initChart = () => {
       top: 10
     },
     tooltip: {
-      trigger: 'axis',
-      formatter: function(params: any[]) {
+      trigger: 'item',
+      formatter: function (params: any[]) {
         let result = `${params[0].name}<br/>`
         params.forEach(param => {
           result += `${param.seriesName}: ${formatNumber(param.value)}%<br/>`
@@ -282,7 +280,7 @@ const initChart = () => {
       }
     ]
   }
-  
+
   chartInstance.setOption(option)
 }
 
@@ -300,7 +298,7 @@ onMounted(async () => {
   await fetchNanhuaProfitMarginData()
   await nextTick()
   initChart()
-  
+
   window.addEventListener('resize', () => {
     if (chartInstance) {
       chartInstance.resize()
@@ -326,4 +324,4 @@ onUnmounted(() => {
   width: 100%;
   height: 400px;
 }
-</style> 
+</style>

@@ -1208,7 +1208,7 @@ const initRevenueChart = () => {
       }
     },
     tooltip: {
-      trigger: 'axis',
+      trigger: 'item',
       axisPointer: {
         type: 'shadow'
       },
@@ -1287,7 +1287,7 @@ const initProfitChart = () => {
       }
     },
     tooltip: {
-      trigger: 'axis',
+      trigger: 'item',
       axisPointer: {
         type: 'shadow'
       },

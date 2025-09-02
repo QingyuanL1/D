@@ -48,19 +48,8 @@
         </div>
       </div>
 
-      <!-- 月度趋势图表 -->
-      <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
-        <div class="flex justify-between items-center mb-6">
-          <h3 class="text-lg font-semibold text-gray-900">{{ selectedYear }}年月度趋势对比</h3>
-          <div class="flex items-center space-x-4">
-            <div class="flex items-center">
-              <div class="w-4 h-4 bg-blue-500 rounded mr-2"></div>
-              <span class="text-sm text-gray-600">累计趋势</span>
-            </div>
-          </div>
-        </div>
-        <div class="h-[500px]" ref="chartRef"></div>
-      </div>
+      <!-- 月度趋势图表组件 -->
+      <BusinessIncomeTrendChart />
 
       <!-- 当月数据柱状图 -->
       <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
@@ -113,6 +102,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
 import * as echarts from 'echarts'
+import BusinessIncomeTrendChart from '@/components/BusinessIncomeTrendChart.vue'
 
 // 响应式数据
 const selectedYear = ref(new Date().getFullYear().toString())
@@ -120,12 +110,10 @@ const availableYears = ref<string[]>([])
 const loading = ref(true)
 
 // 图表引用
-const chartRef = ref<HTMLElement | null>(null)
 const pieChartRef = ref<HTMLElement | null>(null)
 const monthlyChartRef = ref<HTMLElement | null>(null)
 
 // 图表实例
-const chartInstance = ref<echarts.ECharts | null>(null)
 const pieChartInstance = ref<echarts.ECharts | null>(null)
 const monthlyChartInstance = ref<echarts.ECharts | null>(null)
 
@@ -295,9 +283,6 @@ const fetchPieData = async () => {
 
 // 初始化图表
 const initCharts = () => {
-  if (chartRef.value) {
-    chartInstance.value = echarts.init(chartRef.value)
-  }
   if (pieChartRef.value) {
     pieChartInstance.value = echarts.init(pieChartRef.value)
   }
@@ -308,125 +293,10 @@ const initCharts = () => {
 
 // 更新所有图表
 const updateCharts = () => {
-  updateTrendChart()
   updateMonthlyChart()
   updatePieChart()
 }
 
-// 更新趋势图
-const updateTrendChart = () => {
-  if (!chartInstance.value) return
-
-  const series: any[] = []
-
-  // 检查是否有数据
-  const hasData = months.value.length > 0 && Object.keys(monthlyData.value).length > 0
-
-  if (hasData) {
-    // 为每个类别创建月度变化趋势线
-    Object.keys(categories).forEach((key, index) => {
-      const categoryData = monthlyData.value[key]
-      const categoryInfo = categories[key as keyof typeof categories]
-
-      if (categoryData) {
-        // 当期累计线
-        series.push({
-          name: `${categoryInfo.name}`,
-          type: 'line',
-          data: categoryData.currentTotal,
-          smooth: true,
-          connectNulls: false, // 不连接null值，让曲线在无数据处断开
-          lineStyle: {
-            color: categoryInfo.color,
-            width: 3
-          },
-          itemStyle: {
-            color: categoryInfo.color
-          },
-          areaStyle: {
-            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-              { offset: 0, color: categoryInfo.color + '40' },
-              { offset: 1, color: categoryInfo.color + '10' }
-            ])
-          }
-        })
-      }
-    })
-  }
-
-  const option = {
-    title: {
-      text: `${selectedYear.value}年营业收入趋势分析`,
-      textStyle: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: '#374151'
-      },
-      left: 'center',
-      top: 10
-    },
-    tooltip: {
-      trigger: 'axis',
-      formatter: function (params: any[]) {
-        if (!hasData) return '暂无数据'
-        let result = `${params[0].name}<br/>`
-        params.forEach(param => {
-          if (param.value === null) {
-            result += `${param.seriesName}: 暂无数据<br/>`
-          } else {
-            result += `${param.seriesName}: ${formatNumber(param.value)} 万元<br/>`
-          }
-        })
-        return result
-      }
-    },
-    legend: {
-      top: 50,
-      type: 'scroll'
-    },
-    grid: {
-      left: '8%',
-      right: '5%',
-      bottom: '15%',
-      top: '25%',
-      containLabel: true
-    },
-    xAxis: {
-      type: 'category',
-      data: hasData ? months.value : [],
-      axisLabel: {
-        fontSize: 12
-      }
-    },
-    yAxis: {
-      type: 'value',
-      name: '万元',
-      nameTextStyle: {
-        fontSize: 12
-      },
-      axisLabel: {
-        formatter: function (value: number) {
-          return formatNumber(value)
-        },
-        fontSize: 12
-      }
-    },
-    series: hasData ? series : [],
-    graphic: hasData ? [] : [{
-      type: 'text',
-      left: 'center',
-      top: 'middle',
-      style: {
-        text: '暂无数据',
-        fontSize: 16,
-        fontWeight: 'bold',
-        fill: '#999'
-      }
-    }]
-  }
-
-  chartInstance.value.setOption(option, true)
-}
 
 // 更新当月数据柱状图
 const updateMonthlyChart = () => {
@@ -439,14 +309,11 @@ const updateMonthlyChart = () => {
 
   if (hasData) {
     // 为每个类别创建并排柱状图
-    Object.keys(categories).forEach((key, index) => {
+    Object.keys(categories).forEach((key) => {
       const categoryData = monthlyCurrentData.value[key]
       const categoryInfo = categories[key as keyof typeof categories]
 
-      console.log(`处理类别 ${key}:`, categoryData) // 调试信息
-
       if (categoryData && categoryData.currentMonth) {
-        console.log(`${categoryInfo.name} 数据:`, categoryData.currentMonth) // 调试信息
         series.push({
           name: `${categoryInfo.name}`,
           type: 'bar',
@@ -461,7 +328,6 @@ const updateMonthlyChart = () => {
         })
       }
     })
-    console.log('最终series数据:', series) // 调试信息
   }
 
   const option = {
@@ -476,44 +342,17 @@ const updateMonthlyChart = () => {
       top: 10
     },
     tooltip: {
-      trigger: 'axis',
-      axisPointer: {
-        type: 'shadow'
-      },
-      formatter: function (params: any[]) {
-        console.log('Tooltip params:', params) // 调试信息
-        if (!params || params.length === 0) return '暂无数据'
+      trigger: 'item',
+      formatter: function (params: any) {
+        const monthName = params.name
+        const seriesName = params.seriesName
+        const value = params.value
 
-        let result = `${params[0].name}<br/>`
-        let total = 0
-
-        // 计算总额
-        params.forEach(param => {
-          if (param.value !== null) {
-            const value = Number(param.value || 0)
-            total += value
-            console.log(`${param.seriesName}: ${value}`) // 调试信息
-          }
-        })
-
-        // 显示各部分数据和占比
-        params.forEach(param => {
-          const value = param.value === null ? 0 : Number(param.value || 0)
-          const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : '0.0'
-
-          if (param.value === null) {
-            result += `${param.seriesName}: 暂无数据<br/>`
-          } else {
-            result += `${param.seriesName}: ${value.toLocaleString('zh-CN', { maximumFractionDigits: 2 })} 万元 (${percentage}%)<br/>`
-          }
-        })
-
-        // 显示总计
-        if (total > 0) {
-          result += `<br/>总计: ${total.toLocaleString('zh-CN', { maximumFractionDigits: 2 })} 万元`
+        if (value === null) {
+          return `${monthName}<br/>${seriesName}: 暂无数据`
         }
 
-        return result
+        return `${monthName}<br/>${seriesName}: ${formatNumber(value)} 万元`
       }
     },
     legend: {
@@ -651,7 +490,6 @@ const updatePieChart = () => {
 
 // 处理窗口大小变化
 const handleResize = () => {
-  chartInstance.value?.resize()
   monthlyChartInstance.value?.resize()
   pieChartInstance.value?.resize()
 }
@@ -664,7 +502,6 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
-  chartInstance.value?.dispose()
   monthlyChartInstance.value?.dispose()
   pieChartInstance.value?.dispose()
   window.removeEventListener('resize', handleResize)

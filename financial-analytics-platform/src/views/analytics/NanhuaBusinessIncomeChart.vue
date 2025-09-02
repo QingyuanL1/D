@@ -14,7 +14,7 @@
           <div class="flex items-center space-x-3">
             <span class="text-sm text-gray-600">选择年份:</span>
             <select v-model="selectedYear" @change="fetchData"
-                    class="px-3 py-1.5 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white">
+              class="px-3 py-1.5 text-sm border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white">
               <option v-for="year in availableYears" :key="year" :value="year">{{ year }}年</option>
             </select>
           </div>
@@ -151,23 +151,23 @@ const fetchBusinessIncomeData = async () => {
   try {
     months.value = []
     mainBusinessData.value = []
-    
+
     for (let month = 1; month <= 12; month++) {
       const period = `${selectedYear.value}-${month.toString().padStart(2, '0')}`
       const response = await fetch(`http://47.111.95.19:3000/nanhua-business-income/${period}`)
-      
+
       if (response.ok) {
         const result = await response.json()
         if (result.success && result.data && result.data.customers) {
           if (months.value.length < 12) {
             months.value.push(`${month}月`)
           }
-          
+
           // 计算主营业务当期收入总和
           const totalCurrent = result.data.customers.reduce((sum: number, customer: any) => {
             return sum + (customer.current || 0)
           }, 0)
-          
+
           mainBusinessData.value.push(totalCurrent)
         } else {
           if (months.value.length < 12) {
@@ -182,7 +182,7 @@ const fetchBusinessIncomeData = async () => {
         mainBusinessData.value.push(0)
       }
     }
-    
+
     // 如果没有数据，填充默认月份
     if (months.value.length === 0) {
       for (let month = 1; month <= 12; month++) {
@@ -200,11 +200,11 @@ const fetchBusinessIncomeData = async () => {
 const fetchNonMainBusinessData = async () => {
   try {
     nonMainBusinessData.value = []
-    
+
     for (let month = 1; month <= 12; month++) {
       const period = `${selectedYear.value}-${month.toString().padStart(2, '0')}`
       const response = await fetch(`http://47.111.95.19:3000/nanhua-non-main-business/${period}`)
-      
+
       if (response.ok) {
         const result = await response.json()
         if (result.success && result.data && result.data.items) {
@@ -212,7 +212,7 @@ const fetchNonMainBusinessData = async () => {
           const totalCurrent = result.data.items.reduce((sum: number, item: any) => {
             return sum + (item.current || 0)
           }, 0)
-          
+
           nonMainBusinessData.value.push(totalCurrent)
         } else {
           nonMainBusinessData.value.push(0)
@@ -221,7 +221,7 @@ const fetchNonMainBusinessData = async () => {
         nonMainBusinessData.value.push(0)
       }
     }
-    
+
     // 如果没有数据，填充0
     if (nonMainBusinessData.value.length === 0) {
       for (let month = 1; month <= 12; month++) {
@@ -261,18 +261,18 @@ const updateChart = () => {
       top: 10
     },
     tooltip: {
-      trigger: 'axis',
-      formatter: function(params: any[]) {
+      trigger: 'item',
+      formatter: function (params: any[]) {
         if (!hasData) return '暂无数据'
         let result = `${params[0].name}<br/>`
         let total = 0
-        
+
         params.forEach(param => {
           const value = param.value || 0
           total += value
           result += `${param.seriesName}: ${formatNumber(value)} 万元<br/>`
         })
-        
+
         result += `<br/>总计: ${formatNumber(total)} 万元`
         return result
       }
@@ -302,7 +302,7 @@ const updateChart = () => {
         fontSize: 12
       },
       axisLabel: {
-        formatter: function(value: number) {
+        formatter: function (value: number) {
           return formatNumber(value)
         },
         fontSize: 12
@@ -384,4 +384,4 @@ onUnmounted(() => {
 
 <style scoped>
 /* 组件样式 */
-</style> 
+</style>
